@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { RPCHandler } from '@orpc/server/message-port'
@@ -76,7 +76,17 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+function syncTheme() {
+  if (win) {
+    win.webContents.send('theme-changed', nativeTheme.shouldUseDarkColors)
+  }
+}
+
+app.whenReady().then(() => {
+  createWindow()
+  syncTheme()
+  nativeTheme.on('updated', syncTheme)
+})
 
 ipcMain.on('start-orpc-server', (event) => {
   const [serverPort] = event.ports
