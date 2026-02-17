@@ -18,7 +18,9 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const [channel, ...omit] = args
     return ipcRenderer.invoke(channel, ...omit)
   },
-
+  close: () => ipcRenderer.send('window-close'),
+  minimize: () => ipcRenderer.send('window-minimize'),
+  maximize: () => ipcRenderer.send('window-maximize'),
   // You can expose other APTs you need here.
   // ...
 })

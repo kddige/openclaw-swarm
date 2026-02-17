@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -31,10 +31,14 @@ let win: BrowserWindow | null
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    titleBarStyle: 'hiddenInset',
+    titleBarOverlay: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
   })
+
+  win.setWindowButtonVisibility(false)
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
@@ -68,3 +72,10 @@ app.on('activate', () => {
 })
 
 app.whenReady().then(createWindow)
+
+ipcMain.on('window-close', () => win?.close())
+ipcMain.on('window-minimize', () => win?.minimize())
+ipcMain.on('window-maximize', () => {
+  if (win?.isMaximized()) win.unmaximize()
+  else win?.maximize()
+})

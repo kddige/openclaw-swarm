@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -13,10 +13,13 @@ let win;
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    titleBarStyle: "hiddenInset",
+    titleBarOverlay: false,
     webPreferences: {
       preload: path.join(__dirname$1, "preload.mjs")
     }
   });
+  win.setWindowButtonVisibility(false);
   win.webContents.on("did-finish-load", () => {
     win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
   });
@@ -38,6 +41,12 @@ app.on("activate", () => {
   }
 });
 app.whenReady().then(createWindow);
+ipcMain.on("window-close", () => win == null ? void 0 : win.close());
+ipcMain.on("window-minimize", () => win == null ? void 0 : win.minimize());
+ipcMain.on("window-maximize", () => {
+  if (win == null ? void 0 : win.isMaximized()) win.unmaximize();
+  else win == null ? void 0 : win.maximize();
+});
 export {
   MAIN_DIST,
   RENDERER_DIST,

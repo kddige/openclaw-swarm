@@ -1,1 +1,10 @@
 @import 'tailwindcss';
+
+.titlebar {
+  -webkit-app-region: drag;
+  height: 48px;
+}
+
+.titlebar button {
+  -webkit-app-region: no-drag; /* knapper skal kunne klikkes */
+}
