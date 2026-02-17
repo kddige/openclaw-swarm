@@ -42,6 +42,7 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     titleBarStyle: 'hiddenInset',
     titleBarOverlay: false,
+    trafficLightPosition: { x: 12, y: 12 },
     transparent: true,
     vibrancy: 'under-window',
     visualEffectState: 'active',
