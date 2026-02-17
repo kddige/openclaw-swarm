@@ -1,7 +1,6 @@
 import { TooltipProvider } from '@/components/ui/tooltip'
 import '../index.css'
 import { createRootRoute, Outlet } from '@tanstack/react-router'
-import { SidebarProvider } from '@/components/ui/sidebar'
 
 export const Route = createRootRoute({ component: RootLayout })
 
