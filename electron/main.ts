@@ -47,8 +47,6 @@ function createWindow() {
     },
   })
 
-  win.setWindowButtonVisibility(false)
-
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {
