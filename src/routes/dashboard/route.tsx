@@ -1,19 +1,18 @@
-import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { LayoutDashboardIcon, ServerIcon, SettingsIcon } from 'lucide-react'
 
 export const Route = createFileRoute('/dashboard')({
   component: RouteComponent,
@@ -22,25 +21,44 @@ export const Route = createFileRoute('/dashboard')({
 function RouteComponent() {
   return (
     <SidebarProvider className="bg-transparent! dragable">
-      <div className="absolute z-20 w-32 left-0 top-1.5 flex justify-end">
+      {/*<div className="absolute z-20 w-32 left-0 top-1.5 flex justify-end">
         <SidebarTrigger />
-      </div>
+      </div>*/}
       <Sidebar
         variant="inset"
         className="**:data-[slot=sidebar-inner]:bg-transparent **:data-[slot=sidebar-inner]:pt-8"
       >
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
+            <SidebarGroupLabel>Fleet</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton>Dashboard</SidebarMenuButton>
+                  <SidebarMenuButton render={<Link to="/dashboard" />}>
+                    <LayoutDashboardIcon />
+                    Dashboard
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton render={<Link to="/dashboard/agents" />}>
+                    <ServerIcon />
+                    Agents
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton>
+                <SettingsIcon />
+                Settings
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <Outlet />
