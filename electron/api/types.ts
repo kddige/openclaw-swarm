@@ -12,10 +12,10 @@ export interface StoredGateway {
 }
 
 export interface DeviceIdentity {
-  deviceId: string
-  publicKeyDer: string // base64-encoded DER
-  privateKeyDer: string // base64-encoded DER
-  publicKeyBase64url: string
+  deviceId: string // SHA-256 hex of raw 32-byte public key
+  publicKeyRaw: string // base64-encoded raw 32-byte Ed25519 public key
+  privateKeyDer: string // base64-encoded PKCS8 DER private key (for crypto.createPrivateKey)
+  publicKeyBase64url: string // base64url-encoded raw 32-byte public key (for connect frame)
 }
 
 export interface StoredDeviceToken {

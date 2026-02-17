@@ -50,10 +50,10 @@ export function buildConnectFrame(opts: {
     minProtocol: 3,
     maxProtocol: 3,
     client: {
-      id: 'fleet-manager',
+      id: 'gateway-client',
       version: opts.appVersion,
       platform: opts.platform,
-      mode: 'operator',
+      mode: 'ui',
       instanceId: crypto.randomUUID(),
     },
     role: 'operator',
