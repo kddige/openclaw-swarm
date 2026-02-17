@@ -4,6 +4,7 @@ import path from 'node:path'
 import { RPCHandler } from '@orpc/server/message-port'
 import { onError } from '@orpc/server'
 import { router } from './api/router'
+import { GatewayManager } from './gateway/manager'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -28,6 +29,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
   : RENDERER_DIST
 
 let win: BrowserWindow | null
+let gatewayManager: GatewayManager | null = null
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -84,15 +86,20 @@ function syncTheme() {
 }
 
 app.whenReady().then(() => {
+  gatewayManager = new GatewayManager()
   createWindow()
   syncTheme()
   nativeTheme.on('updated', syncTheme)
 })
 
+app.on('before-quit', () => {
+  gatewayManager?.destroy()
+})
+
 ipcMain.on('start-orpc-server', (event) => {
   const [serverPort] = event.ports
   handler.upgrade(serverPort, {
-    context: { win: win! },
+    context: { win: win!, gatewayManager: gatewayManager! },
   })
   serverPort.start()
 })
