@@ -1,9 +1,9 @@
 // @see - https://www.electron.build/configuration/configuration
 {
   $schema: 'https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json',
-  appId: 'YourAppID',
+  appId: 'ai.hucomm.fleet',
   asar: true,
-  productName: 'YourAppName',
+  productName: 'Hucomm Fleet',
   directories: {
     output: 'release/${version}',
   },
