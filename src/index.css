@@ -121,10 +121,10 @@
   }
 }
 
-html,
-body {
-}
-
 .dragable {
   app-region: drag;
+}
+
+button {
+  app-region: no-drag;
 }
