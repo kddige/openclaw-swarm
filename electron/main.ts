@@ -1,9 +1,10 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
-import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { RPCHandler } from '@orpc/server/message-port'
+import { onError } from '@orpc/server'
+import { router } from './api/router'
 
-const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // The built directory structure
@@ -28,6 +29,14 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 
 let win: BrowserWindow | null
 
+const handler = new RPCHandler(router, {
+  interceptors: [
+    onError((error) => {
+      console.error(error)
+    }),
+  ],
+})
+
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
@@ -39,11 +48,6 @@ function createWindow() {
   })
 
   win.setWindowButtonVisibility(false)
-
-  // Test active push message to Renderer-process.
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString())
-  })
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
@@ -73,9 +77,10 @@ app.on('activate', () => {
 
 app.whenReady().then(createWindow)
 
-ipcMain.on('window-close', () => win?.close())
-ipcMain.on('window-minimize', () => win?.minimize())
-ipcMain.on('window-maximize', () => {
-  if (win?.isMaximized()) win.unmaximize()
-  else win?.maximize()
+ipcMain.on('start-orpc-server', (event) => {
+  const [serverPort] = event.ports
+  handler.upgrade(serverPort, {
+    context: { win: win! },
+  })
+  serverPort.start()
 })
