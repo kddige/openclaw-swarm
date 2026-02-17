@@ -11,6 +11,7 @@
   files: ['dist', 'dist-electron'],
   mac: {
     target: ['dmg'],
+    identity: null,
     artifactName: '${productName}-Mac-${version}-Installer.${ext}',
   },
   win: {
