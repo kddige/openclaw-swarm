@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -56,12 +56,20 @@ function formatChatTime(timestamp: string | number | undefined): string {
   }
 }
 
+type OptimisticMessage = {
+  role: 'user'
+  content: string
+  timestamp: number
+  optimistic: true
+}
+
 function MaintenanceChatPage() {
   const { gatewayId } = Route.useParams()
   const { sessionKey } = Route.useSearch()
   const queryClient = useQueryClient()
 
   const [message, setMessage] = useState('')
+  const [optimisticMsgs, setOptimisticMsgs] = useState<OptimisticMessage[]>([])
   const [showNewSessionDialog, setShowNewSessionDialog] = useState(false)
   const [atBottom, setAtBottom] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -78,11 +86,23 @@ function MaintenanceChatPage() {
     refetchInterval: 2000,
   })
 
+  // Auto-clear optimistic messages 10s after they were sent
+  // (gateway refetch at 2s will pick them up well before that)
+  useEffect(() => {
+    if (optimisticMsgs.length === 0) return
+    const timer = setTimeout(
+      () => setOptimisticMsgs([]),
+      10_000,
+    )
+    return () => clearTimeout(timer)
+  }, [optimisticMsgs.length])
+
   const resetMutation = useMutation({
     ...orpc.gateway.resetSession.mutationOptions(),
     onSuccess: () => {
       toast.success('Session reset — new conversation started')
       setShowNewSessionDialog(false)
+      setOptimisticMsgs([])
       queryClient.invalidateQueries({
         queryKey: orpc.gateway.chatHistory.queryOptions({
           input: { gatewayId, sessionKey },
@@ -119,7 +139,7 @@ function MaintenanceChatPage() {
       const el = scrollRef.current
       if (el) el.scrollTop = el.scrollHeight
     }
-  }, [history, atBottom])
+  }, [history, optimisticMsgs, atBottom])
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current
@@ -131,6 +151,11 @@ function MaintenanceChatPage() {
   const handleSend = useCallback(() => {
     const text = message.trim()
     if (!text || sendMutation.isPending) return
+    // Optimistic: show immediately
+    setOptimisticMsgs((prev) => [
+      ...prev,
+      { role: 'user', content: text, timestamp: Date.now(), optimistic: true },
+    ])
     setMessage('')
     sendMutation.mutate({ gatewayId, sessionKey, message: text })
   }, [message, sendMutation, gatewayId, sessionKey])
@@ -145,7 +170,15 @@ function MaintenanceChatPage() {
     [handleSend],
   )
 
-  const messages = history ?? []
+  // Merge: show confirmed history + optimistic msgs not yet in history
+  const messages = useMemo(() => {
+    const confirmed = history ?? []
+    const confirmedUserTexts = new Set(
+      confirmed.filter((m) => m.role === 'user').map((m) => extractText(m.content)),
+    )
+    const pending = optimisticMsgs.filter((o) => !confirmedUserTexts.has(o.content))
+    return [...confirmed, ...pending]
+  }, [history, optimisticMsgs])
 
   return (
     <div className="flex flex-col h-screen">
@@ -190,11 +223,11 @@ function MaintenanceChatPage() {
       </div>
 
       {/* Message area */}
-      <div className="relative flex-1 min-h-0 mx-6 my-4">
+      <div className="relative flex-1 min-h-0 min-w-0 mx-6 my-4 overflow-hidden">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="h-full overflow-y-auto rounded-lg border bg-muted/20 p-4 flex flex-col gap-3"
+          className="h-full overflow-y-auto overflow-x-hidden rounded-lg border bg-muted/20 p-4 flex flex-col gap-3"
         >
           {isLoading ? (
             <div className="flex flex-col gap-2">
@@ -216,8 +249,8 @@ function MaintenanceChatPage() {
             messages.map((msg, i) => {
               if (msg.role === 'tool') {
                 return (
-                  <div key={i} className="flex justify-start">
-                    <div className="flex items-center gap-1.5 rounded-md border bg-muted/40 px-2.5 py-1 text-[0.625rem] text-muted-foreground max-w-[80%]">
+                  <div key={i} className="flex justify-start min-w-0">
+                    <div className="flex items-center gap-1.5 rounded-md border bg-muted/40 px-2.5 py-1 text-[0.625rem] text-muted-foreground max-w-full min-w-0">
                       <WrenchIcon className="size-2.5 shrink-0" />
                       <span className="font-mono truncate">{extractText(msg.content)}</span>
                     </div>
@@ -227,21 +260,25 @@ function MaintenanceChatPage() {
 
               if (msg.role === 'system') {
                 return (
-                  <div key={i} className="flex justify-center">
-                    <span className="text-[0.625rem] italic text-muted-foreground/60 px-2">
+                  <div key={i} className="flex justify-center min-w-0">
+                    <span className="text-[0.625rem] italic text-muted-foreground/60 px-2 text-center break-words">
                       {extractText(msg.content)}
                     </span>
                   </div>
                 )
               }
 
+              const text = extractText(msg.content)
+              if (!text) return null
+
               const isUser = msg.role === 'user'
+              const isOptimistic = 'optimistic' in msg && msg.optimistic
 
               return (
                 <div
                   key={i}
                   className={cn(
-                    'flex items-end gap-2',
+                    'flex items-end gap-2 min-w-0',
                     isUser ? 'justify-end' : 'justify-start',
                   )}
                 >
@@ -252,22 +289,23 @@ function MaintenanceChatPage() {
                   )}
                   <div
                     className={cn(
-                      'flex flex-col gap-0.5 max-w-[75%]',
-                      isUser ? 'items-end' : 'items-start',
+                      'flex flex-col gap-0.5 min-w-0',
+                      isUser ? 'items-end max-w-[75%]' : 'items-start max-w-[80%]',
                     )}
                   >
                     <div
                       className={cn(
-                        'rounded-lg px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words',
+                        'rounded-lg px-3 py-2 text-xs leading-relaxed break-words overflow-wrap-anywhere',
                         isUser
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted text-foreground',
+                        isOptimistic && 'opacity-60',
                       )}
                     >
-                      {extractText(msg.content)}
+                      {text}
                     </div>
-                    <span className="text-[0.5625rem] text-muted-foreground tabular-nums px-1">
-                      {formatChatTime(msg.timestamp)}
+                    <span className="text-[0.5625rem] text-muted-foreground tabular-nums px-1 shrink-0">
+                      {isOptimistic ? 'Sending…' : formatChatTime(msg.timestamp)}
                     </span>
                   </div>
                   {isUser && (
