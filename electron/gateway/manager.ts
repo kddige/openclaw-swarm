@@ -8,6 +8,7 @@ import {
 import { store, encryptToken, decryptToken } from '../store'
 import { getOrCreateDeviceIdentity } from '../device-identity'
 import { createDebugLogger } from '../lib/debug'
+import { gatewayPublisher } from './publisher'
 import type {
   StoredGateway,
   GatewayRuntimeState,
@@ -76,6 +77,15 @@ export class GatewayManager {
         payload: event.health,
         timestamp: Date.now(),
       })
+      if (event.health) {
+        gatewayPublisher
+          .publish('health', {
+            gatewayId: event.gatewayId,
+            ok: event.health.ok,
+            ts: event.health.ts ?? Date.now(),
+          })
+          .catch(() => {})
+      }
     })
 
     conn.on('gateway-event', (event) => {
@@ -258,7 +268,7 @@ export class GatewayManager {
       includeGlobal: true,
     })) as Record<string, unknown>
     const raw = (result.sessions ?? result) as Record<string, unknown>[]
-    return raw.map((s) => ({
+    const sessions = raw.map((s) => ({
       key: String(s.key ?? ''),
       displayName: (s.displayName as string) ?? (s.label as string) ?? null,
       kind: (s.kind as string) ?? null,
@@ -275,6 +285,8 @@ export class GatewayManager {
       cost: Number(s.cost ?? 0),
       model: (s.model as string) ?? null,
     }))
+    gatewayPublisher.publish('sessions', { gatewayId: id, sessions }).catch(() => {})
+    return sessions
   }
 
   async getSessionUsage(
@@ -384,7 +396,9 @@ export class GatewayManager {
     const raw = Array.isArray(result)
       ? result
       : ((result as Record<string, unknown>).presence ?? [])
-    return raw as PresenceEntry[]
+    const devices = raw as PresenceEntry[]
+    gatewayPublisher.publish('presence', { gatewayId, devices }).catch(() => {})
+    return devices
   }
 
   async getCost(

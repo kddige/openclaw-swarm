@@ -8,6 +8,7 @@
         "@base-ui/react": "^1.2.0",
         "@monaco-editor/react": "^4.7.0",
         "@orpc/client": "^1.13.5",
+        "@orpc/experimental-publisher": "^1.13.5",
         "@orpc/server": "^1.13.5",
         "@orpc/tanstack-query": "^1.13.5",
         "@tanstack/react-query": "^5.90.21",
@@ -298,6 +299,8 @@
     "@orpc/client": ["@orpc/client@1.13.5", "", { "dependencies": { "@orpc/shared": "1.13.5", "@orpc/standard-server": "1.13.5", "@orpc/standard-server-fetch": "1.13.5", "@orpc/standard-server-peer": "1.13.5" } }, "sha512-j0VJpiWiFv9Xfan3NOoouHL07nSiHX8haxYaZzHYWSdWh+ABzwa8aRTwQSUpuCfD6i0EtYEZJAB6gVwtAnQoxQ=="],
 
     "@orpc/contract": ["@orpc/contract@1.13.5", "", { "dependencies": { "@orpc/client": "1.13.5", "@orpc/shared": "1.13.5", "@standard-schema/spec": "^1.1.0", "openapi-types": "^12.1.3" } }, "sha512-JeklRu2kxsRKyaPeKqA40YHsGRLjQdAuEGNCNU6VxA3v4UReh8ZsDG+WvEoHfXIOLRn2VWBzEsbE1G2MwRCGsg=="],
+
+    "@orpc/experimental-publisher": ["@orpc/experimental-publisher@1.13.5", "", { "dependencies": { "@orpc/client": "1.13.5", "@orpc/shared": "1.13.5", "@orpc/standard-server": "1.13.5" }, "peerDependencies": { "@upstash/redis": ">=1.35.6", "ioredis": ">=5.8.1" }, "optionalPeers": ["@upstash/redis", "ioredis"] }, "sha512-SNJx7l2tZgJMnHTujSbHTUYs4HoKmda7gUv8Kpsmdm1Npb0iB0TyrJvFD6vongwDdzKliiB1PwMQvhkIx0Nu4Q=="],
 
     "@orpc/interop": ["@orpc/interop@1.13.5", "", {}, "sha512-l02yMZWJ9hJ2Z0PF14UsP2Hd71jbUbNgvA5/hxzGkx9ci89cgJ3F9yv3clpwz8VElfh2Qp9jta+peKgiRV1a5A=="],
 

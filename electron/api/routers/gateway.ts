@@ -1,5 +1,6 @@
 import { z } from 'zod/v4'
 import { p } from '../orpc'
+import { gatewayPublisher } from '../../gateway/publisher'
 
 export const gatewayRouter = {
   list: p.handler(({ context }) => {
@@ -253,5 +254,21 @@ export const gatewayRouter = {
     .input(z.object({ gatewayId: z.string(), raw: z.string(), baseHash: z.string().optional() }))
     .handler(async ({ input, context }) => {
       return context.gatewayManager.applyConfig(input.gatewayId, input.raw, input.baseHash)
+    }),
+
+  sessionsStream: p
+    .input(z.object({ gatewayId: z.string() }))
+    .handler(async function* ({ input, signal }) {
+      for await (const payload of gatewayPublisher.subscribe('sessions', { signal })) {
+        if (payload.gatewayId === input.gatewayId) yield payload
+      }
+    }),
+
+  presenceStream: p
+    .input(z.object({ gatewayId: z.string() }))
+    .handler(async function* ({ input, signal }) {
+      for await (const payload of gatewayPublisher.subscribe('presence', { signal })) {
+        if (payload.gatewayId === input.gatewayId) yield payload
+      }
     }),
 }

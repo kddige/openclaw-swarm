@@ -558,9 +558,21 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
   const queryClient = useQueryClient()
   const [actionDialog, setActionDialog] = useState<SessionActionDialog>({ type: 'none' })
 
-  const { data: sessions, isLoading } = useQuery(
+  const { data: initialSessions, isLoading } = useQuery(
     orpc.gateway.sessions.queryOptions({ input: { gatewayId } }),
   )
+
+  const { data: streamedChunks } = useQuery(
+    orpc.gateway.sessionsStream.experimental_streamedOptions({
+      input: { gatewayId },
+      queryFnOptions: { refetchMode: 'replace' },
+    }),
+  )
+
+  const sessions =
+    streamedChunks && streamedChunks.length > 0
+      ? streamedChunks[streamedChunks.length - 1]!.sessions
+      : initialSessions
 
   const sessionsQueryKey = orpc.gateway.sessions.queryOptions({
     input: { gatewayId },
@@ -1770,9 +1782,21 @@ function activityStatus(lastInputSeconds?: number): { label: string; color: stri
 }
 
 function DevicesTab({ gatewayId }: { gatewayId: string }) {
-  const { data: presence, isLoading } = useQuery(
+  const { data: initialPresence, isLoading } = useQuery(
     orpc.gateway.presence.queryOptions({ input: { gatewayId } }),
   )
+
+  const { data: streamedPresenceChunks } = useQuery(
+    orpc.gateway.presenceStream.experimental_streamedOptions({
+      input: { gatewayId },
+      queryFnOptions: { refetchMode: 'replace' },
+    }),
+  )
+
+  const presence =
+    streamedPresenceChunks && streamedPresenceChunks.length > 0
+      ? streamedPresenceChunks[streamedPresenceChunks.length - 1]!.devices
+      : initialPresence
 
   if (isLoading) {
     return (
