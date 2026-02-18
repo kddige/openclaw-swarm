@@ -1598,6 +1598,7 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
 
   const text = draft ?? original
   const isDirty = draft !== null && draft !== original
+  const hasRedacted = text.includes('__OPENCLAW_REDACTED__')
 
   const patchMutation = useMutation({
     ...orpc.gateway.configPatch.mutationOptions(),
@@ -1679,25 +1680,35 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
 
   return (
     <div className="flex flex-col gap-3 pt-2">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Button
           variant="outline"
           size="sm"
           disabled={!isDirty || patchMutation.isPending}
           onClick={handlePatch}
+          title="Safe: only sends your changes, secrets are untouched"
         >
           {patchMutation.isPending && <Spinner className="size-3" />}
-          Save (patch)
+          Save changes
         </Button>
         <Button
-          variant="outline"
+          variant="destructive"
           size="sm"
-          disabled={!isDirty || applyMutation.isPending}
+          disabled={!isDirty || applyMutation.isPending || hasRedacted}
           onClick={() => setApplyOpen(true)}
+          title={hasRedacted ? 'Remove all __OPENCLAW_REDACTED__ placeholders before applying — apply replaces the entire config including secrets' : 'Replace entire config and restart gateway'}
         >
-          Apply (replace)
+          Replace entire config
         </Button>
+        {hasRedacted && isDirty && (
+          <p className="text-[0.625rem] text-destructive">
+            Replace all <code>__OPENCLAW_REDACTED__</code> values with real values before using &ldquo;Replace entire config&rdquo;
+          </p>
+        )}
       </div>
+      <p className="text-[0.625rem] text-muted-foreground -mt-1">
+        <strong>Save changes</strong> = safe incremental patch (recommended) · <strong>Replace entire config</strong> = full overwrite + gateway restart
+      </p>
 
       <div className="overflow-hidden rounded-lg border">
         <MonacoEditor
@@ -1718,9 +1729,9 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
       <AlertDialog open={applyOpen} onOpenChange={(open) => !open && setApplyOpen(false)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Apply Config</AlertDialogTitle>
+            <AlertDialogTitle>Replace entire config?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will replace the entire config and restart the gateway. Are you sure?
+              This sends your full config to the gateway, replacing everything — including secrets. The gateway will restart. This cannot be undone. Use <strong>Save changes</strong> instead if you only want to update specific fields.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
