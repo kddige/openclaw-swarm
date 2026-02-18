@@ -97,6 +97,31 @@ export const Route = createFileRoute('/dashboard/gateways/$gatewayId/')({
   errorComponent: RouteErrorFallback,
 })
 
+const REDACTED = '__OPENCLAW_REDACTED__'
+
+function stripRedacted(obj: unknown): { cleaned: unknown; redactedCount: number } {
+  let redactedCount = 0
+
+  function walk(v: unknown): unknown {
+    if (typeof v === 'string' && v === REDACTED) {
+      redactedCount++
+      return undefined
+    }
+    if (Array.isArray(v)) return v.map(walk)
+    if (v !== null && typeof v === 'object') {
+      const out: Record<string, unknown> = {}
+      for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+        const walked = walk(val)
+        if (walked !== undefined) out[k] = walked
+      }
+      return out
+    }
+    return v
+  }
+
+  return { cleaned: walk(obj), redactedCount }
+}
+
 function statusBadge(status: string) {
   switch (status) {
     case 'connected':
@@ -1605,24 +1630,34 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
   })
 
   const handlePatch = () => {
+    let parsed: unknown
     try {
-      JSON.parse(text)
+      parsed = JSON.parse(text)
     } catch {
       toast.error('Invalid JSON')
       return
     }
-    patchMutation.mutate({ gatewayId, raw: text })
+    const { cleaned, redactedCount } = stripRedacted(parsed)
+    if (redactedCount > 0) {
+      toast.info(`Stripped ${redactedCount} redacted field(s) — existing values kept on gateway`)
+    }
+    patchMutation.mutate({ gatewayId, raw: JSON.stringify(cleaned, null, 2) })
   }
 
   const handleApply = () => {
+    let parsed: unknown
     try {
-      JSON.parse(text)
+      parsed = JSON.parse(text)
     } catch {
       toast.error('Invalid JSON')
       setApplyOpen(false)
       return
     }
-    applyMutation.mutate({ gatewayId, raw: text })
+    const { cleaned, redactedCount } = stripRedacted(parsed)
+    if (redactedCount > 0) {
+      toast.info(`Stripped ${redactedCount} redacted field(s) from apply — those keys will be omitted`)
+    }
+    applyMutation.mutate({ gatewayId, raw: JSON.stringify(cleaned, null, 2) })
   }
 
   if (isLoading) {
