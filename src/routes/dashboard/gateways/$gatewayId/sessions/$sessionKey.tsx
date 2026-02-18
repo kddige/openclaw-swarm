@@ -47,6 +47,7 @@ import {
   XIcon,
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
+import { extractText } from '@/lib/content'
 import {
   AreaChart,
   Area,
@@ -751,7 +752,7 @@ function ChatBubble({
           isSystem && 'bg-muted/30 text-muted-foreground text-[0.625rem] italic max-w-full',
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <p className="whitespace-pre-wrap break-words">{extractText(message.content)}</p>
         <div
           className={cn(
             'flex items-center gap-2 mt-1 text-[0.5rem] text-muted-foreground',

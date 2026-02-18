@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { extractText } from '@/lib/content'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -94,22 +95,6 @@ export const Route = createFileRoute('/dashboard/gateways/$gatewayId/')({
   component: GatewayDetailPage,
   errorComponent: RouteErrorFallback,
 })
-
-type ContentBlock = { type: string; text?: string }
-
-function extractText(content: unknown): string {
-  if (typeof content === 'string') return content
-  if (Array.isArray(content)) {
-    return content
-      .map((b: ContentBlock) => (b.type === 'text' ? (b.text ?? '') : `[${b.type}]`))
-      .join('\n')
-  }
-  if (content && typeof content === 'object') {
-    const b = content as ContentBlock
-    return b.text ?? JSON.stringify(content)
-  }
-  return String(content ?? '')
-}
 
 function statusBadge(status: string) {
   switch (status) {

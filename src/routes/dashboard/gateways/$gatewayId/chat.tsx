@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDistanceToNow } from 'date-fns'
+import { extractText } from '@/lib/content'
 
 export const Route = createFileRoute('/dashboard/gateways/$gatewayId/chat')({
   component: MaintenanceChatPage,
@@ -41,22 +42,6 @@ export const Route = createFileRoute('/dashboard/gateways/$gatewayId/chat')({
     sessionKey: z.string().default('fleet-maintenance'),
   }),
 })
-
-type ContentBlock = { type: string; text?: string }
-
-function extractText(content: unknown): string {
-  if (typeof content === 'string') return content
-  if (Array.isArray(content)) {
-    return content
-      .map((b: ContentBlock) => (b.type === 'text' ? (b.text ?? '') : `[${b.type}]`))
-      .join('\n')
-  }
-  if (content && typeof content === 'object') {
-    const b = content as ContentBlock
-    return b.text ?? JSON.stringify(content)
-  }
-  return String(content ?? '')
-}
 
 function formatChatTime(timestamp: string | number | undefined): string {
   if (!timestamp) return ''
