@@ -19,6 +19,7 @@ import type {
   AgentEntry,
   PresenceEntry,
   CostSummary,
+  ExecApprovalsSnapshot,
 } from '../api/types'
 
 const debug = createDebugLogger('gw:manager')
@@ -309,6 +310,42 @@ export class GatewayManager {
     })) as ChatMessage[]
   }
 
+  async resetSession(
+    gatewayId: string,
+    sessionKey: string,
+    reason?: 'new' | 'reset',
+  ): Promise<void> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('sessions.reset', { key: sessionKey, reason })
+  }
+
+  async deleteSession(
+    gatewayId: string,
+    sessionKey: string,
+    deleteTranscript?: boolean,
+  ): Promise<void> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('sessions.delete', { key: sessionKey, deleteTranscript })
+  }
+
+  async compactSession(
+    gatewayId: string,
+    sessionKey: string,
+    maxLines?: number,
+  ): Promise<void> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('sessions.compact', { key: sessionKey, maxLines })
+  }
+
+  async patchSession(
+    gatewayId: string,
+    sessionKey: string,
+    patch: { label?: string; model?: string },
+  ): Promise<void> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('sessions.patch', { key: sessionKey, ...patch })
+  }
+
   async getAgents(gatewayId: string): Promise<AgentEntry[]> {
     const conn = this.getConnection(gatewayId)
     const result = (await conn.request('agents.list', {})) as Record<
@@ -345,7 +382,142 @@ export class GatewayManager {
     })) as CostSummary
   }
 
+  async getExecApprovals(gatewayId: string): Promise<ExecApprovalsSnapshot> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('exec.approvals.get', {})) as ExecApprovalsSnapshot
+  }
+
+  async getLogsTail(
+    gatewayId: string,
+    params: {
+      limit?: number
+      level?: string
+      source?: string
+      cursor?: number
+    },
+  ): Promise<{
+    lines: Array<{
+      ts: number
+      level: string
+      msg: string
+      source?: string
+    }>
+    cursor?: number
+  }> {
+    const conn = this.getConnection(gatewayId)
+    const raw = (await conn.request('logs.tail', params)) as {
+      lines: string[]
+      cursor?: number
+    }
+    const lines = (raw.lines ?? []).map((lineStr) => {
+      try {
+        const parsed = JSON.parse(lineStr)
+        const meta = parsed._meta ?? {}
+        const levelName: string = (meta.logLevelName ?? 'info').toLowerCase()
+        const timeStr: string = meta.date ?? parsed.time ?? ''
+        const t = timeStr ? new Date(timeStr).getTime() : NaN
+        const ts = Number.isFinite(t) ? t : Date.now()
+        const rawMsg = parsed['1'] ?? parsed.msg ?? ''
+        const msg: string = typeof rawMsg === 'string' ? rawMsg : JSON.stringify(rawMsg)
+        let source: string | undefined
+        try {
+          const sub = JSON.parse(parsed['0'] ?? '{}')
+          source = sub.subsystem
+        } catch {
+          source = parsed['0']
+        }
+        return { ts, level: levelName, msg, source }
+      } catch {
+        return { ts: Date.now(), level: 'info', msg: lineStr, source: undefined }
+      }
+    })
+    return { lines, cursor: raw.cursor }
+  }
+
   // ── Fleet Aggregation ─────────────────────────────────
+
+  async searchFleet(query: string): Promise<{
+    sessions: Array<{ gatewayId: string; gatewayLabel: string } & SessionEntry>
+    agents: Array<{ gatewayId: string; gatewayLabel: string } & AgentEntry>
+  }> {
+    const q = query.toLowerCase()
+    const connectedEntries = Array.from(this.connections.entries()).filter(
+      ([, conn]) => conn.getStatus() === 'connected',
+    )
+
+    const results = await Promise.allSettled(
+      connectedEntries.map(async ([id, conn]) => {
+        const [sessions, agents] = await Promise.allSettled([
+          this.getGatewaySessions(id),
+          this.getAgents(id),
+        ])
+        return {
+          id,
+          label: conn.label,
+          sessions: sessions.status === 'fulfilled' ? sessions.value : [],
+          agents: agents.status === 'fulfilled' ? agents.value : [],
+        }
+      }),
+    )
+
+    const matchedSessions: Array<{ gatewayId: string; gatewayLabel: string } & SessionEntry> = []
+    const matchedAgents: Array<{ gatewayId: string; gatewayLabel: string } & AgentEntry> = []
+
+    for (const result of results) {
+      if (result.status !== 'fulfilled') continue
+      const { id, label, sessions, agents } = result.value
+
+      for (const session of sessions) {
+        if (matchedSessions.length >= 60) break
+        const haystack = [
+          session.key,
+          session.displayName,
+          session.agent,
+          session.model,
+          session.channel,
+          session.kind,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+        if (haystack.includes(q)) {
+          matchedSessions.push({ gatewayId: id, gatewayLabel: label, ...session })
+        }
+      }
+
+      for (const agent of agents) {
+        if (matchedAgents.length >= 60) break
+        if (agent.id.toLowerCase().includes(q)) {
+          matchedAgents.push({ gatewayId: id, gatewayLabel: label, ...agent })
+        }
+      }
+    }
+
+    return { sessions: matchedSessions, agents: matchedAgents }
+  }
+
+  async getFleetPresence(): Promise<
+    Array<{ gatewayId: string; gatewayLabel: string; devices: PresenceEntry[] }>
+  > {
+    const connectedEntries = Array.from(this.connections.entries()).filter(
+      ([, conn]) => conn.getStatus() === 'connected',
+    )
+
+    const results = await Promise.allSettled(
+      connectedEntries.map(async ([id, conn]) => {
+        const devices = await this.getPresence(id)
+        return { gatewayId: id, gatewayLabel: conn.label, devices }
+      }),
+    )
+
+    const output: Array<{ gatewayId: string; gatewayLabel: string; devices: PresenceEntry[] }> = []
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        output.push(result.value)
+      }
+    }
+    return output
+  }
 
   async getFleetCost(): Promise<{
     totalCost: number

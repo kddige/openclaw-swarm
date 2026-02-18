@@ -99,6 +99,72 @@ export const gatewayRouter = {
       )
     }),
 
+  resetSession: p
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        sessionKey: z.string(),
+        reason: z.enum(['new', 'reset']).optional(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      await context.gatewayManager.resetSession(
+        input.gatewayId,
+        input.sessionKey,
+        input.reason,
+      )
+      return { ok: true as const }
+    }),
+
+  deleteSession: p
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        sessionKey: z.string(),
+        deleteTranscript: z.boolean().optional(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      await context.gatewayManager.deleteSession(
+        input.gatewayId,
+        input.sessionKey,
+        input.deleteTranscript,
+      )
+      return { ok: true as const }
+    }),
+
+  compactSession: p
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        sessionKey: z.string(),
+        maxLines: z.number().optional(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      await context.gatewayManager.compactSession(
+        input.gatewayId,
+        input.sessionKey,
+        input.maxLines,
+      )
+      return { ok: true as const }
+    }),
+
+  patchSession: p
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        sessionKey: z.string(),
+        label: z.string().optional(),
+        model: z.string().optional(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const { gatewayId, sessionKey, ...patch } = input
+      await context.gatewayManager.patchSession(gatewayId, sessionKey, patch)
+      return { ok: true as const }
+    }),
+
   agents: p
     .input(z.object({ gatewayId: z.string() }))
     .handler(async ({ input, context }) => {
@@ -125,5 +191,26 @@ export const gatewayRouter = {
         input.startDate,
         input.endDate,
       )
+    }),
+
+  execApprovals: p
+    .input(z.object({ gatewayId: z.string() }))
+    .handler(async ({ input, context }) => {
+      return context.gatewayManager.getExecApprovals(input.gatewayId)
+    }),
+
+  logsTail: p
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        limit: z.number().optional(),
+        level: z.string().optional(),
+        source: z.string().optional(),
+        cursor: z.number().optional(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const { gatewayId, ...params } = input
+      return context.gatewayManager.getLogsTail(gatewayId, params)
     }),
 }

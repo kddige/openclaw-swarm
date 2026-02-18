@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboardIcon,
   PlusIcon,
+  SearchIcon,
   ServerIcon,
   SettingsIcon,
 } from 'lucide-react'
@@ -135,6 +136,17 @@ function DashboardLayout() {
         </SidebarContent>
         <SidebarFooter>
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => window.dispatchEvent(new Event('open-command-palette'))}
+              >
+                <SearchIcon />
+                Search
+                <SidebarMenuBadge className="font-mono text-[0.625rem] text-muted-foreground">
+                  ⌘K
+                </SidebarMenuBadge>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton>
                 <SettingsIcon />

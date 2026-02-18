@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,6 +26,23 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   ArrowLeftIcon,
   CheckCircleIcon,
   XCircleIcon,
@@ -38,8 +56,37 @@ import {
   CopyIcon,
   CheckIcon,
   RefreshCwIcon,
+  MoreHorizontalIcon,
+  RotateCcwIcon,
+  MinimizeIcon,
+  Trash2Icon,
+  ShieldIcon,
+  AlertTriangleIcon,
+  ArrowDownIcon,
 } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 import { formatDistanceToNow } from 'date-fns'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Cell,
+  LabelList,
+} from 'recharts'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
 
 export const Route = createFileRoute('/dashboard/gateways/$gatewayId/')({
   component: GatewayDetailPage,
@@ -206,8 +253,11 @@ function GatewayDetailPage() {
         <TabsList>
           <TabsTrigger value="status">Status</TabsTrigger>
           <TabsTrigger value="sessions">Sessions</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
+          <TabsTrigger value="usage">Usage</TabsTrigger>
           <TabsTrigger value="health">Health</TabsTrigger>
           <TabsTrigger value="agents">Agents</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
         </TabsList>
 
@@ -217,16 +267,200 @@ function GatewayDetailPage() {
         <TabsContent value="sessions">
           <SessionsTab gatewayId={gatewayId} />
         </TabsContent>
+        <TabsContent value="logs">
+          <LogsTab gatewayId={gatewayId} />
+        </TabsContent>
+        <TabsContent value="usage">
+          <UsageTab gatewayId={gatewayId} />
+        </TabsContent>
         <TabsContent value="health">
           <HealthTab gateway={gateway} />
         </TabsContent>
         <TabsContent value="agents">
           <AgentsTab gatewayId={gatewayId} />
         </TabsContent>
+        <TabsContent value="security">
+          <SecurityTab gatewayId={gatewayId} />
+        </TabsContent>
         <TabsContent value="devices">
           <DevicesTab gatewayId={gatewayId} />
         </TabsContent>
       </Tabs>
+    </div>
+  )
+}
+
+const CHART_COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+]
+
+function UsageTab({ gatewayId }: { gatewayId: string }) {
+  const { data: costData, isLoading } = useQuery(
+    orpc.gateway.cost.queryOptions({ input: { gatewayId } }),
+  )
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4 pt-2">
+        <Skeleton className="h-48 rounded-lg" />
+        <Skeleton className="h-48 rounded-lg" />
+      </div>
+    )
+  }
+
+  const byModel = costData?.byModel ?? []
+  const bySession = costData?.bySession ?? []
+
+  const modelChartData = byModel.map((m) => ({
+    model: m.model.length > 28 ? `...${m.model.slice(-25)}` : m.model,
+    cost: m.cost,
+  }))
+
+  const topSessions = [...bySession]
+    .sort((a, b) => b.cost - a.cost)
+    .slice(0, 10)
+    .map((s) => ({
+      session:
+        s.key.length > 18
+          ? `${s.key.slice(0, 9)}…${s.key.slice(-6)}`
+          : s.key,
+      cost: s.cost,
+    }))
+
+  const modelConfig = Object.fromEntries(
+    byModel.map((m, i) => [
+      m.model,
+      { label: m.model, color: CHART_COLORS[i % CHART_COLORS.length] },
+    ]),
+  )
+
+  return (
+    <div className="flex flex-col gap-4 pt-2">
+      {/* Cost by Model */}
+      <Card className="bg-muted/40">
+        <CardContent className="pt-4">
+          <h3 className="text-xs font-medium mb-3">Cost by Model</h3>
+          {modelChartData.length === 0 ? (
+            <p className="py-8 text-center text-xs text-muted-foreground">
+              No cost data available.
+            </p>
+          ) : (
+            <ChartContainer
+              config={modelConfig}
+              className="aspect-auto h-[200px] w-full"
+            >
+              <BarChart
+                layout="vertical"
+                data={modelChartData}
+                margin={{ top: 0, right: 60, bottom: 0, left: 8 }}
+              >
+                <CartesianGrid horizontal={false} />
+                <YAxis
+                  dataKey="model"
+                  type="category"
+                  width={160}
+                  tick={{ fontSize: 10 }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <XAxis
+                  type="number"
+                  tickFormatter={(v: number) => `$${v.toFixed(3)}`}
+                  tick={{ fontSize: 10 }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      formatter={(value) => [
+                        `$${Number(value).toFixed(4)}`,
+                        'Cost',
+                      ]}
+                    />
+                  }
+                />
+                <Bar dataKey="cost" radius={[0, 3, 3, 0]}>
+                  {modelChartData.map((_, i) => (
+                    <Cell
+                      key={i}
+                      fill={CHART_COLORS[i % CHART_COLORS.length]}
+                    />
+                  ))}
+                  <LabelList
+                    dataKey="cost"
+                    position="right"
+                    formatter={(v: number) => `$${v.toFixed(3)}`}
+                    style={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                  />
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Cost by Session (top 10) */}
+      <Card className="bg-muted/40">
+        <CardContent className="pt-4">
+          <h3 className="text-xs font-medium mb-3">Top Sessions by Cost</h3>
+          {topSessions.length === 0 ? (
+            <p className="py-8 text-center text-xs text-muted-foreground">
+              No session cost data available.
+            </p>
+          ) : (
+            <ChartContainer
+              config={{ cost: { label: 'Cost', color: 'var(--chart-1)' } }}
+              className="aspect-auto h-[200px] w-full"
+            >
+              <BarChart
+                layout="vertical"
+                data={topSessions}
+                margin={{ top: 0, right: 60, bottom: 0, left: 8 }}
+              >
+                <CartesianGrid horizontal={false} />
+                <YAxis
+                  dataKey="session"
+                  type="category"
+                  width={120}
+                  tick={{ fontSize: 10, fontFamily: 'monospace' }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <XAxis
+                  type="number"
+                  tickFormatter={(v: number) => `$${v.toFixed(3)}`}
+                  tick={{ fontSize: 10 }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      formatter={(value) => [
+                        `$${Number(value).toFixed(4)}`,
+                        'Cost',
+                      ]}
+                    />
+                  }
+                />
+                <Bar dataKey="cost" fill="var(--chart-1)" radius={[0, 3, 3, 0]}>
+                  <LabelList
+                    dataKey="cost"
+                    position="right"
+                    formatter={(v: number) => `$${v.toFixed(3)}`}
+                    style={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                  />
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
@@ -323,10 +557,57 @@ function StatusTab({
   )
 }
 
+type SessionActionDialog =
+  | { type: 'none' }
+  | { type: 'reset'; sessionKey: string }
+  | { type: 'compact'; sessionKey: string }
+  | { type: 'delete'; sessionKey: string; deleteTranscript: boolean }
+
 function SessionsTab({ gatewayId }: { gatewayId: string }) {
+  const queryClient = useQueryClient()
+  const [actionDialog, setActionDialog] = useState<SessionActionDialog>({ type: 'none' })
+
   const { data: sessions, isLoading } = useQuery(
     orpc.gateway.sessions.queryOptions({ input: { gatewayId } }),
   )
+
+  const sessionsQueryKey = orpc.gateway.sessions.queryOptions({
+    input: { gatewayId },
+  }).queryKey
+
+  const resetMutation = useMutation({
+    ...orpc.gateway.resetSession.mutationOptions(),
+    onSuccess: () => {
+      toast.success('Session reset')
+      setActionDialog({ type: 'none' })
+    },
+    onError: (err) => {
+      toast.error('Failed to reset session', { description: String(err) })
+    },
+  })
+
+  const compactMutation = useMutation({
+    ...orpc.gateway.compactSession.mutationOptions(),
+    onSuccess: () => {
+      toast.success('Session compacted')
+      setActionDialog({ type: 'none' })
+    },
+    onError: (err) => {
+      toast.error('Failed to compact session', { description: String(err) })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    ...orpc.gateway.deleteSession.mutationOptions(),
+    onSuccess: () => {
+      toast.success('Session deleted')
+      setActionDialog({ type: 'none' })
+      queryClient.invalidateQueries({ queryKey: sessionsQueryKey })
+    },
+    onError: (err) => {
+      toast.error('Failed to delete session', { description: String(err) })
+    },
+  })
 
   if (isLoading) {
     return (
@@ -358,6 +639,7 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
             <TableHead>Last Active</TableHead>
             <TableHead className="text-right">Tokens</TableHead>
             <TableHead className="text-right">Cost</TableHead>
+            <TableHead className="w-8" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -394,10 +676,151 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
               <TableCell className="text-right tabular-nums">
                 ${session.cost.toFixed(4)}
               </TableCell>
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <Button variant="ghost" size="icon-xs" />
+                    }
+                  >
+                    <MoreHorizontalIcon />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() =>
+                        setActionDialog({ type: 'reset', sessionKey: session.key })
+                      }
+                    >
+                      <RotateCcwIcon />
+                      Reset Session
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        setActionDialog({ type: 'compact', sessionKey: session.key })
+                      }
+                    >
+                      <MinimizeIcon />
+                      Compact Session
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() =>
+                        setActionDialog({
+                          type: 'delete',
+                          sessionKey: session.key,
+                          deleteTranscript: false,
+                        })
+                      }
+                    >
+                      <Trash2Icon />
+                      Delete Session
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      {/* Reset Dialog */}
+      <AlertDialog
+        open={actionDialog.type === 'reset'}
+        onOpenChange={(open) => !open && setActionDialog({ type: 'none' })}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Session</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will reset the session state. The transcript may be preserved depending on gateway settings.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                actionDialog.type === 'reset' &&
+                resetMutation.mutate({ gatewayId, sessionKey: actionDialog.sessionKey })
+              }
+              disabled={resetMutation.isPending}
+            >
+              Reset
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Compact Dialog */}
+      <AlertDialog
+        open={actionDialog.type === 'compact'}
+        onOpenChange={(open) => !open && setActionDialog({ type: 'none' })}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Compact Session</AlertDialogTitle>
+            <AlertDialogDescription>
+              Summarize and compress the session history to reduce token usage.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                actionDialog.type === 'compact' &&
+                compactMutation.mutate({ gatewayId, sessionKey: actionDialog.sessionKey })
+              }
+              disabled={compactMutation.isPending}
+            >
+              Compact
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Dialog */}
+      <AlertDialog
+        open={actionDialog.type === 'delete'}
+        onOpenChange={(open) => !open && setActionDialog({ type: 'none' })}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Session</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this session. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <label className="flex items-center gap-2 text-xs cursor-pointer">
+            <input
+              type="checkbox"
+              checked={actionDialog.type === 'delete' ? actionDialog.deleteTranscript : false}
+              onChange={(e) =>
+                actionDialog.type === 'delete' &&
+                setActionDialog({ ...actionDialog, deleteTranscript: e.target.checked })
+              }
+              className="rounded"
+            />
+            Also delete transcript
+          </label>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() =>
+                actionDialog.type === 'delete' &&
+                deleteMutation.mutate({
+                  gatewayId,
+                  sessionKey: actionDialog.sessionKey,
+                  deleteTranscript: actionDialog.deleteTranscript,
+                })
+              }
+              disabled={deleteMutation.isPending}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -536,6 +959,407 @@ function AgentsTab({ gatewayId }: { gatewayId: string }) {
   )
 }
 
+function securityModeBadgeClass(mode: string | undefined) {
+  switch (mode) {
+    case 'full':
+      return 'text-destructive border-destructive/40'
+    case 'allowlist':
+      return 'text-amber-600 dark:text-amber-400 border-amber-500/40'
+    case 'deny':
+      return 'text-emerald-600 dark:text-emerald-400 border-emerald-500/40'
+    default:
+      return ''
+  }
+}
+
+function SecurityTab({ gatewayId }: { gatewayId: string }) {
+  const { data, isLoading, error } = useQuery(
+    orpc.gateway.execApprovals.queryOptions({ input: { gatewayId } }),
+  )
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4 pt-2">
+        <Skeleton className="h-20 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="py-8 text-center text-xs text-muted-foreground">
+        Exec approvals not available.
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className="py-8 text-center text-xs text-muted-foreground">
+        Not configured.
+      </div>
+    )
+  }
+
+  if (!data.exists) {
+    return (
+      <div className="py-8 text-center text-xs text-muted-foreground">
+        No exec approvals file found on this gateway.
+      </div>
+    )
+  }
+
+  const { file } = data
+  const defaults = file.defaults
+  const agents = file.agents ? Object.entries(file.agents) : []
+
+  return (
+    <div className="flex flex-col gap-4 pt-2">
+      {defaults && (
+        <Card size="sm" className="bg-muted/40">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <ShieldIcon className="size-3 text-muted-foreground" />
+              <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
+                Defaults
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-1.5">
+              {defaults.security && (
+                <Badge
+                  variant="outline"
+                  className={cn('gap-1', securityModeBadgeClass(defaults.security))}
+                >
+                  security: {defaults.security}
+                </Badge>
+              )}
+              {defaults.ask && (
+                <Badge variant="outline">ask: {defaults.ask}</Badge>
+              )}
+              {defaults.askFallback && (
+                <Badge variant="outline">fallback: {defaults.askFallback}</Badge>
+              )}
+              {defaults.autoAllowSkills !== undefined && (
+                <Badge variant="outline">
+                  autoAllowSkills: {String(defaults.autoAllowSkills)}
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {agents.length === 0 && !defaults && (
+        <div className="py-8 text-center text-xs text-muted-foreground">
+          No exec approval configuration found.
+        </div>
+      )}
+
+      {agents.map(([agentId, config]) => (
+        <div key={agentId} className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <UserIcon className="size-3 text-muted-foreground" />
+            <span className="text-xs font-medium">{agentId}</span>
+            <div className="flex flex-wrap gap-1.5">
+              {config.security && (
+                <Badge
+                  variant="outline"
+                  className={cn('gap-1', securityModeBadgeClass(config.security))}
+                >
+                  {config.security}
+                </Badge>
+              )}
+              {config.ask && (
+                <Badge variant="outline" className="text-[0.625rem]">
+                  ask: {config.ask}
+                </Badge>
+              )}
+              {config.autoAllowSkills !== undefined && (
+                <Badge variant="outline" className="text-[0.625rem]">
+                  autoAllowSkills: {String(config.autoAllowSkills)}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {config.security === 'full' && (
+            <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2">
+              <AlertTriangleIcon className="size-3 text-destructive shrink-0" />
+              <span className="text-[0.625rem] text-destructive font-medium">
+                Full access — all commands allowed
+              </span>
+            </div>
+          )}
+
+          {config.allowlist && config.allowlist.length > 0 ? (
+            <div className="rounded-md border bg-muted/20 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Pattern</TableHead>
+                    <TableHead>Last Used</TableHead>
+                    <TableHead>Last Command</TableHead>
+                    <TableHead>Resolved Path</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {config.allowlist.map((entry, i) => (
+                    <TableRow key={entry.id ?? i}>
+                      <TableCell className="font-mono text-[0.625rem]">
+                        {entry.pattern}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground tabular-nums">
+                        {entry.lastUsedAt
+                          ? formatDistanceToNow(entry.lastUsedAt, { addSuffix: true })
+                          : 'Never'}
+                      </TableCell>
+                      <TableCell className="font-mono text-[0.625rem] max-w-48 truncate">
+                        {entry.lastUsedCommand ?? '--'}
+                      </TableCell>
+                      <TableCell className="font-mono text-[0.625rem] text-muted-foreground max-w-40 truncate">
+                        {entry.lastResolvedPath ?? '--'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : config.security !== 'full' ? (
+            <div className="py-4 text-center text-xs text-muted-foreground rounded-md border bg-muted/20">
+              No allowed commands.
+            </div>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+type LogLine = {
+  ts: number
+  level: string
+  msg: string
+  source?: string
+  [key: string]: unknown
+}
+
+const LEVEL_COLORS: Record<string, string> = {
+  debug: 'text-muted-foreground',
+  info: 'text-foreground',
+  warn: 'text-amber-400',
+  error: 'text-red-400',
+}
+
+function formatLogTime(ts: number): string {
+  const d = new Date(ts)
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
+  return `${hh}:${mm}:${ss}`
+}
+
+const MAX_LINES = 1000
+
+function LogsTab({ gatewayId }: { gatewayId: string }) {
+  const [levelFilter, setLevelFilter] = useState('all')
+  const [sourceFilter, setSourceFilter] = useState('')
+  const [lines, setLines] = useState<LogLine[]>([])
+  const [cursor, setCursor] = useState<number | undefined>(undefined)
+  // mountNonce forces a fresh query on every mount, bypassing stale cache
+  const [mountNonce] = useState(() => Date.now())
+  const [atBottom, setAtBottom] = useState(true)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Explicit reset on mount (guards against kept-alive component state)
+  useEffect(() => {
+    setLines([])
+    setCursor(undefined)
+  }, [])
+
+  const queryInput = {
+    gatewayId,
+    limit: 200,
+    ...(levelFilter !== 'all' ? { level: levelFilter } : {}),
+    ...(sourceFilter.trim() ? { source: sourceFilter.trim() } : {}),
+  }
+
+  // Reset lines when filters change
+  useEffect(() => {
+    setLines([])
+    setCursor(undefined)
+  }, [levelFilter, sourceFilter])
+
+  // Initial fetch + polling — mountNonce in queryKey ensures no stale cache reuse
+  const { data: logsData } = useQuery({
+    ...orpc.gateway.logsTail.queryOptions({
+      input: {
+        ...queryInput,
+        cursor: cursor,
+      },
+    }),
+    queryKey: [mountNonce, gatewayId, cursor, levelFilter, sourceFilter],
+    refetchInterval: 3000,
+    staleTime: 0,
+    gcTime: 0,
+  })
+
+  // Append new lines when data arrives
+  const prevCursorRef = useRef<number | undefined>(undefined)
+  useEffect(() => {
+    if (!logsData) return
+    const newLines: LogLine[] = logsData.lines ?? []
+    const newCursor: number | undefined = logsData.cursor
+    // Skip if we've already processed this exact cursor position
+    if (newCursor !== undefined && newCursor === prevCursorRef.current && newLines.length === 0) return
+    prevCursorRef.current = newCursor
+    if (newLines.length === 0) return
+    const timer = setTimeout(() => {
+      setLines((prev) => {
+        const combined = [...prev, ...newLines]
+        return combined.length > MAX_LINES
+          ? combined.slice(combined.length - MAX_LINES)
+          : combined
+      })
+      if (newCursor) setCursor(newCursor)
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [logsData])
+
+  const scrollToBottom = useCallback(() => {
+    const el = scrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
+    setAtBottom(true)
+  }, [])
+
+  // Auto-scroll when new lines arrive and user is at bottom
+  useEffect(() => {
+    if (atBottom) {
+      const el = scrollRef.current
+      if (el) el.scrollTop = el.scrollHeight
+    }
+  }, [lines, atBottom])
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+    setAtBottom(distFromBottom <= 50)
+  }, [])
+
+  const handleClear = () => {
+    setLines([])
+    setCursor(undefined)
+  }
+
+  return (
+    <div className="flex flex-col gap-3 pt-2" style={{ height: 'calc(100vh - 220px)', minHeight: '400px' }}>
+      {/* Filter bar */}
+      <div className="flex items-center gap-2 shrink-0">
+        <Select value={levelFilter} onValueChange={(v) => setLevelFilter(v ?? 'all')}>
+          <SelectTrigger className="w-32 h-7 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All levels</SelectItem>
+            <SelectItem value="debug">Debug</SelectItem>
+            <SelectItem value="info">Info</SelectItem>
+            <SelectItem value="warn">Warn</SelectItem>
+            <SelectItem value="error">Error</SelectItem>
+          </SelectContent>
+        </Select>
+        <Input
+          placeholder="Filter by source…"
+          value={sourceFilter}
+          onChange={(e) => setSourceFilter(e.target.value)}
+          className="h-7 w-40 text-xs"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleClear}
+          className="h-7 text-xs"
+        >
+          Clear
+        </Button>
+      </div>
+
+      {/* Log area */}
+      <div className="relative flex-1 min-h-0">
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="h-full overflow-y-auto rounded-lg border bg-zinc-950 p-3"
+        >
+          {lines.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full gap-2 text-zinc-500">
+              <TerminalIcon className="size-6 opacity-40" />
+              <span className="font-mono text-xs">No logs available</span>
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              {lines.map((line, i) => {
+                const levelColor = LEVEL_COLORS[line.level] ?? 'text-zinc-400'
+                return (
+                  <div key={i} className="flex items-baseline gap-2 font-mono text-[0.75rem] leading-relaxed">
+                    <span className="text-zinc-500 shrink-0 tabular-nums">
+                      {formatLogTime(line.ts)}
+                    </span>
+                    <span className={cn('w-10 shrink-0 uppercase text-[0.6rem] font-semibold tabular-nums', levelColor)}>
+                      {line.level}
+                    </span>
+                    {line.source && (
+                      <span className="shrink-0 rounded px-1 bg-zinc-800 text-zinc-400 text-[0.625rem] font-medium">
+                        {line.source}
+                      </span>
+                    )}
+                    <span className={cn('break-all', levelColor)}>
+                      {line.msg}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Jump to bottom button */}
+        {!atBottom && (
+          <button
+            type="button"
+            onClick={scrollToBottom}
+            className="absolute bottom-3 right-4 flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800 px-3 py-1 text-[0.625rem] font-medium text-zinc-300 shadow-lg hover:bg-zinc-700 transition-colors"
+          >
+            <ArrowDownIcon className="size-3" />
+            Jump to bottom
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function activityStatus(lastInputSeconds?: number): { label: string; color: string } {
+  if (lastInputSeconds === undefined || lastInputSeconds === null) {
+    return { label: 'Unknown', color: 'bg-muted-foreground/50' }
+  }
+  if (lastInputSeconds < 60) {
+    return { label: 'Active now', color: 'bg-emerald-500' }
+  }
+  if (lastInputSeconds < 300) {
+    const mins = Math.floor(lastInputSeconds / 60)
+    return { label: `Active ${mins}m ago`, color: 'bg-emerald-500' }
+  }
+  if (lastInputSeconds < 1800) {
+    const mins = Math.floor(lastInputSeconds / 60)
+    return { label: `Idle ${mins}m ago`, color: 'bg-amber-500' }
+  }
+  return { label: 'Away', color: 'bg-muted-foreground/50' }
+}
+
 function DevicesTab({ gatewayId }: { gatewayId: string }) {
   const { data: presence, isLoading } = useQuery(
     orpc.gateway.presence.queryOptions({ input: { gatewayId } }),
@@ -543,9 +1367,9 @@ function DevicesTab({ gatewayId }: { gatewayId: string }) {
 
   if (isLoading) {
     return (
-      <div className="pt-2 space-y-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-8 rounded" />
+          <Skeleton key={i} className="h-40 rounded-lg" />
         ))}
       </div>
     )
@@ -560,37 +1384,91 @@ function DevicesTab({ gatewayId }: { gatewayId: string }) {
   }
 
   return (
-    <div className="pt-2">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Host</TableHead>
-            <TableHead>IP</TableHead>
-            <TableHead>Mode</TableHead>
-            <TableHead>Platform</TableHead>
-            <TableHead>Version</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {presence.map((entry, i) => (
-            <TableRow key={`${entry.host}-${entry.ip}-${i}`}>
-              <TableCell className="font-medium text-xs">
-                {entry.host}
-              </TableCell>
-              <TableCell className="font-mono text-[0.625rem]">
-                {entry.ip}
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline">{entry.mode}</Badge>
-              </TableCell>
-              <TableCell>{entry.platform}</TableCell>
-              <TableCell className="text-muted-foreground">
-                {entry.version}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-2">
+      {presence.map((entry, i) => {
+        const activity = activityStatus(entry.lastInputSeconds)
+        const connectedSince = entry.ts
+          ? formatDistanceToNow(entry.ts, { addSuffix: true })
+          : null
+        return (
+          <Card key={`${entry.host}-${entry.ip}-${i}`} className="bg-muted/40">
+            <CardHeader>
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-sm font-bold truncate">{entry.host ?? 'Unknown'}</span>
+                <div className="flex gap-1 shrink-0">
+                  {entry.platform && (
+                    <Badge variant="outline" className="text-[0.625rem]">
+                      {entry.platform}
+                    </Badge>
+                  )}
+                  {entry.mode && (
+                    <Badge variant="outline" className="text-[0.625rem]">
+                      {entry.mode}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              {(entry.deviceFamily || entry.modelIdentifier) && (
+                <p className="text-[0.625rem] text-muted-foreground truncate">
+                  {[entry.deviceFamily, entry.modelIdentifier].filter(Boolean).join(' · ')}
+                </p>
+              )}
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              {entry.ip && (
+                <span className="font-mono text-[0.625rem] text-muted-foreground">
+                  {entry.ip}
+                </span>
+              )}
+              {entry.version && (
+                <span className="text-[0.625rem] text-muted-foreground">
+                  v{entry.version}
+                </span>
+              )}
+
+              <div className="flex items-center gap-1.5">
+                <span className={cn('size-1.5 rounded-full shrink-0', activity.color)} />
+                <span className="text-[0.625rem] text-muted-foreground">{activity.label}</span>
+              </div>
+
+              {entry.text && (
+                <p className="text-[0.625rem] text-muted-foreground italic truncate">
+                  {entry.text}
+                </p>
+              )}
+
+              {entry.roles && entry.roles.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {entry.roles.map((role) => (
+                    <Badge key={role} variant="outline" className="text-[0.625rem]">
+                      {role}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {entry.tags && entry.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {entry.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="text-[0.5625rem] rounded px-1 py-0.5 bg-muted text-muted-foreground"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {connectedSince && (
+                <p className="text-[0.5625rem] text-muted-foreground/70 mt-1">
+                  Connected {connectedSince}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
   )
 }

@@ -210,6 +210,46 @@ export interface CostSummary {
 }
 
 // ============================================================
+// Exec Approvals Types
+// ============================================================
+
+export interface ExecAllowlistEntry {
+  id?: string
+  pattern: string
+  lastUsedAt?: number
+  lastUsedCommand?: string
+  lastResolvedPath?: string
+}
+
+export interface ExecAgentConfig {
+  security?: string
+  ask?: string
+  askFallback?: string
+  autoAllowSkills?: boolean
+  allowlist?: ExecAllowlistEntry[]
+}
+
+export interface ExecApprovalsDefaults {
+  security?: string
+  ask?: string
+  askFallback?: string
+  autoAllowSkills?: boolean
+}
+
+export interface ExecApprovalsFile {
+  version: 1
+  defaults?: ExecApprovalsDefaults
+  agents?: Record<string, ExecAgentConfig>
+}
+
+export interface ExecApprovalsSnapshot {
+  path: string
+  exists: boolean
+  hash: string
+  file: ExecApprovalsFile
+}
+
+// ============================================================
 // Event Streaming
 // ============================================================
 

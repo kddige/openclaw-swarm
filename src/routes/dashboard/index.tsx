@@ -23,6 +23,24 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
+function activityStatus(lastInputSeconds?: number): { label: string; color: string } {
+  if (lastInputSeconds === undefined || lastInputSeconds === null) {
+    return { label: 'Unknown', color: 'bg-muted-foreground/50' }
+  }
+  if (lastInputSeconds < 60) {
+    return { label: 'Active now', color: 'bg-emerald-500' }
+  }
+  if (lastInputSeconds < 300) {
+    const mins = Math.floor(lastInputSeconds / 60)
+    return { label: `Active ${mins}m ago`, color: 'bg-emerald-500' }
+  }
+  if (lastInputSeconds < 1800) {
+    const mins = Math.floor(lastInputSeconds / 60)
+    return { label: `Idle ${mins}m ago`, color: 'bg-amber-500' }
+  }
+  return { label: 'Away', color: 'bg-muted-foreground/50' }
+}
+
 export const Route = createFileRoute('/dashboard/')({
   component: FleetDashboard,
 })
@@ -53,6 +71,13 @@ function FleetDashboard() {
   const { data: fleetCost, isLoading: costLoading } = useQuery(
     orpc.fleet.cost.queryOptions(),
   )
+  const { data: fleetPresence } = useQuery(
+    orpc.fleet.presence.queryOptions(),
+  )
+
+  const allDevices = fleetPresence?.flatMap((g) =>
+    g.devices.map((d) => ({ ...d, gatewayId: g.gatewayId, gatewayLabel: g.gatewayLabel })),
+  ) ?? []
 
   if (gatewaysLoading || overviewLoading) {
     return (
@@ -193,6 +218,48 @@ function FleetDashboard() {
           )
         })}
       </div>
+
+      {allDevices.length > 0 && (
+        <>
+          <h2 className="text-xs font-medium text-muted-foreground mt-2">
+            Connected Devices
+          </h2>
+          <div className="flex flex-col gap-3">
+            {fleetPresence?.map((group) => {
+              if (!group.devices.length) return null
+              return (
+                <div key={group.gatewayId} className="flex flex-col gap-2">
+                  <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
+                    {group.gatewayLabel}
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {group.devices.map((device, i) => {
+                      const activity = activityStatus(device.lastInputSeconds)
+                      return (
+                        <Link
+                          key={`${device.host}-${device.ip}-${i}`}
+                          to="/dashboard/gateways/$gatewayId"
+                          params={{ gatewayId: group.gatewayId }}
+                        >
+                          <div className="flex items-center gap-1.5 rounded-full border bg-muted/40 px-3 py-1.5 text-xs hover:bg-muted/70 transition-colors cursor-pointer">
+                            <span className={cn('size-1.5 rounded-full shrink-0', activity.color)} />
+                            <span className="font-medium">{device.host ?? 'Unknown'}</span>
+                            {device.platform && (
+                              <span className="text-muted-foreground text-[0.625rem]">
+                                ({device.platform})
+                              </span>
+                            )}
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
     </div>
   )
 }
