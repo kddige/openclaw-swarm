@@ -384,7 +384,7 @@ export class GatewayManager {
 
   async getExecApprovals(gatewayId: string): Promise<ExecApprovalsSnapshot> {
     const conn = this.getConnection(gatewayId)
-    return (await conn.request('exec-approvals.get', {})) as ExecApprovalsSnapshot
+    return (await conn.request('exec.approvals.get', {})) as ExecApprovalsSnapshot
   }
 
   async getLogsTail(
