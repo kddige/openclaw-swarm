@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { extractText } from '@/lib/content'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
@@ -276,6 +276,7 @@ function GatewayDetailPage() {
           <TabsTrigger value="health">Health</TabsTrigger>
           <TabsTrigger value="agents">Agents</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="config">Config</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
         </TabsList>
 
@@ -302,6 +303,9 @@ function GatewayDetailPage() {
         </TabsContent>
         <TabsContent value="security">
           <SecurityTab gatewayId={gatewayId} />
+        </TabsContent>
+        <TabsContent value="config">
+          <ConfigTab gatewayId={gatewayId} />
         </TabsContent>
         <TabsContent value="devices">
           <DevicesTab gatewayId={gatewayId} />
@@ -1547,6 +1551,147 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
           </button>
         )}
       </div>
+    </div>
+  )
+}
+
+function ConfigTab({ gatewayId }: { gatewayId: string }) {
+  const queryClient = useQueryClient()
+  // null = user hasn't edited yet; string = user's current edits
+  const [draft, setDraft] = useState<string | null>(null)
+  const [applyOpen, setApplyOpen] = useState(false)
+
+  const { data, isLoading, error } = useQuery(
+    orpc.gateway.configGet.queryOptions({ input: { gatewayId } }),
+  )
+
+  const original = useMemo(
+    () => (data !== undefined ? JSON.stringify(data, null, 2) : ''),
+    [data],
+  )
+
+  const text = draft ?? original
+  const isDirty = draft !== null && draft !== original
+
+  const patchMutation = useMutation({
+    ...orpc.gateway.configPatch.mutationOptions(),
+    onSuccess: () => {
+      toast.success('Config saved')
+      setDraft(null)
+      queryClient.invalidateQueries({
+        queryKey: orpc.gateway.configGet.queryOptions({ input: { gatewayId } }).queryKey,
+      })
+    },
+    onError: (err) => {
+      toast.error('Failed to save config', { description: String(err) })
+    },
+  })
+
+  const applyMutation = useMutation({
+    ...orpc.gateway.configApply.mutationOptions(),
+    onSuccess: () => {
+      toast.success('Config applied')
+      setDraft(null)
+      setApplyOpen(false)
+      queryClient.invalidateQueries({
+        queryKey: orpc.gateway.configGet.queryOptions({ input: { gatewayId } }).queryKey,
+      })
+    },
+    onError: (err) => {
+      toast.error('Failed to apply config', { description: String(err) })
+      setApplyOpen(false)
+    },
+  })
+
+  const handlePatch = () => {
+    try {
+      JSON.parse(text)
+    } catch {
+      toast.error('Invalid JSON')
+      return
+    }
+    patchMutation.mutate({ gatewayId, raw: text })
+  }
+
+  const handleApply = () => {
+    try {
+      JSON.parse(text)
+    } catch {
+      toast.error('Invalid JSON')
+      setApplyOpen(false)
+      return
+    }
+    applyMutation.mutate({ gatewayId, raw: text })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-3 pt-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="rounded-lg" style={{ minHeight: '400px' }} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="py-8 text-center text-xs text-muted-foreground">
+        Config not available.
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-3 pt-2">
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!isDirty || patchMutation.isPending}
+          onClick={handlePatch}
+        >
+          {patchMutation.isPending && <Spinner className="size-3" />}
+          Save (patch)
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!isDirty || applyMutation.isPending}
+          onClick={() => setApplyOpen(true)}
+        >
+          Apply (replace)
+        </Button>
+      </div>
+
+      <textarea
+        value={text}
+        onChange={(e) => setDraft(e.target.value)}
+        className="w-full rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-relaxed resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+        style={{ minHeight: '400px', whiteSpace: 'pre-wrap' }}
+        spellCheck={false}
+      />
+
+      <AlertDialog open={applyOpen} onOpenChange={(open) => !open && setApplyOpen(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apply Config</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will replace the entire config and restart the gateway. Are you sure?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleApply}
+              disabled={applyMutation.isPending}
+            >
+              {applyMutation.isPending && <Spinner className="size-3" />}
+              Apply
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -403,6 +403,30 @@ export class GatewayManager {
     return (await conn.request('exec.approvals.get', {})) as ExecApprovalsSnapshot
   }
 
+  async getConfig(gatewayId: string): Promise<unknown> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('config.get', {})
+  }
+
+  async getConfigSchema(gatewayId: string): Promise<unknown> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('config.schema', {})
+  }
+
+  async patchConfig(gatewayId: string, raw: string): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    const parsed: unknown = JSON.parse(raw)
+    await conn.request('config.patch', { raw: parsed })
+    return { ok: true }
+  }
+
+  async applyConfig(gatewayId: string, raw: string): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    const parsed: unknown = JSON.parse(raw)
+    await conn.request('config.apply', { raw: parsed })
+    return { ok: true }
+  }
+
   async getLogsTail(
     gatewayId: string,
     params: {
