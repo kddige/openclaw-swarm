@@ -20,6 +20,7 @@ import type {
   PresenceEntry,
   CostSummary,
   ExecApprovalsSnapshot,
+  GatewayConfigResponse,
 } from '../api/types'
 
 const debug = createDebugLogger('gw:manager')
@@ -403,9 +404,9 @@ export class GatewayManager {
     return (await conn.request('exec.approvals.get', {})) as ExecApprovalsSnapshot
   }
 
-  async getConfig(gatewayId: string): Promise<unknown> {
+  async getConfig(gatewayId: string): Promise<GatewayConfigResponse> {
     const conn = this.getConnection(gatewayId)
-    return conn.request('config.get', {})
+    return conn.request('config.get', {}) as Promise<GatewayConfigResponse>
   }
 
   async getConfigSchema(gatewayId: string): Promise<unknown> {
