@@ -310,6 +310,15 @@ export class GatewayManager {
     })) as ChatMessage[]
   }
 
+  async sendChatMessage(
+    gatewayId: string,
+    sessionKey: string,
+    message: string,
+  ): Promise<void> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('chat.send', { key: sessionKey, message })
+  }
+
   async resetSession(
     gatewayId: string,
     sessionKey: string,
