@@ -417,7 +417,8 @@ export class GatewayManager {
         const levelName: string = (meta.logLevelName ?? 'info').toLowerCase()
         const timeStr: string = meta.date ?? parsed.time ?? ''
         const ts = timeStr ? new Date(timeStr).getTime() : Date.now()
-        const msg: string = parsed['1'] ?? parsed.msg ?? ''
+        const rawMsg = parsed['1'] ?? parsed.msg ?? ''
+        const msg: string = typeof rawMsg === 'string' ? rawMsg : JSON.stringify(rawMsg)
         let source: string | undefined
         try {
           const sub = JSON.parse(parsed['0'] ?? '{}')
