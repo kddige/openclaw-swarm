@@ -90,7 +90,7 @@ function SessionDetailPage() {
     }),
   )
 
-  const { data: chatHistory, isLoading: chatLoading } = useQuery(
+  const { data: chatHistory } = useQuery(
     orpc.gateway.chatHistory.queryOptions({
       input: { gatewayId, sessionKey, limit: 200 },
     }),
@@ -423,19 +423,9 @@ function SessionDetailPage() {
         </>
       )}
 
-      <div className="min-w-0">
-        <h2 className="text-xs font-medium mb-2">Chat History</h2>
-        {chatLoading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 rounded-md" />
-            ))}
-          </div>
-        ) : !chatHistory?.length ? (
-          <div className="py-8 text-center text-xs text-muted-foreground">
-            No messages in this session.
-          </div>
-        ) : (
+      {Array.isArray(chatHistory) && chatHistory.length > 0 && (
+        <div className="min-w-0">
+          <h2 className="text-xs font-medium mb-2">Chat History</h2>
           <ScrollArea className="h-[400px] rounded-md border bg-muted/20 p-3 overflow-x-hidden">
             <div className="flex flex-col gap-2 min-w-0">
               {chatHistory.map((msg, i) => {
@@ -445,8 +435,8 @@ function SessionDetailPage() {
               })}
             </div>
           </ScrollArea>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Reset Dialog */}
       <AlertDialog open={dialog === 'reset'} onOpenChange={(open) => !open && setDialog('none')}>
