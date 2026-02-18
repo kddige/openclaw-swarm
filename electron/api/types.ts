@@ -1,3 +1,18 @@
+import type { z } from 'zod/v4'
+import type {
+  RequestFrameSchema,
+  ResponseFrameSchema,
+  EventFrameSchema,
+  GatewayFrameSchema,
+  ErrorShapeSchema,
+  ConnectParamsSchema,
+  HelloOkSchema,
+  PresenceEntrySchema as PresenceEntryZod,
+  SnapshotSchema,
+  StateVersionSchema,
+  ChallengeEventSchema,
+} from '../gateway/schemas'
+
 // ============================================================
 // Gateway Config (persisted in electron-store)
 // ============================================================
@@ -31,32 +46,19 @@ export interface FleetStore {
 }
 
 // ============================================================
-// WS Protocol Types
+// WS Protocol Types (derived from Zod schemas)
 // ============================================================
 
-export interface WsReqFrame {
-  type: 'req'
-  id: string
-  method: string
-  params: Record<string, unknown>
-}
-
-export interface WsResFrame {
-  type: 'res'
-  id: string
-  ok: boolean
-  payload?: Record<string, unknown>
-  error?: { code: string; message: string; data?: unknown }
-}
-
-export interface WsEventFrame {
-  type: 'event'
-  event: string
-  payload: Record<string, unknown>
-  seq?: number
-}
-
-export type WsFrame = WsReqFrame | WsResFrame | WsEventFrame
+export type WsReqFrame = z.infer<typeof RequestFrameSchema>
+export type WsResFrame = z.infer<typeof ResponseFrameSchema>
+export type WsEventFrame = z.infer<typeof EventFrameSchema>
+export type WsFrame = z.infer<typeof GatewayFrameSchema>
+export type ErrorShape = z.infer<typeof ErrorShapeSchema>
+export type ConnectParams = z.infer<typeof ConnectParamsSchema>
+export type HelloOk = z.infer<typeof HelloOkSchema>
+export type Snapshot = z.infer<typeof SnapshotSchema>
+export type StateVersion = z.infer<typeof StateVersionSchema>
+export type ChallengeEvent = z.infer<typeof ChallengeEventSchema>
 
 // ============================================================
 // Gateway Runtime State
@@ -191,19 +193,10 @@ export interface AgentEntry {
 }
 
 // ============================================================
-// Presence Types
+// Presence Types (derived from Zod schema)
 // ============================================================
 
-export interface PresenceEntry {
-  host: string
-  ip: string
-  version: string
-  platform: string
-  deviceFamily: string
-  mode: string
-  reason: string
-  text: string
-}
+export type PresenceEntry = z.infer<typeof PresenceEntryZod>
 
 // ============================================================
 // Cost Types

@@ -6,10 +6,12 @@ import {
   createReqFrame,
   buildConnectFrame,
 } from './protocol'
+import { HelloOkSchema, ChallengeEventSchema } from './schemas'
 import type {
   DeviceIdentity,
   GatewayConnectionStatus,
   ServerInfo,
+  HelloOk,
   WsResFrame,
   WsEventFrame,
   WsReqFrame,
@@ -183,7 +185,12 @@ export class GatewayConnection extends EventEmitter {
     }
 
     if (frame.event === 'connect.challenge') {
-      this.handleChallenge(frame.payload as { nonce: string })
+      const challenge = ChallengeEventSchema.safeParse(frame.payload)
+      if (!challenge.success) {
+        debug.error(`[${this.id}] invalid challenge payload:`, challenge.error.message)
+        return
+      }
+      this.handleChallenge(challenge.data)
       return
     }
 
@@ -211,19 +218,24 @@ export class GatewayConnection extends EventEmitter {
 
     this.sendRequest(frame)
       .then((res) => {
-        const resPayload = res as Record<string, unknown>
-        debug.log(`[${this.id}] connect response:`, JSON.stringify(resPayload).slice(0, 500))
+        const raw = res as Record<string, unknown>
+        debug.log(`[${this.id}] connect response:`, JSON.stringify(raw).slice(0, 500))
 
-        if (resPayload.type === 'hello-ok') {
+        const parsed = HelloOkSchema.safeParse(raw)
+        if (!parsed.success) {
+          debug.warn(`[${this.id}] hello-ok validation failed, falling back:`, parsed.error.message)
+        }
+
+        const helloOk: HelloOk | null = parsed.success ? parsed.data : null
+
+        if (raw.type === 'hello-ok') {
           debug.log(`[${this.id}] handshake SUCCESS`)
           this.setStatus('connected')
           this.lastConnectedAt = Date.now()
           this.reconnectBackoff = 800
           this.lastSeq = null
 
-          const server = resPayload.server as
-            | { version?: string; host?: string; connId?: string }
-            | undefined
+          const server = helloOk?.server ?? (raw.server as { version?: string; host?: string; connId?: string } | undefined)
           if (server) {
             this._serverInfo = {
               version: server.version ?? 'unknown',
@@ -232,9 +244,7 @@ export class GatewayConnection extends EventEmitter {
             }
           }
 
-          const auth = resPayload.auth as
-            | { deviceToken?: string }
-            | undefined
+          const auth = helloOk?.auth ?? (raw.auth as { deviceToken?: string } | undefined)
           if (auth?.deviceToken) {
             debug.log(`[${this.id}] received device token`)
             this.emit('device-token', {
@@ -243,9 +253,7 @@ export class GatewayConnection extends EventEmitter {
             })
           }
 
-          const policy = resPayload.policy as
-            | { tickIntervalMs?: number }
-            | undefined
+          const policy = helloOk?.policy ?? (raw.policy as { tickIntervalMs?: number } | undefined)
           if (policy?.tickIntervalMs) {
             debug.log(`[${this.id}] tick interval: ${policy.tickIntervalMs}ms`)
             this.startTick(policy.tickIntervalMs)
@@ -254,7 +262,7 @@ export class GatewayConnection extends EventEmitter {
           this.refreshState()
           this.startStatusPolling()
         } else {
-          debug.warn(`[${this.id}] unexpected connect response type: ${resPayload.type}`)
+          debug.warn(`[${this.id}] unexpected connect response type: ${raw.type}`)
         }
       })
       .catch((err: PairingError | Error) => {
@@ -334,11 +342,11 @@ export class GatewayConnection extends EventEmitter {
       if (frame.error?.code) err.code = frame.error.code
       if (
         frame.error?.code === 'DEVICE_PAIRING_REQUIRED' &&
-        frame.error.data &&
-        typeof frame.error.data === 'object' &&
-        'requestId' in frame.error.data
+        frame.error.details &&
+        typeof frame.error.details === 'object' &&
+        'requestId' in (frame.error.details as Record<string, unknown>)
       ) {
-        err.requestId = (frame.error.data as { requestId: string }).requestId
+        err.requestId = (frame.error.details as { requestId: string }).requestId
       }
       // Also check top-level error for requestId (some gateway versions)
       if (

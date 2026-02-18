@@ -1,13 +1,23 @@
 import crypto from 'node:crypto'
 import type { WsFrame, WsReqFrame, DeviceIdentity } from '../api/types'
+import { GatewayFrameSchema } from './schemas'
 import { signChallenge } from '../device-identity'
+import { createDebugLogger } from '../lib/debug'
+
+const debug = createDebugLogger('gw:protocol')
 
 export function encodeFrame(frame: WsReqFrame): string {
   return JSON.stringify(frame)
 }
 
 export function decodeFrame(data: string): WsFrame {
-  return JSON.parse(data) as WsFrame
+  const json = JSON.parse(data) as unknown
+  const result = GatewayFrameSchema.safeParse(json)
+  if (!result.success) {
+    debug.warn('frame validation failed, passing through:', result.error.message)
+    return json as WsFrame
+  }
+  return result.data
 }
 
 export function createReqFrame(
