@@ -480,6 +480,29 @@ export class GatewayManager {
     return { sessions: matchedSessions, agents: matchedAgents }
   }
 
+  async getFleetPresence(): Promise<
+    Array<{ gatewayId: string; gatewayLabel: string; devices: PresenceEntry[] }>
+  > {
+    const connectedEntries = Array.from(this.connections.entries()).filter(
+      ([, conn]) => conn.getStatus() === 'connected',
+    )
+
+    const results = await Promise.allSettled(
+      connectedEntries.map(async ([id, conn]) => {
+        const devices = await this.getPresence(id)
+        return { gatewayId: id, gatewayLabel: conn.label, devices }
+      }),
+    )
+
+    const output: Array<{ gatewayId: string; gatewayLabel: string; devices: PresenceEntry[] }> = []
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        output.push(result.value)
+      }
+    }
+    return output
+  }
+
   async getFleetCost(): Promise<{
     totalCost: number
     byGateway: { id: string; label: string; cost: number }[]

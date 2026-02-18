@@ -8,6 +8,9 @@ export const fleetRouter = {
   cost: p.handler(({ context }) => {
     return context.gatewayManager.getFleetCost()
   }),
+  presence: p.handler(({ context }) => {
+    return context.gatewayManager.getFleetPresence()
+  }),
   search: p
     .input(z.object({ query: z.string() }))
     .handler(({ input, context }) => {
