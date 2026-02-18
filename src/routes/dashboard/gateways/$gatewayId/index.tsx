@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import MonacoEditor from '@monaco-editor/react'
 import { extractText } from '@/lib/content'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
@@ -1566,7 +1567,7 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
   )
 
   const original = useMemo(
-    () => (data !== undefined ? JSON.stringify(data, null, 2) : ''),
+    () => (data !== undefined ? data.raw : ''),
     [data],
   )
 
@@ -1663,13 +1664,21 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
         </Button>
       </div>
 
-      <textarea
-        value={text}
-        onChange={(e) => setDraft(e.target.value)}
-        className="w-full rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-relaxed resize-none focus:outline-none focus:ring-1 focus:ring-ring"
-        style={{ minHeight: '400px', whiteSpace: 'pre-wrap' }}
-        spellCheck={false}
-      />
+      <div className="overflow-hidden rounded-lg border">
+        <MonacoEditor
+          language="json"
+          theme="vs-dark"
+          height="60vh"
+          value={text}
+          onChange={(val) => setDraft(val ?? '')}
+          options={{
+            minimap: { enabled: false },
+            fontSize: 12,
+            wordWrap: 'on',
+            scrollBeyondLastLine: false,
+          }}
+        />
+      </div>
 
       <AlertDialog open={applyOpen} onOpenChange={(open) => !open && setApplyOpen(false)}>
         <AlertDialogContent>
