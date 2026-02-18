@@ -242,6 +242,20 @@ function GatewayDetailPage() {
           <span className={cn('size-1.5 rounded-full', status.dot)} />
           {status.text}
         </Badge>
+        <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          render={
+            <Link
+              to="/dashboard/gateways/$gatewayId/chat"
+              params={{ gatewayId }}
+            />
+          }
+        >
+          <MessageSquareIcon className="size-3" />
+          Maintenance Chat
+        </Button>
       </div>
 
       {gateway.status === 'pairing' && (
