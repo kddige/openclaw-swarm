@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
@@ -49,6 +50,7 @@ import {
 
 export const Route = createFileRoute('/dashboard/gateways/')({
   component: GatewaysPage,
+  errorComponent: RouteErrorFallback,
 })
 
 function statusConfig(status: string) {

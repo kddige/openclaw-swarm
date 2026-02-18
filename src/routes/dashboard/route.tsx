@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { RouteErrorFallback } from '@/components/route-error-fallback'
 import {
   Sidebar,
   SidebarContent,
@@ -27,6 +28,7 @@ import {
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardLayout,
+  errorComponent: RouteErrorFallback,
 })
 
 function statusDot(status: string) {
