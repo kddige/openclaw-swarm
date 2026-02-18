@@ -1168,7 +1168,7 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
   const [levelFilter, setLevelFilter] = useState('all')
   const [sourceFilter, setSourceFilter] = useState('')
   const [lines, setLines] = useState<LogLine[]>([])
-  const [cursor, setCursor] = useState<string | undefined>(undefined)
+  const [cursor, setCursor] = useState<number | undefined>(undefined)
   const [atBottom, setAtBottom] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -1204,7 +1204,7 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
     if (!logsData || logsData === prevDataRef.current) return
     prevDataRef.current = logsData
     const newLines: LogLine[] = logsData.lines ?? []
-    const newCursor: string | undefined = logsData.cursor
+    const newCursor: number | undefined = logsData.cursor
     if (newLines.length === 0) return
     const timer = setTimeout(() => {
       setLines((prev) => {

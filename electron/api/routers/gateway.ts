@@ -206,7 +206,7 @@ export const gatewayRouter = {
         limit: z.number().optional(),
         level: z.string().optional(),
         source: z.string().optional(),
-        cursor: z.string().optional(),
+        cursor: z.number().optional(),
       }),
     )
     .handler(async ({ input, context }) => {

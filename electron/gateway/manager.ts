@@ -393,7 +393,7 @@ export class GatewayManager {
       limit?: number
       level?: string
       source?: string
-      cursor?: string
+      cursor?: number
     },
   ): Promise<{
     lines: Array<{
@@ -403,7 +403,7 @@ export class GatewayManager {
       source?: string
       [key: string]: unknown
     }>
-    cursor?: string
+    cursor?: number
   }> {
     const conn = this.getConnection(gatewayId)
     return (await conn.request('logs.tail', params)) as {
@@ -414,7 +414,7 @@ export class GatewayManager {
         source?: string
         [key: string]: unknown
       }>
-      cursor?: string
+      cursor?: number
     }
   }
 
