@@ -46,6 +46,7 @@ import {
   CheckIcon,
   LinkIcon,
   TerminalIcon,
+  PencilIcon,
 } from 'lucide-react'
 
 export const Route = createFileRoute('/dashboard/gateways/')({
@@ -129,6 +130,11 @@ function GatewaysPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [removeId, setRemoveId] = useState<string | null>(null)
+  const [editGateway, setEditGateway] = useState<{
+    id: string
+    label: string
+    url: string
+  } | null>(null)
 
   const removeMutation = useMutation({
     ...orpc.gateway.remove.mutationOptions(),
@@ -241,6 +247,19 @@ function GatewaysPage() {
                       <Button
                         variant="ghost"
                         size="icon-xs"
+                        onClick={() =>
+                          setEditGateway({
+                            id: gw.id,
+                            label: gw.label,
+                            url: gw.url,
+                          })
+                        }
+                      >
+                        <PencilIcon />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
                         className="text-destructive hover:text-destructive"
                         onClick={() => setRemoveId(gw.id)}
                       >
@@ -277,6 +296,18 @@ function GatewaysPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog
+        open={editGateway !== null}
+        onOpenChange={(open) => !open && setEditGateway(null)}
+      >
+        {editGateway && (
+          <EditGatewayDialog
+            gateway={editGateway}
+            onClose={() => setEditGateway(null)}
+          />
+        )}
+      </Dialog>
     </div>
   )
 }
@@ -313,6 +344,108 @@ function CopyableCommand({ command }: { command: string }) {
         <CopyIcon className="size-3 text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
       )}
     </button>
+  )
+}
+
+function EditGatewayDialog({
+  gateway,
+  onClose,
+}: {
+  gateway: { id: string; label: string; url: string }
+  onClose: () => void
+}) {
+  const queryClient = useQueryClient()
+  const [label, setLabel] = useState(gateway.label)
+  const [url, setUrl] = useState(gateway.url)
+  const [token, setToken] = useState('')
+
+  const updateMutation = useMutation({
+    ...orpc.gateway.update.mutationOptions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: orpc.gateway.list.queryOptions().queryKey,
+      })
+      onClose()
+    },
+  })
+
+  const canSubmit = label.trim().length > 0 && url.trim().length > 0
+
+  const handleSubmit = () => {
+    updateMutation.mutate({
+      id: gateway.id,
+      label: label.trim(),
+      url: url.trim(),
+      ...(token.length > 0 ? { token } : {}),
+    })
+  }
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Edit Gateway</DialogTitle>
+        <DialogDescription>Update the gateway configuration.</DialogDescription>
+      </DialogHeader>
+
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="edit-gw-label">Label</Label>
+          <Input
+            id="edit-gw-label"
+            placeholder="My Gateway"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            disabled={updateMutation.isPending}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="edit-gw-url">URL</Label>
+          <Input
+            id="edit-gw-url"
+            placeholder="wss://gateway.example.com:18789"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            disabled={updateMutation.isPending}
+          />
+          <p className="text-[0.625rem] text-muted-foreground">
+            WebSocket URL including port. Use wss:// for TLS.
+          </p>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="edit-gw-token">Token</Label>
+          <Input
+            id="edit-gw-token"
+            type="password"
+            placeholder="••••••••"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            disabled={updateMutation.isPending}
+          />
+          <p className="text-[0.625rem] text-muted-foreground">
+            Leave empty to keep current token.
+          </p>
+        </div>
+
+        {updateMutation.isError && (
+          <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+            <XCircleIcon className="size-3.5 shrink-0" />
+            {updateMutation.error instanceof Error
+              ? updateMutation.error.message
+              : 'Failed to update gateway'}
+          </div>
+        )}
+      </div>
+
+      <DialogFooter>
+        <Button
+          disabled={!canSubmit || updateMutation.isPending}
+          onClick={handleSubmit}
+        >
+          {updateMutation.isPending && <Spinner className="size-3" />}
+          {updateMutation.isPending ? 'Saving...' : 'Save'}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
   )
 }
 
