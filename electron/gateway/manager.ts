@@ -416,15 +416,13 @@ export class GatewayManager {
 
   async patchConfig(gatewayId: string, raw: string): Promise<{ ok: true }> {
     const conn = this.getConnection(gatewayId)
-    const parsed: unknown = JSON.parse(raw)
-    await conn.request('config.patch', { raw: parsed })
+    await conn.request('config.patch', { raw })
     return { ok: true }
   }
 
   async applyConfig(gatewayId: string, raw: string): Promise<{ ok: true }> {
     const conn = this.getConnection(gatewayId)
-    const parsed: unknown = JSON.parse(raw)
-    await conn.request('config.apply', { raw: parsed })
+    await conn.request('config.apply', { raw })
     return { ok: true }
   }
 
