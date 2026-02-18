@@ -202,11 +202,24 @@ export type PresenceEntry = z.infer<typeof PresenceEntryZod>
 // Cost Types
 // ============================================================
 
-export interface CostSummary {
+export interface CostDay {
+  date: string
+  input: number
+  output: number
+  cacheRead: number
+  cacheWrite: number
+  totalTokens: number
   totalCost: number
-  period: { start: number; end: number }
-  byModel: { model: string; cost: number }[]
-  bySession: { key: string; label: string | null; cost: number }[]
+  inputCost: number
+  outputCost: number
+  cacheReadCost: number
+  cacheWriteCost: number
+}
+
+export interface CostSummary {
+  updatedAt: number
+  days: number
+  daily: CostDay[]
 }
 
 // ============================================================

@@ -535,7 +535,8 @@ export class GatewayManager {
     const results = await Promise.allSettled(
       connectedEntries.map(async ([id, conn]) => {
         const summary = await this.getCost(id, startDate, endDate)
-        return { id, label: conn.label, cost: summary.totalCost }
+        const cost = summary.daily.reduce((sum, d) => sum + d.totalCost, 0)
+        return { id, label: conn.label, cost }
       }),
     )
 
