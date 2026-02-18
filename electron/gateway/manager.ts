@@ -170,7 +170,11 @@ export class GatewayManager {
   async testConnection(params: {
     url: string
     token: string
-  }): Promise<{ ok: boolean; error?: string }> {
+  }): Promise<{
+    ok: boolean
+    error?: string
+    pairingRequestId?: string
+  }> {
     debug.log(`testConnection: url=${params.url}`)
     const tempConn = new GatewayConnection({
       id: 'test-' + crypto.randomUUID(),
@@ -206,8 +210,13 @@ export class GatewayManager {
           resolve({ ok: false, error: 'Authentication failed' })
         } else if (status === 'pairing') {
           clearTimeout(timeout)
+          const requestId = tempConn.getPairingRequestId() ?? undefined
           tempConn.destroy()
-          resolve({ ok: false, error: 'Device pairing required' })
+          resolve({
+            ok: false,
+            error: 'Device pairing required',
+            pairingRequestId: requestId,
+          })
         }
       })
 
@@ -349,6 +358,7 @@ export class GatewayManager {
       status: conn.getStatus(),
       lastConnectedAt: conn.getLastConnectedAt(),
       lastError: conn.getLastError(),
+      pairingRequestId: conn.getPairingRequestId(),
       gatewayStatus: conn.getCachedStatus(),
       health: conn.getCachedHealth(),
     }

@@ -76,6 +76,7 @@ export interface GatewayRuntimeState {
   status: GatewayConnectionStatus
   lastConnectedAt: number | null
   lastError: string | null
+  pairingRequestId: string | null
   gatewayStatus: GatewayStatusPayload | null
   health: HealthPayload | null
 }

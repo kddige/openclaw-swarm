@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
+import { Spinner } from '@/components/ui/spinner'
 import {
   Tabs,
   TabsContent,
@@ -32,6 +34,11 @@ import {
   ShieldIcon,
   CpuIcon,
   ActivityIcon,
+  LinkIcon,
+  TerminalIcon,
+  CopyIcon,
+  CheckIcon,
+  RefreshCwIcon,
 } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 
@@ -46,7 +53,7 @@ function statusBadge(status: string) {
     case 'connecting':
       return { text: 'Connecting', dot: 'bg-amber-500 animate-pulse' }
     case 'pairing':
-      return { text: 'Pairing', dot: 'bg-blue-500 animate-pulse' }
+      return { text: 'Pairing Required', dot: 'bg-amber-400 animate-pulse' }
     case 'auth-failed':
       return { text: 'Auth Failed', dot: 'bg-destructive' }
     default:
@@ -61,6 +68,96 @@ function formatUptime(seconds: number): string {
   if (d > 0) return `${d}d ${h}h ${m}m`
   if (h > 0) return `${h}h ${m}m`
   return `${m}m`
+}
+
+function PairingBanner({
+  gatewayId,
+  requestId,
+}: {
+  gatewayId: string
+  requestId: string | null
+}) {
+  const queryClient = useQueryClient()
+  const [copied, setCopied] = useState(false)
+
+  const reconnectMutation = useMutation({
+    ...orpc.gateway.reconnect.mutationOptions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: orpc.gateway.get.queryOptions({ input: { id: gatewayId } }).queryKey,
+      })
+      queryClient.invalidateQueries({
+        queryKey: orpc.gateway.list.queryOptions().queryKey,
+      })
+    },
+  })
+
+  const command = requestId
+    ? `openclaw devices approve ${requestId}`
+    : null
+
+  const copyCommand = async () => {
+    if (!command) return
+    await navigator.clipboard.writeText(command)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+      <div className="flex items-center gap-2">
+        <LinkIcon className="size-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+        <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+          Device Pairing Required
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        This gateway requires you to approve this device before connecting.
+        Run this command on the machine running the gateway:
+      </p>
+      {command ? (
+        <button
+          type="button"
+          onClick={copyCommand}
+          className="group flex items-center gap-2 rounded-md border bg-muted/60 px-3 py-2 text-left transition-colors hover:bg-muted"
+        >
+          <TerminalIcon className="size-3 text-muted-foreground shrink-0" />
+          <code className="flex-1 font-mono text-[0.6875rem] text-foreground select-all">
+            {command}
+          </code>
+          {copied ? (
+            <CheckIcon className="size-3 text-emerald-500 shrink-0" />
+          ) : (
+            <CopyIcon className="size-3 text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+          )}
+        </button>
+      ) : (
+        <div className="flex flex-col gap-1.5 rounded-md border bg-muted/60 px-3 py-2">
+          <code className="font-mono text-[0.6875rem] text-foreground">
+            openclaw devices list
+          </code>
+          <p className="text-[0.625rem] text-muted-foreground">
+            Find the pending request, then run:{' '}
+            <code className="font-mono">openclaw devices approve &lt;requestId&gt;</code>
+          </p>
+        </div>
+      )}
+      <p className="text-[0.625rem] text-muted-foreground">
+        You can also approve via the OpenClaw Control UI → Devices tab.
+      </p>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => reconnectMutation.mutate({ id: gatewayId })}
+        disabled={reconnectMutation.isPending}
+        className="self-start"
+      >
+        {reconnectMutation.isPending && <Spinner className="size-3" />}
+        <RefreshCwIcon className="size-3" />
+        Retry Connection
+      </Button>
+    </div>
+  )
 }
 
 function GatewayDetailPage() {
@@ -106,6 +203,13 @@ function GatewayDetailPage() {
           {status.text}
         </Badge>
       </div>
+
+      {gateway.status === 'pairing' && (
+        <PairingBanner
+          gatewayId={gatewayId}
+          requestId={gateway.pairingRequestId}
+        />
+      )}
 
       <Tabs defaultValue="status">
         <TabsList>

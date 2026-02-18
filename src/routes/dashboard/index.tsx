@@ -19,6 +19,7 @@ import {
   ActivityIcon,
   DollarSignIcon,
   AlertTriangleIcon,
+  LinkIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -33,7 +34,7 @@ function statusLabel(status: string) {
     case 'connecting':
       return { text: 'Connecting', className: 'text-amber-600 dark:text-amber-400' }
     case 'pairing':
-      return { text: 'Pairing', className: 'text-blue-600 dark:text-blue-400' }
+      return { text: 'Pairing Required', className: 'text-amber-600 dark:text-amber-400' }
     case 'auth-failed':
       return { text: 'Auth Failed', className: 'text-destructive' }
     case 'disconnected':
@@ -142,8 +143,12 @@ function FleetDashboard() {
                           gw.status === 'connected'
                             ? 'bg-emerald-500'
                             : gw.status === 'connecting'
-                              ? 'bg-amber-500'
-                              : 'bg-muted-foreground',
+                              ? 'bg-amber-500 animate-pulse'
+                              : gw.status === 'pairing'
+                                ? 'bg-amber-400 animate-pulse'
+                                : gw.status === 'auth-failed'
+                                  ? 'bg-destructive'
+                                  : 'bg-muted-foreground/50',
                         )}
                       />
                       {status.text}
@@ -158,6 +163,15 @@ function FleetDashboard() {
                     <span>
                       {gw.gatewayStatus?.defaultModel ?? 'No model info'}
                     </span>
+                    {gw.status === 'pairing' && (
+                      <Badge
+                        variant="outline"
+                        className="w-fit mt-1 gap-1 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                      >
+                        <LinkIcon data-icon="inline-start" />
+                        Pairing required
+                      </Badge>
+                    )}
                     {gw.health && !gw.health.ok && (
                       <Badge
                         variant="destructive"

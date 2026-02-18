@@ -36,7 +36,7 @@ function statusDot(status: string) {
     case 'connecting':
       return 'bg-amber-500 animate-pulse'
     case 'pairing':
-      return 'bg-blue-500 animate-pulse'
+      return 'bg-amber-400 animate-pulse'
     case 'auth-failed':
       return 'bg-destructive'
     case 'disconnected':

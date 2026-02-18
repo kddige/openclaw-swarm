@@ -39,9 +39,12 @@ import {
   PlusIcon,
   ServerIcon,
   TrashIcon,
-  CheckCircleIcon,
   XCircleIcon,
   RefreshCwIcon,
+  CopyIcon,
+  CheckIcon,
+  LinkIcon,
+  TerminalIcon,
 } from 'lucide-react'
 
 export const Route = createFileRoute('/dashboard/gateways/')({
@@ -55,13 +58,65 @@ function statusConfig(status: string) {
     case 'connecting':
       return { text: 'Connecting', dot: 'bg-amber-500 animate-pulse' }
     case 'pairing':
-      return { text: 'Pairing', dot: 'bg-blue-500 animate-pulse' }
+      return { text: 'Pairing Required', dot: 'bg-amber-400 animate-pulse' }
     case 'auth-failed':
       return { text: 'Auth Failed', dot: 'bg-destructive' }
     case 'disconnected':
     default:
       return { text: 'Offline', dot: 'bg-muted-foreground/50' }
   }
+}
+
+function GatewayPairingHint({
+  requestId,
+  gatewayId,
+}: {
+  requestId: string | null
+  gatewayId: string
+}) {
+  const [copied, setCopied] = useState(false)
+  const command = requestId
+    ? `openclaw devices approve ${requestId}`
+    : null
+
+  const copyCommand = async () => {
+    if (!command) return
+    await navigator.clipboard.writeText(command)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-[0.625rem] text-amber-600 dark:text-amber-400">
+        Device pairing required
+      </span>
+      {command ? (
+        <button
+          type="button"
+          onClick={copyCommand}
+          className="group flex items-center gap-1.5 rounded border bg-muted/60 px-2 py-1 text-left transition-colors hover:bg-muted"
+        >
+          <code className="flex-1 font-mono text-[0.5625rem] text-foreground truncate">
+            {command}
+          </code>
+          {copied ? (
+            <CheckIcon className="size-2.5 text-emerald-500 shrink-0" />
+          ) : (
+            <CopyIcon className="size-2.5 text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+          )}
+        </button>
+      ) : (
+        <Link
+          to="/dashboard/gateways/$gatewayId"
+          params={{ gatewayId }}
+          className="text-[0.625rem] text-amber-600 dark:text-amber-400 hover:underline"
+        >
+          View pairing instructions →
+        </Link>
+      )}
+    </div>
+  )
 }
 
 function GatewaysPage() {
@@ -156,14 +211,21 @@ function GatewaysPage() {
                     <span className="text-xs text-muted-foreground truncate">
                       {gw.url}
                     </span>
-                    {gw.lastError && (
+                    {gw.lastError && gw.status !== 'pairing' && (
                       <span className="text-[0.625rem] text-destructive truncate">
                         {gw.lastError}
                       </span>
                     )}
+                    {gw.status === 'pairing' && (
+                      <GatewayPairingHint
+                        requestId={gw.pairingRequestId}
+                        gatewayId={gw.id}
+                      />
+                    )}
                     <div className="flex items-center gap-1.5 mt-1">
                       {(gw.status === 'disconnected' ||
-                        gw.status === 'auth-failed') && (
+                        gw.status === 'auth-failed' ||
+                        gw.status === 'pairing') && (
                         <Button
                           variant="ghost"
                           size="icon-xs"
@@ -217,126 +279,197 @@ function GatewaysPage() {
   )
 }
 
+type DialogPhase =
+  | { step: 'form' }
+  | { step: 'testing' }
+  | { step: 'error'; message: string }
+  | { step: 'pairing'; requestId: string | null }
+  | { step: 'saving' }
+
+function CopyableCommand({ command }: { command: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(command)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="group flex items-center gap-2 rounded-md border bg-muted/60 px-3 py-2 text-left transition-colors hover:bg-muted"
+    >
+      <TerminalIcon className="size-3 text-muted-foreground shrink-0" />
+      <code className="flex-1 font-mono text-[0.6875rem] text-foreground select-all">
+        {command}
+      </code>
+      {copied ? (
+        <CheckIcon className="size-3 text-emerald-500 shrink-0" />
+      ) : (
+        <CopyIcon className="size-3 text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+      )}
+    </button>
+  )
+}
+
 function AddGatewayDialog({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
   const [url, setUrl] = useState('')
   const [token, setToken] = useState('')
   const [label, setLabel] = useState('')
-  const [testResult, setTestResult] = useState<{
-    ok: boolean
-    error?: string
-  } | null>(null)
+  const [phase, setPhase] = useState<DialogPhase>({ step: 'form' })
 
-  const testMutation = useMutation({
-    ...orpc.gateway.testConnection.mutationOptions(),
-    onSuccess: (result) => setTestResult(result),
-  })
+  const testMutation = useMutation(
+    orpc.gateway.testConnection.mutationOptions(),
+  )
+  const addMutation = useMutation(
+    orpc.gateway.add.mutationOptions(),
+  )
 
-  const addMutation = useMutation({
-    ...orpc.gateway.add.mutationOptions(),
-    onSuccess: () => {
+  const canSubmit = url.length > 0 && token.length > 0 && label.length > 0
+  const busy = phase.step === 'testing' || phase.step === 'saving'
+
+  const handleSubmit = async () => {
+    setPhase({ step: 'testing' })
+    try {
+      const result = await testMutation.mutateAsync({ url, token })
+      if (!result.ok) {
+        if (result.error === 'Device pairing required') {
+          setPhase({
+            step: 'pairing',
+            requestId: result.pairingRequestId ?? null,
+          })
+        } else {
+          setPhase({ step: 'error', message: result.error ?? 'Connection failed' })
+        }
+        return
+      }
+      // Test passed — save
+      setPhase({ step: 'saving' })
+      await addMutation.mutateAsync({ url, token, label })
       queryClient.invalidateQueries({
         queryKey: orpc.gateway.list.queryOptions().queryKey,
       })
       onClose()
-    },
-  })
+    } catch {
+      setPhase({ step: 'error', message: 'Connection failed unexpectedly' })
+    }
+  }
 
-  const canTest = url.length > 0 && token.length > 0
-  const canSave = canTest && label.length > 0
+  const resetToForm = () => setPhase({ step: 'form' })
 
   return (
     <DialogContent>
       <DialogHeader>
         <DialogTitle>Add Gateway</DialogTitle>
         <DialogDescription>
-          Enter the connection details for the gateway.
+          Connect to an OpenClaw Gateway instance.
         </DialogDescription>
       </DialogHeader>
+
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="gw-label">
-            Label <span className="text-destructive">*</span>
-          </Label>
+          <Label htmlFor="gw-label">Label</Label>
           <Input
             id="gw-label"
             placeholder="My Gateway"
             value={label}
-            onChange={(e) => setLabel(e.target.value)}
+            onChange={(e) => { setLabel(e.target.value); resetToForm() }}
+            disabled={busy}
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="gw-url">
-            URL <span className="text-destructive">*</span>
-          </Label>
+          <Label htmlFor="gw-url">URL</Label>
           <Input
             id="gw-url"
             placeholder="wss://gateway.example.com:18789"
             value={url}
-            onChange={(e) => {
-              setUrl(e.target.value)
-              setTestResult(null)
-            }}
+            onChange={(e) => { setUrl(e.target.value); resetToForm() }}
+            disabled={busy}
           />
           <p className="text-[0.625rem] text-muted-foreground">
-            WebSocket URL including port. Use wss:// for TLS connections.
+            WebSocket URL including port. Use wss:// for TLS.
           </p>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="gw-token">
-            Token <span className="text-destructive">*</span>
-          </Label>
+          <Label htmlFor="gw-token">Token</Label>
           <Input
             id="gw-token"
             type="password"
             placeholder="Enter authentication token"
             value={token}
-            onChange={(e) => {
-              setToken(e.target.value)
-              setTestResult(null)
-            }}
+            onChange={(e) => { setToken(e.target.value); resetToForm() }}
+            disabled={busy}
           />
         </div>
 
-        {testResult && (
-          <div
-            className={cn(
-              'flex items-center gap-2 rounded-md border px-3 py-2 text-xs',
-              testResult.ok
-                ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400'
-                : 'border-destructive/30 bg-destructive/5 text-destructive',
-            )}
-          >
-            {testResult.ok ? (
-              <>
-                <CheckCircleIcon className="size-3.5 shrink-0" />
-                Connection successful
-              </>
+        {/* ── Phase feedback ── */}
+
+        {phase.step === 'error' && (
+          <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+            <XCircleIcon className="size-3.5 shrink-0" />
+            {phase.message}
+          </div>
+        )}
+
+        {phase.step === 'pairing' && (
+          <div className="flex flex-col gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+            <div className="flex items-center gap-2">
+              <LinkIcon className="size-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                Device Pairing Required
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Approve this device on the gateway, then press the button below to
+              finish connecting.
+            </p>
+            {phase.requestId ? (
+              <CopyableCommand
+                command={`openclaw devices approve ${phase.requestId}`}
+              />
             ) : (
-              <>
-                <XCircleIcon className="size-3.5 shrink-0" />
-                {testResult.error ?? 'Connection failed'}
-              </>
+              <div className="flex flex-col gap-1.5 rounded-md border bg-muted/60 px-3 py-2">
+                <code className="font-mono text-[0.6875rem] text-foreground">
+                  openclaw devices list
+                </code>
+                <p className="text-[0.625rem] text-muted-foreground">
+                  Find the pending request, then:{' '}
+                  <code className="font-mono">
+                    openclaw devices approve &lt;id&gt;
+                  </code>
+                </p>
+              </div>
             )}
+            <p className="text-[0.625rem] text-muted-foreground">
+              Or approve via the OpenClaw Control UI → Devices tab.
+            </p>
           </div>
         )}
       </div>
+
       <DialogFooter>
-        <Button
-          variant="outline"
-          disabled={!canTest || testMutation.isPending}
-          onClick={() => testMutation.mutate({ url, token })}
-        >
-          {testMutation.isPending && <Spinner className="size-3" />}
-          Test Connection
-        </Button>
-        <Button
-          disabled={!canSave || addMutation.isPending}
-          onClick={() => addMutation.mutate({ url, token, label })}
-        >
-          {addMutation.isPending && <Spinner className="size-3" />}
-          Add Gateway
-        </Button>
+        {phase.step === 'pairing' ? (
+          <Button disabled={busy} onClick={handleSubmit}>
+            {phase.step === 'pairing' && testMutation.isPending && (
+              <Spinner className="size-3" />
+            )}
+            Retry & Save
+          </Button>
+        ) : (
+          <Button disabled={!canSubmit || busy} onClick={handleSubmit}>
+            {busy && <Spinner className="size-3" />}
+            {phase.step === 'testing'
+              ? 'Connecting...'
+              : phase.step === 'saving'
+                ? 'Saving...'
+                : phase.step === 'error'
+                  ? 'Try Again'
+                  : 'Add Gateway'}
+          </Button>
+        )}
       </DialogFooter>
     </DialogContent>
   )

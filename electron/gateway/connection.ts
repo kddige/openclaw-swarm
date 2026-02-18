@@ -19,6 +19,11 @@ import { createDebugLogger } from '../lib/debug'
 
 const debug = createDebugLogger('gw:conn')
 
+interface PairingError extends Error {
+  code?: string
+  requestId?: string
+}
+
 interface PendingRequest {
   resolve: (payload: unknown) => void
   reject: (error: Error) => void
@@ -59,6 +64,7 @@ export class GatewayConnection extends EventEmitter {
   private cachedStatus: GatewayStatusPayload | null = null
   private cachedHealth: HealthPayload | null = null
   private statusPollTimer: ReturnType<typeof setInterval> | null = null
+  private _pairingRequestId: string | null = null
 
   constructor(config: GatewayConnectionConfig) {
     super()
@@ -90,12 +96,16 @@ export class GatewayConnection extends EventEmitter {
   getCachedHealth(): HealthPayload | null {
     return this.cachedHealth
   }
+  getPairingRequestId(): string | null {
+    return this._pairingRequestId
+  }
 
   connect(): void {
     if (this.destroyed) return
     debug.log(`[${this.id}] connecting to ${this._url}`)
     this.setStatus('connecting')
     this.lastError = null
+    this._pairingRequestId = null
 
     try {
       this.ws = new WebSocket(this._url)
@@ -231,7 +241,7 @@ export class GatewayConnection extends EventEmitter {
           debug.warn(`[${this.id}] unexpected connect response type: ${resPayload.type}`)
         }
       })
-      .catch((err: Error) => {
+      .catch((err: PairingError | Error) => {
         debug.error(`[${this.id}] connect request FAILED:`, err.message)
         this.lastError = err.message
 
@@ -243,9 +253,16 @@ export class GatewayConnection extends EventEmitter {
           this.setStatus('auth-failed')
           return
         }
-        if (err.message.includes('pairing')) {
+        if (
+          err.message.includes('pairing') ||
+          ('code' in err && err.code === 'DEVICE_PAIRING_REQUIRED')
+        ) {
+          if ('requestId' in err && err.requestId) {
+            this._pairingRequestId = err.requestId
+            debug.log(`[${this.id}] pairing required, requestId=${err.requestId}`)
+          }
           this.setStatus('pairing')
-          this.scheduleReconnect()
+          // Do NOT auto-reconnect while pairing — user must retry manually
           return
         }
 
@@ -295,9 +312,28 @@ export class GatewayConnection extends EventEmitter {
     if (frame.ok) {
       pending.resolve(frame.payload)
     } else {
-      pending.reject(
-        new Error(frame.error?.message ?? 'Unknown gateway error'),
-      )
+      const err = new Error(
+        frame.error?.message ?? 'Unknown gateway error',
+      ) as PairingError
+      if (frame.error?.code) err.code = frame.error.code
+      if (
+        frame.error?.code === 'DEVICE_PAIRING_REQUIRED' &&
+        frame.error.data &&
+        typeof frame.error.data === 'object' &&
+        'requestId' in frame.error.data
+      ) {
+        err.requestId = (frame.error.data as { requestId: string }).requestId
+      }
+      // Also check top-level error for requestId (some gateway versions)
+      if (
+        frame.error?.code === 'DEVICE_PAIRING_REQUIRED' &&
+        'requestId' in (frame.error as Record<string, unknown>)
+      ) {
+        err.requestId =
+          err.requestId ??
+          (frame.error as unknown as { requestId: string }).requestId
+      }
+      pending.reject(err)
     }
   }
 
@@ -363,7 +399,7 @@ export class GatewayConnection extends EventEmitter {
   }
 
   private scheduleReconnect(): void {
-    if (this.destroyed || this.status === 'auth-failed') return
+    if (this.destroyed || this.status === 'auth-failed' || this.status === 'pairing') return
     debug.log(`[${this.id}] scheduling reconnect in ${Math.round(this.reconnectBackoff)}ms`)
     this.reconnectTimer = setTimeout(() => {
       this.connect()
