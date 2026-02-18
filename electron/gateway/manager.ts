@@ -347,6 +347,39 @@ export class GatewayManager {
 
   // ── Fleet Aggregation ─────────────────────────────────
 
+  async getFleetCost(): Promise<{
+    totalCost: number
+    byGateway: { id: string; label: string; cost: number }[]
+  }> {
+    const now = new Date()
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const startDate = yesterday.toISOString()
+    const endDate = now.toISOString()
+
+    const connectedEntries = Array.from(this.connections.entries()).filter(
+      ([, conn]) => conn.getStatus() === 'connected',
+    )
+
+    const results = await Promise.allSettled(
+      connectedEntries.map(async ([id, conn]) => {
+        const summary = await this.getCost(id, startDate, endDate)
+        return { id, label: conn.label, cost: summary.totalCost }
+      }),
+    )
+
+    const byGateway: { id: string; label: string; cost: number }[] = []
+    let totalCost = 0
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        byGateway.push(result.value)
+        totalCost += result.value.cost
+      }
+    }
+
+    return { totalCost, byGateway }
+  }
+
   getFleetOverview(): {
     totalGateways: number
     connectedGateways: number
