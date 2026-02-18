@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useQuery } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
@@ -32,6 +33,7 @@ export const Route = createFileRoute(
   '/dashboard/gateways/$gatewayId/sessions/$sessionKey',
 )({
   component: SessionDetailPage,
+  errorComponent: RouteErrorFallback,
 })
 
 function SessionDetailPage() {

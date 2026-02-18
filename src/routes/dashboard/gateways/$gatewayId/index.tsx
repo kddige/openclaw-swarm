@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
@@ -42,6 +43,7 @@ import { formatDistanceToNow } from 'date-fns'
 
 export const Route = createFileRoute('/dashboard/gateways/$gatewayId/')({
   component: GatewayDetailPage,
+  errorComponent: RouteErrorFallback,
 })
 
 function statusBadge(status: string) {

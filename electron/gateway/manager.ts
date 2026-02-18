@@ -5,7 +5,7 @@ import {
   GatewayConnection,
   type GatewayConnectionConfig,
 } from './connection'
-import { store } from '../store'
+import { store, encryptToken, decryptToken } from '../store'
 import { getOrCreateDeviceIdentity } from '../device-identity'
 import { createDebugLogger } from '../lib/debug'
 import type {
@@ -41,7 +41,7 @@ export class GatewayManager {
       id: gw.id,
       url: gw.url,
       label: gw.label,
-      token: gw.token,
+      token: decryptToken(gw.token),
       identity: this.identity,
       appVersion: app.getVersion(),
       platform: process.platform,
@@ -120,13 +120,14 @@ export class GatewayManager {
       id,
       url: params.url,
       label: params.label,
-      token: params.token,
+      token: encryptToken(params.token),
       addedAt: Date.now(),
       sortOrder: gateways.length,
     }
     gateways.push(stored)
     store.set('gateways', gateways)
 
+    // initConnection decrypts the token; pass stored (encrypted) record
     const conn = this.initConnection(stored)
     return this.getRuntimeState(conn)
   }
@@ -158,9 +159,13 @@ export class GatewayManager {
 
     conn.updateConfig(updates)
 
+    const storedUpdates = {
+      ...updates,
+      ...(updates.token !== undefined && { token: encryptToken(updates.token) }),
+    }
     const gateways = store.get('gateways').map((g) => {
       if (g.id !== id) return g
-      return { ...g, ...updates }
+      return { ...g, ...storedUpdates }
     })
     store.set('gateways', gateways)
 
@@ -341,6 +346,39 @@ export class GatewayManager {
   }
 
   // ── Fleet Aggregation ─────────────────────────────────
+
+  async getFleetCost(): Promise<{
+    totalCost: number
+    byGateway: { id: string; label: string; cost: number }[]
+  }> {
+    const now = new Date()
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const startDate = yesterday.toISOString()
+    const endDate = now.toISOString()
+
+    const connectedEntries = Array.from(this.connections.entries()).filter(
+      ([, conn]) => conn.getStatus() === 'connected',
+    )
+
+    const results = await Promise.allSettled(
+      connectedEntries.map(async ([id, conn]) => {
+        const summary = await this.getCost(id, startDate, endDate)
+        return { id, label: conn.label, cost: summary.totalCost }
+      }),
+    )
+
+    const byGateway: { id: string; label: string; cost: number }[] = []
+    let totalCost = 0
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        byGateway.push(result.value)
+        totalCost += result.value.cost
+      }
+    }
+
+    return { totalCost, byGateway }
+  }
 
   getFleetOverview(): {
     totalGateways: number

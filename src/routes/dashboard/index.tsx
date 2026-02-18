@@ -50,6 +50,9 @@ function FleetDashboard() {
   const { data: gateways, isLoading: gatewaysLoading } = useQuery(
     orpc.gateway.list.queryOptions(),
   )
+  const { data: fleetCost, isLoading: costLoading } = useQuery(
+    orpc.fleet.cost.queryOptions(),
+  )
 
   if (gatewaysLoading || overviewLoading) {
     return (
@@ -114,7 +117,11 @@ function FleetDashboard() {
         />
         <StatCard
           label="Total Cost (24h)"
-          value="--"
+          value={
+            costLoading
+              ? '--'
+              : `$${(fleetCost?.totalCost ?? 0).toFixed(2)}`
+          }
           icon={<DollarSignIcon className="size-3.5 text-muted-foreground" />}
         />
       </div>
