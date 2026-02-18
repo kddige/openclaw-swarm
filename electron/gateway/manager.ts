@@ -420,6 +420,66 @@ export class GatewayManager {
 
   // ── Fleet Aggregation ─────────────────────────────────
 
+  async searchFleet(query: string): Promise<{
+    sessions: Array<{ gatewayId: string; gatewayLabel: string } & SessionEntry>
+    agents: Array<{ gatewayId: string; gatewayLabel: string } & AgentEntry>
+  }> {
+    const q = query.toLowerCase()
+    const connectedEntries = Array.from(this.connections.entries()).filter(
+      ([, conn]) => conn.getStatus() === 'connected',
+    )
+
+    const results = await Promise.allSettled(
+      connectedEntries.map(async ([id, conn]) => {
+        const [sessions, agents] = await Promise.allSettled([
+          this.getGatewaySessions(id),
+          this.getAgents(id),
+        ])
+        return {
+          id,
+          label: conn.label,
+          sessions: sessions.status === 'fulfilled' ? sessions.value : [],
+          agents: agents.status === 'fulfilled' ? agents.value : [],
+        }
+      }),
+    )
+
+    const matchedSessions: Array<{ gatewayId: string; gatewayLabel: string } & SessionEntry> = []
+    const matchedAgents: Array<{ gatewayId: string; gatewayLabel: string } & AgentEntry> = []
+
+    for (const result of results) {
+      if (result.status !== 'fulfilled') continue
+      const { id, label, sessions, agents } = result.value
+
+      for (const session of sessions) {
+        if (matchedSessions.length >= 60) break
+        const haystack = [
+          session.key,
+          session.displayName,
+          session.agent,
+          session.model,
+          session.channel,
+          session.kind,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+        if (haystack.includes(q)) {
+          matchedSessions.push({ gatewayId: id, gatewayLabel: label, ...session })
+        }
+      }
+
+      for (const agent of agents) {
+        if (matchedAgents.length >= 60) break
+        if (agent.id.toLowerCase().includes(q)) {
+          matchedAgents.push({ gatewayId: id, gatewayLabel: label, ...agent })
+        }
+      }
+    }
+
+    return { sessions: matchedSessions, agents: matchedAgents }
+  }
+
   async getFleetCost(): Promise<{
     totalCost: number
     byGateway: { id: string; label: string; cost: number }[]

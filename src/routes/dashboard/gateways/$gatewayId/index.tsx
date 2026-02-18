@@ -1180,13 +1180,10 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
   }
 
   // Reset lines when filters change
-  const prevFilterRef = useRef({ levelFilter, sourceFilter })
   useEffect(() => {
-    const prev = prevFilterRef.current
-    if (prev.levelFilter !== levelFilter || prev.sourceFilter !== sourceFilter) {
+    return () => {
       setLines([])
       setCursor(undefined)
-      prevFilterRef.current = { levelFilter, sourceFilter }
     }
   }, [levelFilter, sourceFilter])
 
@@ -1208,7 +1205,8 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
     prevDataRef.current = logsData
     const newLines: LogLine[] = logsData.lines ?? []
     const newCursor: string | undefined = logsData.cursor
-    if (newLines.length > 0) {
+    if (newLines.length === 0) return
+    const timer = setTimeout(() => {
       setLines((prev) => {
         const combined = [...prev, ...newLines]
         return combined.length > MAX_LINES
@@ -1216,7 +1214,8 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
           : combined
       })
       if (newCursor) setCursor(newCursor)
-    }
+    }, 0)
+    return () => clearTimeout(timer)
   }, [logsData])
 
   const scrollToBottom = useCallback(() => {

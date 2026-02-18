@@ -550,14 +550,14 @@ type UsageLog = {
 function SessionUsageCharts({ usageLogs }: { usageLogs: UsageLog[] }) {
   const sorted = [...usageLogs].sort((a, b) => a.timestamp - b.timestamp)
 
-  let cumCost = 0
-  const cumulativeData = sorted.map((log) => {
-    cumCost += log.cost
-    return {
+  const cumulativeData = sorted.reduce<{ time: string; cost: number }[]>((acc, log) => {
+    const prev = acc.length > 0 ? acc[acc.length - 1].cost : 0
+    acc.push({
       time: log.timestamp > 0 ? format(log.timestamp, 'HH:mm:ss') : '',
-      cost: cumCost,
-    }
-  })
+      cost: prev + log.cost,
+    })
+    return acc
+  }, [])
 
   const tokenData = sorted.map((log) => ({
     time: log.timestamp > 0 ? format(log.timestamp, 'HH:mm:ss') : '',
