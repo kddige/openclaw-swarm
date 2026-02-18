@@ -244,14 +244,14 @@ export const gatewayRouter = {
     }),
 
   configPatch: p
-    .input(z.object({ gatewayId: z.string(), raw: z.string() }))
+    .input(z.object({ gatewayId: z.string(), raw: z.string(), baseHash: z.string().optional() }))
     .handler(async ({ input, context }) => {
-      return context.gatewayManager.patchConfig(input.gatewayId, input.raw)
+      return context.gatewayManager.patchConfig(input.gatewayId, input.raw, input.baseHash)
     }),
 
   configApply: p
-    .input(z.object({ gatewayId: z.string(), raw: z.string() }))
+    .input(z.object({ gatewayId: z.string(), raw: z.string(), baseHash: z.string().optional() }))
     .handler(async ({ input, context }) => {
-      return context.gatewayManager.applyConfig(input.gatewayId, input.raw)
+      return context.gatewayManager.applyConfig(input.gatewayId, input.raw, input.baseHash)
     }),
 }

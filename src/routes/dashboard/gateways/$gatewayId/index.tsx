@@ -1641,7 +1641,7 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
     if (redactedCount > 0) {
       toast.info(`Stripped ${redactedCount} redacted field(s) — existing values kept on gateway`)
     }
-    patchMutation.mutate({ gatewayId, raw: JSON.stringify(cleaned, null, 2) })
+    patchMutation.mutate({ gatewayId, raw: JSON.stringify(cleaned, null, 2), baseHash: data?.hash })
   }
 
   const handleApply = () => {
@@ -1657,7 +1657,7 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
     if (redactedCount > 0) {
       toast.info(`Stripped ${redactedCount} redacted field(s) from apply — those keys will be omitted`)
     }
-    applyMutation.mutate({ gatewayId, raw: JSON.stringify(cleaned, null, 2) })
+    applyMutation.mutate({ gatewayId, raw: JSON.stringify(cleaned, null, 2), baseHash: data?.hash })
   }
 
   if (isLoading) {

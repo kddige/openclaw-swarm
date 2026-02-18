@@ -414,15 +414,15 @@ export class GatewayManager {
     return conn.request('config.schema', {})
   }
 
-  async patchConfig(gatewayId: string, raw: string): Promise<{ ok: true }> {
+  async patchConfig(gatewayId: string, raw: string, baseHash?: string): Promise<{ ok: true }> {
     const conn = this.getConnection(gatewayId)
-    await conn.request('config.patch', { raw })
+    await conn.request('config.patch', { raw, ...(baseHash ? { baseHash } : {}) })
     return { ok: true }
   }
 
-  async applyConfig(gatewayId: string, raw: string): Promise<{ ok: true }> {
+  async applyConfig(gatewayId: string, raw: string, baseHash?: string): Promise<{ ok: true }> {
     const conn = this.getConnection(gatewayId)
-    await conn.request('config.apply', { raw })
+    await conn.request('config.apply', { raw, ...(baseHash ? { baseHash } : {}) })
     return { ok: true }
   }
 
