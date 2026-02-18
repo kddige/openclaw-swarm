@@ -319,7 +319,11 @@ export class GatewayManager {
     message: string,
   ): Promise<void> {
     const conn = this.getConnection(gatewayId)
-    await conn.request('chat.send', { sessionKey, message })
+    await conn.request('chat.send', {
+      sessionKey,
+      message,
+      idempotencyKey: crypto.randomUUID(),
+    })
   }
 
   async resetSession(
