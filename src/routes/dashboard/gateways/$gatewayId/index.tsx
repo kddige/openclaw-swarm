@@ -1013,11 +1013,12 @@ function SecurityTab({ gatewayId }: { gatewayId: string }) {
 
   const { file } = data
   const defaults = file.defaults
+  const hasDefaults = defaults && Object.keys(defaults).length > 0
   const agents = file.agents ? Object.entries(file.agents) : []
 
   return (
     <div className="flex flex-col gap-4 pt-2">
-      {defaults && (
+      {hasDefaults && (
         <Card size="sm" className="bg-muted/40">
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -1053,9 +1054,9 @@ function SecurityTab({ gatewayId }: { gatewayId: string }) {
         </Card>
       )}
 
-      {agents.length === 0 && !defaults && (
+      {agents.length === 0 && !hasDefaults && (
         <div className="py-8 text-center text-xs text-muted-foreground">
-          No exec approval configuration found.
+          No exec approval configuration found. Exec security is using gateway defaults.
         </div>
       )}
 
