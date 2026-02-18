@@ -95,6 +95,22 @@ export const Route = createFileRoute('/dashboard/gateways/$gatewayId/')({
   errorComponent: RouteErrorFallback,
 })
 
+type ContentBlock = { type: string; text?: string }
+
+function extractText(content: unknown): string {
+  if (typeof content === 'string') return content
+  if (Array.isArray(content)) {
+    return content
+      .map((b: ContentBlock) => (b.type === 'text' ? (b.text ?? '') : `[${b.type}]`))
+      .join('\n')
+  }
+  if (content && typeof content === 'object') {
+    const b = content as ContentBlock
+    return b.text ?? JSON.stringify(content)
+  }
+  return String(content ?? '')
+}
+
 function statusBadge(status: string) {
   switch (status) {
     case 'connected':
@@ -1236,7 +1252,7 @@ function ChatTab({ gatewayId }: { gatewayId: string }) {
                   <div key={i} className="flex justify-start">
                     <div className="flex items-center gap-1.5 rounded-md border bg-muted/40 px-2.5 py-1 text-[0.625rem] text-muted-foreground max-w-[80%]">
                       <WrenchIcon className="size-2.5 shrink-0" />
-                      <span className="font-mono truncate">{msg.content}</span>
+                      <span className="font-mono truncate">{extractText(msg.content)}</span>
                     </div>
                   </div>
                 )
@@ -1263,7 +1279,7 @@ function ChatTab({ gatewayId }: { gatewayId: string }) {
                           : 'bg-muted text-foreground',
                       )}
                     >
-                      {msg.content}
+                      {extractText(msg.content)}
                     </div>
                     <span className="text-[0.5625rem] text-muted-foreground tabular-nums px-1">
                       {formatChatTime(msg.timestamp)}
