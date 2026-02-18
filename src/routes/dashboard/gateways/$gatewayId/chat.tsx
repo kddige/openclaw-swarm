@@ -172,7 +172,7 @@ function MaintenanceChatPage() {
 
   // Merge: show confirmed history + optimistic msgs not yet in history
   const messages = useMemo(() => {
-    const confirmed = history ?? []
+    const confirmed = Array.isArray(history) ? history : []
     const confirmedUserTexts = new Set(
       confirmed.filter((m) => m.role === 'user').map((m) => extractText(m.content)),
     )

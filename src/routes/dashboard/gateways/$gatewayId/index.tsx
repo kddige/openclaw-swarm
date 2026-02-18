@@ -1227,7 +1227,7 @@ function ChatTab({ gatewayId }: { gatewayId: string }) {
     [handleSend],
   )
 
-  const messages = history ?? []
+  const messages = Array.isArray(history) ? history : []
 
   return (
     <div
