@@ -1169,8 +1169,16 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
   const [sourceFilter, setSourceFilter] = useState('')
   const [lines, setLines] = useState<LogLine[]>([])
   const [cursor, setCursor] = useState<number | undefined>(undefined)
+  // mountNonce forces a fresh query on every mount, bypassing stale cache
+  const [mountNonce] = useState(() => Date.now())
   const [atBottom, setAtBottom] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Explicit reset on mount (guards against kept-alive component state)
+  useEffect(() => {
+    setLines([])
+    setCursor(undefined)
+  }, [])
 
   const queryInput = {
     gatewayId,
@@ -1181,13 +1189,11 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
 
   // Reset lines when filters change
   useEffect(() => {
-    return () => {
-      setLines([])
-      setCursor(undefined)
-    }
+    setLines([])
+    setCursor(undefined)
   }, [levelFilter, sourceFilter])
 
-  // Initial fetch + polling
+  // Initial fetch + polling — mountNonce in queryKey ensures no stale cache reuse
   const { data: logsData } = useQuery({
     ...orpc.gateway.logsTail.queryOptions({
       input: {
@@ -1195,16 +1201,21 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
         cursor: cursor,
       },
     }),
+    queryKey: [mountNonce, gatewayId, cursor, levelFilter, sourceFilter],
     refetchInterval: 3000,
+    staleTime: 0,
+    gcTime: 0,
   })
 
   // Append new lines when data arrives
-  const prevDataRef = useRef<typeof logsData>(undefined)
+  const prevCursorRef = useRef<number | undefined>(undefined)
   useEffect(() => {
-    if (!logsData || logsData === prevDataRef.current) return
-    prevDataRef.current = logsData
+    if (!logsData) return
     const newLines: LogLine[] = logsData.lines ?? []
     const newCursor: number | undefined = logsData.cursor
+    // Skip if we've already processed this exact cursor position
+    if (newCursor !== undefined && newCursor === prevCursorRef.current && newLines.length === 0) return
+    prevCursorRef.current = newCursor
     if (newLines.length === 0) return
     const timer = setTimeout(() => {
       setLines((prev) => {
