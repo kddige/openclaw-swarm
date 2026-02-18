@@ -401,7 +401,6 @@ export class GatewayManager {
       level: string
       msg: string
       source?: string
-      [key: string]: unknown
     }>
     cursor?: number
   }> {
@@ -416,7 +415,8 @@ export class GatewayManager {
         const meta = parsed._meta ?? {}
         const levelName: string = (meta.logLevelName ?? 'info').toLowerCase()
         const timeStr: string = meta.date ?? parsed.time ?? ''
-        const ts = timeStr ? new Date(timeStr).getTime() : Date.now()
+        const t = timeStr ? new Date(timeStr).getTime() : NaN
+        const ts = Number.isFinite(t) ? t : Date.now()
         const rawMsg = parsed['1'] ?? parsed.msg ?? ''
         const msg: string = typeof rawMsg === 'string' ? rawMsg : JSON.stringify(rawMsg)
         let source: string | undefined
@@ -426,7 +426,7 @@ export class GatewayManager {
         } catch {
           source = parsed['0']
         }
-        return { ts, level: levelName, msg, source, _raw: parsed }
+        return { ts, level: levelName, msg, source }
       } catch {
         return { ts: Date.now(), level: 'info', msg: lineStr, source: undefined }
       }

@@ -101,6 +101,12 @@ function SessionDetailPage() {
     }),
   )
 
+  const { data: sessions } = useQuery(
+    orpc.gateway.sessions.queryOptions({
+      input: { gatewayId },
+    }),
+  )
+
   const sessionsQueryKey = orpc.gateway.sessions.queryOptions({
     input: { gatewayId },
   }).queryKey
@@ -166,7 +172,8 @@ function SessionDetailPage() {
   }, [editingLabel])
 
   function startEditLabel() {
-    setLabelDraft(sessionKey.slice(0, 16))
+    const session = sessions?.find((s) => s.key === sessionKey)
+    setLabelDraft(session?.displayName ?? '')
     setEditingLabel(true)
   }
 
