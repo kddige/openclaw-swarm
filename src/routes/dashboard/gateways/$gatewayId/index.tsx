@@ -1174,11 +1174,15 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
   const [atBottom, setAtBottom] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Explicit reset on mount (guards against kept-alive component state)
-  useEffect(() => {
+  // Track previous filters to reset lines/cursor during render when they change
+  const [prevLevelFilter, setPrevLevelFilter] = useState(levelFilter)
+  const [prevSourceFilter, setPrevSourceFilter] = useState(sourceFilter)
+  if (prevLevelFilter !== levelFilter || prevSourceFilter !== sourceFilter) {
+    setPrevLevelFilter(levelFilter)
+    setPrevSourceFilter(sourceFilter)
     setLines([])
     setCursor(undefined)
-  }, [])
+  }
 
   const queryInput = {
     gatewayId,
@@ -1186,12 +1190,6 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
     ...(levelFilter !== 'all' ? { level: levelFilter } : {}),
     ...(sourceFilter.trim() ? { source: sourceFilter.trim() } : {}),
   }
-
-  // Reset lines when filters change
-  useEffect(() => {
-    setLines([])
-    setCursor(undefined)
-  }, [levelFilter, sourceFilter])
 
   // Initial fetch + polling — mountNonce in queryKey ensures no stale cache reuse
   const { data: logsData } = useQuery({

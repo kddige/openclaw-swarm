@@ -1,30 +1,66 @@
-# React + TypeScript + Vite
+# hucomm-fleet
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Electron desktop app (macOS) for managing a fleet of [OpenClaw Gateway](https://github.com/hucomm/openclaw-gateway) instances.
 
-Currently, two official plugins are available:
+## What is this?
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+hucomm-fleet is a native macOS desktop application that gives you a single pane of glass across all your OpenClaw Gateway deployments. Think Portainer, but for AI agent infrastructure.
 
-## Expanding the ESLint configuration
+**Features:**
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- **Multi-gateway management** — connect to and monitor any number of gateway instances simultaneously
+- **Session monitoring** — live view of active agent sessions across the fleet
+- **Real-time logs** — streaming log output per gateway, with filtering
+- **Usage & cost charts** — token usage and cost breakdowns over time (Recharts)
+- **Security config** — execute security configuration changes fleet-wide
+- **Fleet-wide search** — `Cmd+K` command palette for jumping between gateways, sessions, and actions
+- **Presence view** — see which agents are connected and active right now
 
-- Configure the top-level `parserOptions` property like this:
+## Stack
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+| Layer | Technology |
+|---|---|
+| Shell | Electron (macOS — vibrancy + hidden titlebar) |
+| Frontend | React 19 |
+| Routing | TanStack Router (file-based, memory history) |
+| Server state | TanStack Query |
+| IPC | oRPC over MessagePort |
+| UI components | shadcn/ui (base-mira style) + Base UI primitives |
+| Styling | Tailwind CSS 4, CVA |
+| Persistence | electron-store (safeStorage encryption) |
+| Package manager | Bun |
+
+## Requirements
+
+- Node 22+
+- macOS (vibrancy and native titlebar features are macOS-only)
+- [Bun](https://bun.sh/)
+
+## Dev setup
+
+```bash
+bun install
+bun run dev
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+## Build
+
+```bash
+bun run build
+```
+
+This runs `tsc` + Vite build + `electron-builder` and produces a distributable macOS app in `release/`.
+
+## Architecture
+
+The main process owns all WebSocket connections to remote gateways via `GatewayManager`. The renderer never talks to the network directly. Instead it communicates with the main process through oRPC procedures exposed over a `MessagePort` (established at startup via the preload script).
+
+```
+Renderer (React)
+  └── oRPC client (MessagePort)
+        └── Main process (oRPC server)
+              └── GatewayManager
+                    └── WebSocket connections → OpenClaw Gateways
+```
+
+See [CLAUDE.md](CLAUDE.md) for detailed architecture notes, conventions, and code patterns.
