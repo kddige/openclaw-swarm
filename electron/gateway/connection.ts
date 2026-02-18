@@ -9,6 +9,7 @@ import {
 import type {
   DeviceIdentity,
   GatewayConnectionStatus,
+  ServerInfo,
   WsResFrame,
   WsEventFrame,
   WsReqFrame,
@@ -61,6 +62,7 @@ export class GatewayConnection extends EventEmitter {
   private pendingRequests = new Map<string, PendingRequest>()
   private destroyed = false
 
+  private _serverInfo: ServerInfo | null = null
   private cachedStatus: GatewayStatusPayload | null = null
   private cachedHealth: HealthPayload | null = null
   private statusPollTimer: ReturnType<typeof setInterval> | null = null
@@ -95,6 +97,9 @@ export class GatewayConnection extends EventEmitter {
   }
   getCachedHealth(): HealthPayload | null {
     return this.cachedHealth
+  }
+  getServerInfo(): ServerInfo | null {
+    return this._serverInfo
   }
   getPairingRequestId(): string | null {
     return this._pairingRequestId
@@ -215,6 +220,17 @@ export class GatewayConnection extends EventEmitter {
           this.lastConnectedAt = Date.now()
           this.reconnectBackoff = 800
           this.lastSeq = null
+
+          const server = resPayload.server as
+            | { version?: string; host?: string; connId?: string }
+            | undefined
+          if (server) {
+            this._serverInfo = {
+              version: server.version ?? 'unknown',
+              host: server.host ?? 'unknown',
+              connId: server.connId ?? '',
+            }
+          }
 
           const auth = resPayload.auth as
             | { deviceToken?: string }

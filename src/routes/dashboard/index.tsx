@@ -157,12 +157,10 @@ function FleetDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                    <span>
-                      {gw.gatewayStatus?.activeSessions ?? 0} active sessions
-                    </span>
-                    <span>
-                      {gw.gatewayStatus?.defaultModel ?? 'No model info'}
-                    </span>
+                    {gw.serverInfo && (
+                      <span>{gw.serverInfo.host} · v{gw.serverInfo.version}</span>
+                    )}
+                    <span className="truncate">{gw.url}</span>
                     {gw.status === 'pairing' && (
                       <Badge
                         variant="outline"

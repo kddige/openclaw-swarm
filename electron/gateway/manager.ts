@@ -250,7 +250,24 @@ export class GatewayManager {
     const result = (await conn.request('sessions.list', {
       includeGlobal: true,
     })) as Record<string, unknown>
-    return (result.sessions ?? result) as SessionEntry[]
+    const raw = (result.sessions ?? result) as Record<string, unknown>[]
+    return raw.map((s) => ({
+      key: String(s.key ?? ''),
+      displayName: (s.displayName as string) ?? (s.label as string) ?? null,
+      kind: (s.kind as string) ?? null,
+      agent: (s.agent as string) ?? (s.agentId as string) ?? null,
+      channel: (s.channel as string) ?? null,
+      createdAt: typeof s.createdAt === 'number' ? s.createdAt : null,
+      lastActiveAt: typeof s.lastActiveAt === 'number'
+        ? s.lastActiveAt
+        : typeof s.lastActivity === 'number'
+          ? s.lastActivity
+          : null,
+      tokensIn: Number(s.tokensIn ?? 0),
+      tokensOut: Number(s.tokensOut ?? 0),
+      cost: Number(s.cost ?? 0),
+      model: (s.model as string) ?? null,
+    }))
   }
 
   async getSessionUsage(
@@ -289,16 +306,26 @@ export class GatewayManager {
 
   async getAgents(gatewayId: string): Promise<AgentEntry[]> {
     const conn = this.getConnection(gatewayId)
-    return (await conn.request('agents.list', {})) as AgentEntry[]
+    const result = (await conn.request('agents.list', {})) as Record<
+      string,
+      unknown
+    >
+    const defaultId = result.defaultId as string | undefined
+    const raw = (result.agents ?? result) as { id: string }[]
+    return raw.map((a) => ({
+      id: a.id,
+      isDefault: a.id === defaultId,
+    }))
   }
 
   async getPresence(gatewayId: string): Promise<PresenceEntry[]> {
     const conn = this.getConnection(gatewayId)
-    const result = (await conn.request(
-      'system-presence',
-      {},
-    )) as Record<string, unknown>
-    return (result.presence ?? result) as PresenceEntry[]
+    const result = await conn.request('system-presence', {})
+    // Response may be a bare array or { presence: [...] }
+    const raw = Array.isArray(result)
+      ? result
+      : ((result as Record<string, unknown>).presence ?? [])
+    return raw as PresenceEntry[]
   }
 
   async getCost(
@@ -328,7 +355,13 @@ export class GatewayManager {
     for (const conn of this.connections.values()) {
       if (conn.getStatus() === 'connected') {
         connected++
-        totalActiveSessions += conn.getCachedStatus()?.activeSessions ?? 0
+        // Session count from status.sessions (shape varies by gateway version)
+        const sessions = conn.getCachedStatus()?.sessions as
+          | Record<string, unknown>
+          | undefined
+        if (sessions && typeof sessions.active === 'number') {
+          totalActiveSessions += sessions.active
+        }
       } else {
         disconnected++
       }
@@ -359,6 +392,7 @@ export class GatewayManager {
       lastConnectedAt: conn.getLastConnectedAt(),
       lastError: conn.getLastError(),
       pairingRequestId: conn.getPairingRequestId(),
+      serverInfo: conn.getServerInfo(),
       gatewayStatus: conn.getCachedStatus(),
       health: conn.getCachedHealth(),
     }

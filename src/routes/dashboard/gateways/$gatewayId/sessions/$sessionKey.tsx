@@ -190,7 +190,9 @@ function SessionDetailPage() {
                   {usageLogs.map((log, i) => (
                     <TableRow key={i}>
                       <TableCell className="text-muted-foreground">
-                        {format(log.timestamp, 'HH:mm:ss')}
+                        {typeof log.timestamp === 'number' && log.timestamp > 0
+                          ? format(log.timestamp, 'HH:mm:ss')
+                          : '--'}
                       </TableCell>
                       <TableCell>{log.role}</TableCell>
                       <TableCell className="font-mono text-[0.625rem]">
@@ -302,7 +304,7 @@ function ChatBubble({
             isUser && 'justify-end',
           )}
         >
-          {message.timestamp > 0 && (
+          {typeof message.timestamp === 'number' && message.timestamp > 0 && (
             <span>
               {formatDistanceToNow(message.timestamp, { addSuffix: true })}
             </span>

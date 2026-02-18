@@ -77,48 +77,70 @@ export interface GatewayRuntimeState {
   lastConnectedAt: number | null
   lastError: string | null
   pairingRequestId: string | null
+  serverInfo: ServerInfo | null
   gatewayStatus: GatewayStatusPayload | null
   health: HealthPayload | null
 }
 
-export interface GatewayStatusPayload {
+/** Extracted from hello-ok.server in the WS handshake */
+export interface ServerInfo {
   version: string
-  uptime: number
-  boundAddress: string
-  authMode: string
-  modelProvider: string
-  activeSessions: number
-  totalSessions: number
-  defaultAgent: string | null
-  defaultModel: string | null
+  host: string
+  connId: string
 }
 
+/** The real payload returned by the `status` WS method */
+export interface GatewayStatusPayload {
+  heartbeat?: {
+    defaultAgentId: string
+    agents: {
+      agentId: string
+      enabled: boolean
+      every: string
+      everyMs: number
+    }[]
+  }
+  channelSummary?: string[]
+  sessions?: Record<string, unknown>
+  [key: string]: unknown
+}
+
+/** The real payload returned by the `health` WS method */
 export interface HealthPayload {
   ok: boolean
-  channels: ChannelHealth[]
-  modelAuth: { ok: boolean; provider: string; error: string | null }
-  agents: { name: string; ok: boolean }[]
+  ts?: number
+  durationMs?: number
+  channels: Record<string, ChannelHealthDetail>
 }
 
-export interface ChannelHealth {
-  name: string
-  type: string
-  connected: boolean
-  error: string | null
+export interface ChannelHealthDetail {
+  configured: boolean
+  tokenSource?: string
+  running: boolean
+  lastStartAt: number | null
+  lastStopAt: number | null
+  lastError: string | null
+  probe?: {
+    ok: boolean
+    status: string | null
+    error: string | null
+    elapsedMs?: number
+  }
 }
 
 // ============================================================
 // Session Types
 // ============================================================
 
+/** Normalised session — adapted from the gateway's sessions.list response */
 export interface SessionEntry {
   key: string
-  label: string | null
-  agent: string
+  displayName: string | null
+  kind: string | null
+  agent: string | null
   channel: string | null
-  chatType: string | null
-  createdAt: number
-  lastActiveAt: number
+  createdAt: number | null
+  lastActiveAt: number | null
   tokensIn: number
   tokensOut: number
   cost: number
@@ -165,9 +187,7 @@ export interface ChatMessage {
 
 export interface AgentEntry {
   id: string
-  name: string
   isDefault: boolean
-  avatar: string | null
 }
 
 // ============================================================
@@ -175,12 +195,14 @@ export interface AgentEntry {
 // ============================================================
 
 export interface PresenceEntry {
-  deviceId: string
-  clientId: string
-  role: string
-  connectedAt: number
-  platform: string
+  host: string
+  ip: string
   version: string
+  platform: string
+  deviceFamily: string
+  mode: string
+  reason: string
+  text: string
 }
 
 // ============================================================

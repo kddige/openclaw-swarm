@@ -31,8 +31,6 @@ import {
   MonitorIcon,
   ClockIcon,
   ServerIcon,
-  ShieldIcon,
-  CpuIcon,
   ActivityIcon,
   LinkIcon,
   TerminalIcon,
@@ -40,7 +38,7 @@ import {
   CheckIcon,
   RefreshCwIcon,
 } from 'lucide-react'
-import { formatDistanceToNow, format } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 
 export const Route = createFileRoute('/dashboard/gateways/$gatewayId/')({
   component: GatewayDetailPage,
@@ -59,15 +57,6 @@ function statusBadge(status: string) {
     default:
       return { text: 'Offline', dot: 'bg-muted-foreground/50' }
   }
-}
-
-function formatUptime(seconds: number): string {
-  const d = Math.floor(seconds / 86400)
-  const h = Math.floor((seconds % 86400) / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  if (d > 0) return `${d}d ${h}h ${m}m`
-  if (h > 0) return `${h}h ${m}m`
-  return `${m}m`
 }
 
 function PairingBanner({
@@ -247,22 +236,14 @@ function StatusTab({
     url: string
     lastConnectedAt: number | null
     lastError: string | null
-    gatewayStatus: {
-      version: string
-      uptime: number
-      boundAddress: string
-      authMode: string
-      modelProvider: string
-      activeSessions: number
-      totalSessions: number
-      defaultAgent: string | null
-      defaultModel: string | null
-    } | null
+    serverInfo: { version: string; host: string; connId: string } | null
+    gatewayStatus: Record<string, unknown> | null
   }
 }) {
+  const info = gateway.serverInfo
   const s = gateway.gatewayStatus
 
-  if (!s) {
+  if (!info && !s) {
     return (
       <div className="py-8 text-center text-xs text-muted-foreground">
         No status data available. Gateway may not be connected.
@@ -270,46 +251,72 @@ function StatusTab({
     )
   }
 
-  const items = [
-    { label: 'Version', value: s.version, icon: ServerIcon },
-    { label: 'Uptime', value: formatUptime(s.uptime), icon: ClockIcon },
-    { label: 'Bound Address', value: s.boundAddress, icon: ActivityIcon },
-    { label: 'Auth Mode', value: s.authMode, icon: ShieldIcon },
-    { label: 'Model Provider', value: s.modelProvider, icon: CpuIcon },
-    {
+  const heartbeat = s?.heartbeat as
+    | { defaultAgentId?: string; agents?: { agentId: string; every: string }[] }
+    | undefined
+  const channelSummary = (s?.channelSummary ?? []) as string[]
+
+  const items: { label: string; value: string; icon: typeof ServerIcon }[] = []
+
+  if (info) {
+    items.push({ label: 'Version', value: info.version, icon: ServerIcon })
+    items.push({ label: 'Host', value: info.host, icon: ActivityIcon })
+  }
+  items.push({ label: 'URL', value: gateway.url, icon: MonitorIcon })
+  if (heartbeat?.defaultAgentId) {
+    items.push({
       label: 'Default Agent',
-      value: s.defaultAgent ?? 'None',
+      value: heartbeat.defaultAgentId,
       icon: UserIcon,
-    },
-    {
-      label: 'Default Model',
-      value: s.defaultModel ?? 'None',
-      icon: CpuIcon,
-    },
-    {
-      label: 'Sessions',
-      value: `${s.activeSessions} active / ${s.totalSessions} total`,
-      icon: MonitorIcon,
-    },
-  ]
+    })
+  }
+  if (heartbeat?.agents?.length) {
+    items.push({
+      label: 'Heartbeat Agents',
+      value: heartbeat.agents.map((a) => `${a.agentId} (${a.every})`).join(', '),
+      icon: ClockIcon,
+    })
+  }
+  if (gateway.lastConnectedAt) {
+    items.push({
+      label: 'Connected',
+      value: formatDistanceToNow(gateway.lastConnectedAt, { addSuffix: true }),
+      icon: ClockIcon,
+    })
+  }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 pt-2">
-      {items.map((item) => (
-        <Card key={item.label} size="sm" className="bg-muted/40">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <item.icon className="size-3 text-muted-foreground" />
-              <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
-                {item.label}
-              </span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <span className="text-xs font-medium">{item.value}</span>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="flex flex-col gap-4 pt-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {items.map((item) => (
+          <Card key={item.label} size="sm" className="bg-muted/40">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <item.icon className="size-3 text-muted-foreground" />
+                <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
+                  {item.label}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <span className="text-xs font-medium break-all">{item.value}</span>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {channelSummary.length > 0 && (
+        <div>
+          <h3 className="text-xs font-medium mb-2">Channels</h3>
+          <div className="rounded-md border bg-muted/30 px-3 py-2 space-y-0.5">
+            {channelSummary.map((line, i) => (
+              <p key={i} className="font-mono text-[0.6875rem] text-muted-foreground">
+                {line}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -343,9 +350,9 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
         <TableHeader>
           <TableRow>
             <TableHead>Key</TableHead>
-            <TableHead>Label</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Kind</TableHead>
             <TableHead>Agent</TableHead>
-            <TableHead>Channel</TableHead>
             <TableHead>Last Active</TableHead>
             <TableHead className="text-right">Tokens</TableHead>
             <TableHead className="text-right">Cost</TableHead>
@@ -360,18 +367,24 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
                   params={{ gatewayId, sessionKey: session.key }}
                   className="font-mono text-[0.625rem] hover:underline"
                 >
-                  {session.key.slice(0, 12)}...
+                  {session.key.length > 24
+                    ? `${session.key.slice(0, 12)}...`
+                    : session.key}
                 </Link>
               </TableCell>
               <TableCell className="truncate max-w-32">
-                {session.label ?? '--'}
+                {session.displayName ?? '--'}
               </TableCell>
-              <TableCell>{session.agent}</TableCell>
-              <TableCell>{session.channel ?? '--'}</TableCell>
               <TableCell className="text-muted-foreground">
-                {formatDistanceToNow(session.lastActiveAt, {
-                  addSuffix: true,
-                })}
+                {session.kind ?? '--'}
+              </TableCell>
+              <TableCell>{session.agent ?? '--'}</TableCell>
+              <TableCell className="text-muted-foreground">
+                {session.lastActiveAt
+                  ? formatDistanceToNow(session.lastActiveAt, {
+                      addSuffix: true,
+                    })
+                  : '--'}
               </TableCell>
               <TableCell className="text-right tabular-nums">
                 {(session.tokensIn + session.tokensOut).toLocaleString()}
@@ -393,9 +406,15 @@ function HealthTab({
   gateway: {
     health: {
       ok: boolean
-      channels: { name: string; type: string; connected: boolean; error: string | null }[]
-      modelAuth: { ok: boolean; provider: string; error: string | null }
-      agents: { name: string; ok: boolean }[]
+      channels: Record<
+        string,
+        {
+          configured: boolean
+          running: boolean
+          lastError: string | null
+          probe?: { ok: boolean; error: string | null }
+        }
+      >
     } | null
   }
 }) {
@@ -408,6 +427,8 @@ function HealthTab({
       </div>
     )
   }
+
+  const channelEntries = Object.entries(h.channels)
 
   return (
     <div className="flex flex-col gap-4 pt-2">
@@ -426,77 +447,38 @@ function HealthTab({
         )}
       </div>
 
-      <div>
-        <h3 className="text-xs font-medium mb-2">Channels</h3>
-        <div className="space-y-1.5">
-          {h.channels.map((ch) => (
-            <div
-              key={ch.name}
-              className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium">{ch.name}</span>
-                <span className="text-[0.625rem] text-muted-foreground">
-                  {ch.type}
-                </span>
-              </div>
-              {ch.connected ? (
-                <Badge variant="outline" className="gap-1 text-emerald-600 dark:text-emerald-400">
-                  <CheckCircleIcon className="size-2.5" />
-                  Connected
-                </Badge>
-              ) : (
-                <Badge variant="destructive" className="gap-1">
-                  <XCircleIcon className="size-2.5" />
-                  {ch.error ?? 'Disconnected'}
-                </Badge>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-xs font-medium mb-2">Model Auth</h3>
-        <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
-          <span className="text-xs">{h.modelAuth.provider}</span>
-          {h.modelAuth.ok ? (
-            <Badge variant="outline" className="gap-1 text-emerald-600 dark:text-emerald-400">
-              <CheckCircleIcon className="size-2.5" />
-              OK
-            </Badge>
-          ) : (
-            <Badge variant="destructive" className="gap-1">
-              <XCircleIcon className="size-2.5" />
-              {h.modelAuth.error ?? 'Failed'}
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {h.agents.length > 0 && (
+      {channelEntries.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium mb-2">Agent Health</h3>
+          <h3 className="text-xs font-medium mb-2">Channels</h3>
           <div className="space-y-1.5">
-            {h.agents.map((agent) => (
-              <div
-                key={agent.name}
-                className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2"
-              >
-                <span className="text-xs font-medium">{agent.name}</span>
-                {agent.ok ? (
-                  <Badge variant="outline" className="gap-1 text-emerald-600 dark:text-emerald-400">
-                    <CheckCircleIcon className="size-2.5" />
-                    OK
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive" className="gap-1">
-                    <XCircleIcon className="size-2.5" />
-                    Error
-                  </Badge>
-                )}
-              </div>
-            ))}
+            {channelEntries.map(([name, ch]) => {
+              const isOk = ch.probe?.ok ?? ch.running ?? ch.configured
+              return (
+                <div
+                  key={name}
+                  className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium capitalize">{name}</span>
+                    <span className="text-[0.625rem] text-muted-foreground">
+                      {ch.configured ? 'configured' : 'not configured'}
+                      {ch.running ? ' · running' : ''}
+                    </span>
+                  </div>
+                  {isOk ? (
+                    <Badge variant="outline" className="gap-1 text-emerald-600 dark:text-emerald-400">
+                      <CheckCircleIcon className="size-2.5" />
+                      OK
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive" className="gap-1">
+                      <XCircleIcon className="size-2.5" />
+                      {ch.lastError ?? ch.probe?.error ?? 'Error'}
+                    </Badge>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
@@ -537,7 +519,7 @@ function AgentsTab({ gatewayId }: { gatewayId: string }) {
                 <UserIcon className="size-3.5" />
               </div>
               <div className="flex flex-col">
-                <CardTitle>{agent.name}</CardTitle>
+                <CardTitle>{agent.id}</CardTitle>
                 {agent.isDefault && (
                   <span className="text-[0.625rem] text-muted-foreground">
                     Default agent
@@ -580,26 +562,24 @@ function DevicesTab({ gatewayId }: { gatewayId: string }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Device ID</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Connected</TableHead>
+            <TableHead>Host</TableHead>
+            <TableHead>IP</TableHead>
+            <TableHead>Mode</TableHead>
             <TableHead>Platform</TableHead>
             <TableHead>Version</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {presence.map((entry) => (
-            <TableRow key={`${entry.deviceId}-${entry.clientId}`}>
+          {presence.map((entry, i) => (
+            <TableRow key={`${entry.host}-${entry.ip}-${i}`}>
+              <TableCell className="font-medium text-xs">
+                {entry.host}
+              </TableCell>
               <TableCell className="font-mono text-[0.625rem]">
-                {entry.deviceId.slice(0, 16)}...
+                {entry.ip}
               </TableCell>
-              <TableCell>{entry.clientId}</TableCell>
               <TableCell>
-                <Badge variant="outline">{entry.role}</Badge>
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {format(entry.connectedAt, 'MMM d, HH:mm')}
+                <Badge variant="outline">{entry.mode}</Badge>
               </TableCell>
               <TableCell>{entry.platform}</TableCell>
               <TableCell className="text-muted-foreground">
