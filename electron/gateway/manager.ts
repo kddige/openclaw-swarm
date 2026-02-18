@@ -19,6 +19,7 @@ import type {
   AgentEntry,
   PresenceEntry,
   CostSummary,
+  ExecApprovalsSnapshot,
 } from '../api/types'
 
 const debug = createDebugLogger('gw:manager')
@@ -309,6 +310,42 @@ export class GatewayManager {
     })) as ChatMessage[]
   }
 
+  async resetSession(
+    gatewayId: string,
+    sessionKey: string,
+    reason?: 'new' | 'reset',
+  ): Promise<void> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('sessions.reset', { key: sessionKey, reason })
+  }
+
+  async deleteSession(
+    gatewayId: string,
+    sessionKey: string,
+    deleteTranscript?: boolean,
+  ): Promise<void> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('sessions.delete', { key: sessionKey, deleteTranscript })
+  }
+
+  async compactSession(
+    gatewayId: string,
+    sessionKey: string,
+    maxLines?: number,
+  ): Promise<void> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('sessions.compact', { key: sessionKey, maxLines })
+  }
+
+  async patchSession(
+    gatewayId: string,
+    sessionKey: string,
+    patch: { label?: string; model?: string },
+  ): Promise<void> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('sessions.patch', { key: sessionKey, ...patch })
+  }
+
   async getAgents(gatewayId: string): Promise<AgentEntry[]> {
     const conn = this.getConnection(gatewayId)
     const result = (await conn.request('agents.list', {})) as Record<
@@ -343,6 +380,11 @@ export class GatewayManager {
       startDate,
       endDate,
     })) as CostSummary
+  }
+
+  async getExecApprovals(gatewayId: string): Promise<ExecApprovalsSnapshot> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('exec-approvals.get', {})) as ExecApprovalsSnapshot
   }
 
   // ── Fleet Aggregation ─────────────────────────────────

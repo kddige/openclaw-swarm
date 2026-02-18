@@ -4,6 +4,7 @@ import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,6 +26,23 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   ArrowLeftIcon,
   CheckCircleIcon,
   XCircleIcon,
@@ -38,6 +56,12 @@ import {
   CopyIcon,
   CheckIcon,
   RefreshCwIcon,
+  MoreHorizontalIcon,
+  RotateCcwIcon,
+  MinimizeIcon,
+  Trash2Icon,
+  ShieldIcon,
+  AlertTriangleIcon,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -208,6 +232,7 @@ function GatewayDetailPage() {
           <TabsTrigger value="sessions">Sessions</TabsTrigger>
           <TabsTrigger value="health">Health</TabsTrigger>
           <TabsTrigger value="agents">Agents</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
         </TabsList>
 
@@ -222,6 +247,9 @@ function GatewayDetailPage() {
         </TabsContent>
         <TabsContent value="agents">
           <AgentsTab gatewayId={gatewayId} />
+        </TabsContent>
+        <TabsContent value="security">
+          <SecurityTab gatewayId={gatewayId} />
         </TabsContent>
         <TabsContent value="devices">
           <DevicesTab gatewayId={gatewayId} />
@@ -323,10 +351,57 @@ function StatusTab({
   )
 }
 
+type SessionActionDialog =
+  | { type: 'none' }
+  | { type: 'reset'; sessionKey: string }
+  | { type: 'compact'; sessionKey: string }
+  | { type: 'delete'; sessionKey: string; deleteTranscript: boolean }
+
 function SessionsTab({ gatewayId }: { gatewayId: string }) {
+  const queryClient = useQueryClient()
+  const [actionDialog, setActionDialog] = useState<SessionActionDialog>({ type: 'none' })
+
   const { data: sessions, isLoading } = useQuery(
     orpc.gateway.sessions.queryOptions({ input: { gatewayId } }),
   )
+
+  const sessionsQueryKey = orpc.gateway.sessions.queryOptions({
+    input: { gatewayId },
+  }).queryKey
+
+  const resetMutation = useMutation({
+    ...orpc.gateway.resetSession.mutationOptions(),
+    onSuccess: () => {
+      toast.success('Session reset')
+      setActionDialog({ type: 'none' })
+    },
+    onError: (err) => {
+      toast.error('Failed to reset session', { description: String(err) })
+    },
+  })
+
+  const compactMutation = useMutation({
+    ...orpc.gateway.compactSession.mutationOptions(),
+    onSuccess: () => {
+      toast.success('Session compacted')
+      setActionDialog({ type: 'none' })
+    },
+    onError: (err) => {
+      toast.error('Failed to compact session', { description: String(err) })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    ...orpc.gateway.deleteSession.mutationOptions(),
+    onSuccess: () => {
+      toast.success('Session deleted')
+      setActionDialog({ type: 'none' })
+      queryClient.invalidateQueries({ queryKey: sessionsQueryKey })
+    },
+    onError: (err) => {
+      toast.error('Failed to delete session', { description: String(err) })
+    },
+  })
 
   if (isLoading) {
     return (
@@ -358,6 +433,7 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
             <TableHead>Last Active</TableHead>
             <TableHead className="text-right">Tokens</TableHead>
             <TableHead className="text-right">Cost</TableHead>
+            <TableHead className="w-8" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -394,10 +470,151 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
               <TableCell className="text-right tabular-nums">
                 ${session.cost.toFixed(4)}
               </TableCell>
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <Button variant="ghost" size="icon-xs" />
+                    }
+                  >
+                    <MoreHorizontalIcon />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() =>
+                        setActionDialog({ type: 'reset', sessionKey: session.key })
+                      }
+                    >
+                      <RotateCcwIcon />
+                      Reset Session
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        setActionDialog({ type: 'compact', sessionKey: session.key })
+                      }
+                    >
+                      <MinimizeIcon />
+                      Compact Session
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() =>
+                        setActionDialog({
+                          type: 'delete',
+                          sessionKey: session.key,
+                          deleteTranscript: false,
+                        })
+                      }
+                    >
+                      <Trash2Icon />
+                      Delete Session
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      {/* Reset Dialog */}
+      <AlertDialog
+        open={actionDialog.type === 'reset'}
+        onOpenChange={(open) => !open && setActionDialog({ type: 'none' })}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Session</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will reset the session state. The transcript may be preserved depending on gateway settings.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                actionDialog.type === 'reset' &&
+                resetMutation.mutate({ gatewayId, sessionKey: actionDialog.sessionKey })
+              }
+              disabled={resetMutation.isPending}
+            >
+              Reset
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Compact Dialog */}
+      <AlertDialog
+        open={actionDialog.type === 'compact'}
+        onOpenChange={(open) => !open && setActionDialog({ type: 'none' })}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Compact Session</AlertDialogTitle>
+            <AlertDialogDescription>
+              Summarize and compress the session history to reduce token usage.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                actionDialog.type === 'compact' &&
+                compactMutation.mutate({ gatewayId, sessionKey: actionDialog.sessionKey })
+              }
+              disabled={compactMutation.isPending}
+            >
+              Compact
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Dialog */}
+      <AlertDialog
+        open={actionDialog.type === 'delete'}
+        onOpenChange={(open) => !open && setActionDialog({ type: 'none' })}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Session</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this session. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <label className="flex items-center gap-2 text-xs cursor-pointer">
+            <input
+              type="checkbox"
+              checked={actionDialog.type === 'delete' ? actionDialog.deleteTranscript : false}
+              onChange={(e) =>
+                actionDialog.type === 'delete' &&
+                setActionDialog({ ...actionDialog, deleteTranscript: e.target.checked })
+              }
+              className="rounded"
+            />
+            Also delete transcript
+          </label>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() =>
+                actionDialog.type === 'delete' &&
+                deleteMutation.mutate({
+                  gatewayId,
+                  sessionKey: actionDialog.sessionKey,
+                  deleteTranscript: actionDialog.deleteTranscript,
+                })
+              }
+              disabled={deleteMutation.isPending}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -531,6 +748,186 @@ function AgentsTab({ gatewayId }: { gatewayId: string }) {
             </div>
           </CardHeader>
         </Card>
+      ))}
+    </div>
+  )
+}
+
+function securityModeBadgeClass(mode: string | undefined) {
+  switch (mode) {
+    case 'full':
+      return 'text-destructive border-destructive/40'
+    case 'allowlist':
+      return 'text-amber-600 dark:text-amber-400 border-amber-500/40'
+    case 'deny':
+      return 'text-emerald-600 dark:text-emerald-400 border-emerald-500/40'
+    default:
+      return ''
+  }
+}
+
+function SecurityTab({ gatewayId }: { gatewayId: string }) {
+  const { data, isLoading, error } = useQuery(
+    orpc.gateway.execApprovals.queryOptions({ input: { gatewayId } }),
+  )
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4 pt-2">
+        <Skeleton className="h-20 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="py-8 text-center text-xs text-muted-foreground">
+        Exec approvals not available.
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className="py-8 text-center text-xs text-muted-foreground">
+        Not configured.
+      </div>
+    )
+  }
+
+  if (!data.exists) {
+    return (
+      <div className="py-8 text-center text-xs text-muted-foreground">
+        No exec approvals file found on this gateway.
+      </div>
+    )
+  }
+
+  const { file } = data
+  const defaults = file.defaults
+  const agents = file.agents ? Object.entries(file.agents) : []
+
+  return (
+    <div className="flex flex-col gap-4 pt-2">
+      {defaults && (
+        <Card size="sm" className="bg-muted/40">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <ShieldIcon className="size-3 text-muted-foreground" />
+              <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
+                Defaults
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-1.5">
+              {defaults.security && (
+                <Badge
+                  variant="outline"
+                  className={cn('gap-1', securityModeBadgeClass(defaults.security))}
+                >
+                  security: {defaults.security}
+                </Badge>
+              )}
+              {defaults.ask && (
+                <Badge variant="outline">ask: {defaults.ask}</Badge>
+              )}
+              {defaults.askFallback && (
+                <Badge variant="outline">fallback: {defaults.askFallback}</Badge>
+              )}
+              {defaults.autoAllowSkills !== undefined && (
+                <Badge variant="outline">
+                  autoAllowSkills: {String(defaults.autoAllowSkills)}
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {agents.length === 0 && !defaults && (
+        <div className="py-8 text-center text-xs text-muted-foreground">
+          No exec approval configuration found.
+        </div>
+      )}
+
+      {agents.map(([agentId, config]) => (
+        <div key={agentId} className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <UserIcon className="size-3 text-muted-foreground" />
+            <span className="text-xs font-medium">{agentId}</span>
+            <div className="flex flex-wrap gap-1.5">
+              {config.security && (
+                <Badge
+                  variant="outline"
+                  className={cn('gap-1', securityModeBadgeClass(config.security))}
+                >
+                  {config.security}
+                </Badge>
+              )}
+              {config.ask && (
+                <Badge variant="outline" className="text-[0.625rem]">
+                  ask: {config.ask}
+                </Badge>
+              )}
+              {config.autoAllowSkills !== undefined && (
+                <Badge variant="outline" className="text-[0.625rem]">
+                  autoAllowSkills: {String(config.autoAllowSkills)}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {config.security === 'full' && (
+            <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2">
+              <AlertTriangleIcon className="size-3 text-destructive shrink-0" />
+              <span className="text-[0.625rem] text-destructive font-medium">
+                Full access — all commands allowed
+              </span>
+            </div>
+          )}
+
+          {config.allowlist && config.allowlist.length > 0 ? (
+            <div className="rounded-md border bg-muted/20 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Pattern</TableHead>
+                    <TableHead>Last Used</TableHead>
+                    <TableHead>Last Command</TableHead>
+                    <TableHead>Resolved Path</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {config.allowlist.map((entry, i) => (
+                    <TableRow key={entry.id ?? i}>
+                      <TableCell className="font-mono text-[0.625rem]">
+                        {entry.pattern}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground tabular-nums">
+                        {entry.lastUsedAt
+                          ? formatDistanceToNow(entry.lastUsedAt, { addSuffix: true })
+                          : 'Never'}
+                      </TableCell>
+                      <TableCell className="font-mono text-[0.625rem] max-w-48 truncate">
+                        {entry.lastUsedCommand ?? '--'}
+                      </TableCell>
+                      <TableCell className="font-mono text-[0.625rem] text-muted-foreground max-w-40 truncate">
+                        {entry.lastResolvedPath ?? '--'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : config.security !== 'full' ? (
+            <div className="py-4 text-center text-xs text-muted-foreground rounded-md border bg-muted/20">
+              No allowed commands.
+            </div>
+          ) : null}
+        </div>
       ))}
     </div>
   )
