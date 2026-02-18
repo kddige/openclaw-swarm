@@ -198,4 +198,19 @@ export const gatewayRouter = {
     .handler(async ({ input, context }) => {
       return context.gatewayManager.getExecApprovals(input.gatewayId)
     }),
+
+  logsTail: p
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        limit: z.number().optional(),
+        level: z.string().optional(),
+        source: z.string().optional(),
+        cursor: z.string().optional(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      const { gatewayId, ...params } = input
+      return context.gatewayManager.getLogsTail(gatewayId, params)
+    }),
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -62,7 +62,16 @@ import {
   Trash2Icon,
   ShieldIcon,
   AlertTriangleIcon,
+  ArrowDownIcon,
 } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 import { formatDistanceToNow } from 'date-fns'
 
 export const Route = createFileRoute('/dashboard/gateways/$gatewayId/')({
@@ -230,6 +239,7 @@ function GatewayDetailPage() {
         <TabsList>
           <TabsTrigger value="status">Status</TabsTrigger>
           <TabsTrigger value="sessions">Sessions</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
           <TabsTrigger value="health">Health</TabsTrigger>
           <TabsTrigger value="agents">Agents</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
@@ -241,6 +251,9 @@ function GatewayDetailPage() {
         </TabsContent>
         <TabsContent value="sessions">
           <SessionsTab gatewayId={gatewayId} />
+        </TabsContent>
+        <TabsContent value="logs">
+          <LogsTab gatewayId={gatewayId} />
         </TabsContent>
         <TabsContent value="health">
           <HealthTab gateway={gateway} />
@@ -929,6 +942,199 @@ function SecurityTab({ gatewayId }: { gatewayId: string }) {
           ) : null}
         </div>
       ))}
+    </div>
+  )
+}
+
+type LogLine = {
+  ts: number
+  level: string
+  msg: string
+  source?: string
+  [key: string]: unknown
+}
+
+const LEVEL_COLORS: Record<string, string> = {
+  debug: 'text-muted-foreground',
+  info: 'text-foreground',
+  warn: 'text-amber-400',
+  error: 'text-red-400',
+}
+
+function formatLogTime(ts: number): string {
+  const d = new Date(ts)
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
+  return `${hh}:${mm}:${ss}`
+}
+
+const MAX_LINES = 1000
+
+function LogsTab({ gatewayId }: { gatewayId: string }) {
+  const [levelFilter, setLevelFilter] = useState('all')
+  const [sourceFilter, setSourceFilter] = useState('')
+  const [lines, setLines] = useState<LogLine[]>([])
+  const [cursor, setCursor] = useState<string | undefined>(undefined)
+  const [atBottom, setAtBottom] = useState(true)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const queryInput = {
+    gatewayId,
+    limit: 200,
+    ...(levelFilter !== 'all' ? { level: levelFilter } : {}),
+    ...(sourceFilter.trim() ? { source: sourceFilter.trim() } : {}),
+  }
+
+  // Reset lines when filters change
+  const prevFilterRef = useRef({ levelFilter, sourceFilter })
+  useEffect(() => {
+    const prev = prevFilterRef.current
+    if (prev.levelFilter !== levelFilter || prev.sourceFilter !== sourceFilter) {
+      setLines([])
+      setCursor(undefined)
+      prevFilterRef.current = { levelFilter, sourceFilter }
+    }
+  }, [levelFilter, sourceFilter])
+
+  // Initial fetch + polling
+  const { data: logsData } = useQuery({
+    ...orpc.gateway.logsTail.queryOptions({
+      input: {
+        ...queryInput,
+        cursor: cursor,
+      },
+    }),
+    refetchInterval: 3000,
+  })
+
+  // Append new lines when data arrives
+  const prevDataRef = useRef<typeof logsData>(undefined)
+  useEffect(() => {
+    if (!logsData || logsData === prevDataRef.current) return
+    prevDataRef.current = logsData
+    const newLines: LogLine[] = logsData.lines ?? []
+    const newCursor: string | undefined = logsData.cursor
+    if (newLines.length > 0) {
+      setLines((prev) => {
+        const combined = [...prev, ...newLines]
+        return combined.length > MAX_LINES
+          ? combined.slice(combined.length - MAX_LINES)
+          : combined
+      })
+      if (newCursor) setCursor(newCursor)
+    }
+  }, [logsData])
+
+  const scrollToBottom = useCallback(() => {
+    const el = scrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
+    setAtBottom(true)
+  }, [])
+
+  // Auto-scroll when new lines arrive and user is at bottom
+  useEffect(() => {
+    if (atBottom) {
+      const el = scrollRef.current
+      if (el) el.scrollTop = el.scrollHeight
+    }
+  }, [lines, atBottom])
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+    setAtBottom(distFromBottom <= 50)
+  }, [])
+
+  const handleClear = () => {
+    setLines([])
+    setCursor(undefined)
+  }
+
+  return (
+    <div className="flex flex-col gap-3 pt-2" style={{ height: 'calc(100vh - 220px)', minHeight: '400px' }}>
+      {/* Filter bar */}
+      <div className="flex items-center gap-2 shrink-0">
+        <Select value={levelFilter} onValueChange={(v) => setLevelFilter(v ?? 'all')}>
+          <SelectTrigger className="w-32 h-7 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All levels</SelectItem>
+            <SelectItem value="debug">Debug</SelectItem>
+            <SelectItem value="info">Info</SelectItem>
+            <SelectItem value="warn">Warn</SelectItem>
+            <SelectItem value="error">Error</SelectItem>
+          </SelectContent>
+        </Select>
+        <Input
+          placeholder="Filter by source…"
+          value={sourceFilter}
+          onChange={(e) => setSourceFilter(e.target.value)}
+          className="h-7 w-40 text-xs"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleClear}
+          className="h-7 text-xs"
+        >
+          Clear
+        </Button>
+      </div>
+
+      {/* Log area */}
+      <div className="relative flex-1 min-h-0">
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="h-full overflow-y-auto rounded-lg border bg-zinc-950 p-3"
+        >
+          {lines.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full gap-2 text-zinc-500">
+              <TerminalIcon className="size-6 opacity-40" />
+              <span className="font-mono text-xs">No logs available</span>
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              {lines.map((line, i) => {
+                const levelColor = LEVEL_COLORS[line.level] ?? 'text-zinc-400'
+                return (
+                  <div key={i} className="flex items-baseline gap-2 font-mono text-[0.75rem] leading-relaxed">
+                    <span className="text-zinc-500 shrink-0 tabular-nums">
+                      {formatLogTime(line.ts)}
+                    </span>
+                    <span className={cn('w-10 shrink-0 uppercase text-[0.6rem] font-semibold tabular-nums', levelColor)}>
+                      {line.level}
+                    </span>
+                    {line.source && (
+                      <span className="shrink-0 rounded px-1 bg-zinc-800 text-zinc-400 text-[0.625rem] font-medium">
+                        {line.source}
+                      </span>
+                    )}
+                    <span className={cn('break-all', levelColor)}>
+                      {line.msg}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Jump to bottom button */}
+        {!atBottom && (
+          <button
+            type="button"
+            onClick={scrollToBottom}
+            className="absolute bottom-3 right-4 flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800 px-3 py-1 text-[0.625rem] font-medium text-zinc-300 shadow-lg hover:bg-zinc-700 transition-colors"
+          >
+            <ArrowDownIcon className="size-3" />
+            Jump to bottom
+          </button>
+        )}
+      </div>
     </div>
   )
 }

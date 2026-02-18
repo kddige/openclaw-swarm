@@ -387,6 +387,37 @@ export class GatewayManager {
     return (await conn.request('exec-approvals.get', {})) as ExecApprovalsSnapshot
   }
 
+  async getLogsTail(
+    gatewayId: string,
+    params: {
+      limit?: number
+      level?: string
+      source?: string
+      cursor?: string
+    },
+  ): Promise<{
+    lines: Array<{
+      ts: number
+      level: string
+      msg: string
+      source?: string
+      [key: string]: unknown
+    }>
+    cursor?: string
+  }> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('logs.tail', params)) as {
+      lines: Array<{
+        ts: number
+        level: string
+        msg: string
+        source?: string
+        [key: string]: unknown
+      }>
+      cursor?: string
+    }
+  }
+
   // ── Fleet Aggregation ─────────────────────────────────
 
   async getFleetCost(): Promise<{
