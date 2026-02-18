@@ -47,6 +47,7 @@ import {
   XIcon,
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
+import { extractText } from '@/lib/content'
 import {
   AreaChart,
   Area,
@@ -422,7 +423,7 @@ function SessionDetailPage() {
         </>
       )}
 
-      <div>
+      <div className="min-w-0">
         <h2 className="text-xs font-medium mb-2">Chat History</h2>
         {chatLoading ? (
           <div className="space-y-2">
@@ -435,11 +436,13 @@ function SessionDetailPage() {
             No messages in this session.
           </div>
         ) : (
-          <ScrollArea className="h-[400px] rounded-md border bg-muted/20 p-3">
-            <div className="flex flex-col gap-2">
-              {chatHistory.map((msg, i) => (
-                <ChatBubble key={i} message={msg} />
-              ))}
+          <ScrollArea className="h-[400px] rounded-md border bg-muted/20 p-3 overflow-x-hidden">
+            <div className="flex flex-col gap-2 min-w-0">
+              {chatHistory.map((msg, i) => {
+                const text = extractText(msg.content)
+                if (!text) return null
+                return <ChatBubble key={i} message={{ ...msg, content: text }} />
+              })}
             </div>
           </ScrollArea>
         )}
@@ -726,7 +729,7 @@ function ChatBubble({
   return (
     <div
       className={cn(
-        'flex gap-2',
+        'flex gap-2 min-w-0',
         isUser && 'flex-row-reverse',
         isSystem && 'justify-center',
       )}
@@ -745,13 +748,13 @@ function ChatBubble({
       )}
       <div
         className={cn(
-          'rounded-md px-3 py-2 text-xs max-w-[80%]',
-          isUser && 'bg-primary/10 text-foreground',
+          'rounded-md px-3 py-2 text-xs min-w-0',
+          isUser ? 'max-w-[75%] bg-primary/10 text-foreground' : 'max-w-[80%]',
           message.role === 'assistant' && 'bg-muted/60 text-foreground',
           isSystem && 'bg-muted/30 text-muted-foreground text-[0.625rem] italic max-w-full',
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <p className="break-words overflow-wrap-anywhere whitespace-pre-wrap">{message.content}</p>
         <div
           className={cn(
             'flex items-center gap-2 mt-1 text-[0.5rem] text-muted-foreground',

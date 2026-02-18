@@ -99,6 +99,23 @@ export const gatewayRouter = {
       )
     }),
 
+  sendChatMessage: p
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        sessionKey: z.string(),
+        message: z.string(),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      await context.gatewayManager.sendChatMessage(
+        input.gatewayId,
+        input.sessionKey,
+        input.message,
+      )
+      return { ok: true as const }
+    }),
+
   resetSession: p
     .input(
       z.object({

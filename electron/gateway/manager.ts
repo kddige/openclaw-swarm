@@ -304,10 +304,26 @@ export class GatewayManager {
     limit = 100,
   ): Promise<ChatMessage[]> {
     const conn = this.getConnection(gatewayId)
-    return (await conn.request('chat.history', {
+    const res = (await conn.request('chat.history', {
       sessionKey,
       limit,
-    })) as ChatMessage[]
+    })) as { messages: ChatMessage[] } | ChatMessage[]
+    // Gateway returns { sessionKey, messages: [...], thinkingLevel }
+    if (Array.isArray(res)) return res
+    return (res as { messages: ChatMessage[] }).messages ?? []
+  }
+
+  async sendChatMessage(
+    gatewayId: string,
+    sessionKey: string,
+    message: string,
+  ): Promise<void> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('chat.send', {
+      sessionKey,
+      message,
+      idempotencyKey: crypto.randomUUID(),
+    })
   }
 
   async resetSession(

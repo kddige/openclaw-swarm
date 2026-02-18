@@ -156,7 +156,7 @@ function DashboardLayout() {
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
+      <SidebarInset className="min-w-0 overflow-hidden">
         <Outlet />
       </SidebarInset>
     </SidebarProvider>
