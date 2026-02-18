@@ -172,8 +172,9 @@ function SessionDetailPage() {
     }
   }, [editingLabel])
 
+  const session = sessions?.find((s) => s.key === sessionKey)
+
   function startEditLabel() {
-    const session = sessions?.find((s) => s.key === sessionKey)
     setLabelDraft(session?.displayName ?? '')
     setEditingLabel(true)
   }
@@ -279,6 +280,32 @@ function SessionDetailPage() {
           Delete
         </Button>
       </div>
+
+      {/* Session metadata — always shown from sessions.list */}
+      {session && (
+        <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground border rounded-lg px-4 py-3 bg-muted/20">
+          {session.displayName && (
+            <span><span className="font-medium text-foreground">Label</span> {session.displayName}</span>
+          )}
+          {session.kind && (
+            <span><span className="font-medium text-foreground">Kind</span> {session.kind}</span>
+          )}
+          {session.channel && (
+            <span><span className="font-medium text-foreground">Channel</span> {session.channel}</span>
+          )}
+          {session.agent && (
+            <span><span className="font-medium text-foreground">Agent</span> {session.agent}</span>
+          )}
+          {session.model && (
+            <span><span className="font-medium text-foreground">Model</span> {session.model}</span>
+          )}
+          {session.lastActiveAt && (
+            <span><span className="font-medium text-foreground">Last active</span> {formatDistanceToNow(session.lastActiveAt, { addSuffix: true })}</span>
+          )}
+          <span><span className="font-medium text-foreground">Tokens</span> {(session.tokensIn + session.tokensOut).toLocaleString()}</span>
+          <span><span className="font-medium text-foreground">Cost</span> ${session.cost.toFixed(4)}</span>
+        </div>
+      )}
 
       {usageLoading ? (
         <div className="space-y-3">
