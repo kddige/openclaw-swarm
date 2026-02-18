@@ -74,13 +74,11 @@ import {
 import { Input } from '@/components/ui/input'
 import { formatDistanceToNow } from 'date-fns'
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Cell,
-  LabelList,
+  AreaChart,
+  Area,
 } from 'recharts'
 import {
   ChartContainer,
@@ -290,14 +288,6 @@ function GatewayDetailPage() {
   )
 }
 
-const CHART_COLORS = [
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-  'var(--chart-4)',
-  'var(--chart-5)',
-]
-
 function UsageTab({ gatewayId }: { gatewayId: string }) {
   const { data: costData, isLoading } = useQuery(
     orpc.gateway.cost.queryOptions({ input: { gatewayId } }),
@@ -307,160 +297,108 @@ function UsageTab({ gatewayId }: { gatewayId: string }) {
     return (
       <div className="flex flex-col gap-4 pt-2">
         <Skeleton className="h-48 rounded-lg" />
-        <Skeleton className="h-48 rounded-lg" />
+        <Skeleton className="h-16 rounded-lg" />
       </div>
     )
   }
 
-  const byModel = costData?.byModel ?? []
-  const bySession = costData?.bySession ?? []
+  const daily = costData?.daily ?? []
 
-  const modelChartData = byModel.map((m) => ({
-    model: m.model.length > 28 ? `...${m.model.slice(-25)}` : m.model,
-    cost: m.cost,
+  if (daily.length === 0) {
+    return (
+      <div className="py-8 text-center text-xs text-muted-foreground">
+        No usage data available.
+      </div>
+    )
+  }
+
+  const totalCost = daily.reduce((sum, d) => sum + d.totalCost, 0)
+  const totalTokens = daily.reduce((sum, d) => sum + d.totalTokens, 0)
+
+  const chartData = daily.map((d) => ({
+    date: d.date.slice(-5),
+    totalCost: d.totalCost,
   }))
-
-  const topSessions = [...bySession]
-    .sort((a, b) => b.cost - a.cost)
-    .slice(0, 10)
-    .map((s) => ({
-      session:
-        s.key.length > 18
-          ? `${s.key.slice(0, 9)}…${s.key.slice(-6)}`
-          : s.key,
-      cost: s.cost,
-    }))
-
-  const modelConfig = Object.fromEntries(
-    byModel.map((m, i) => [
-      m.model,
-      { label: m.model, color: CHART_COLORS[i % CHART_COLORS.length] },
-    ]),
-  )
 
   return (
     <div className="flex flex-col gap-4 pt-2">
-      {/* Cost by Model */}
+      {/* Daily cost area chart */}
       <Card className="bg-muted/40">
         <CardContent className="pt-4">
-          <h3 className="text-xs font-medium mb-3">Cost by Model</h3>
-          {modelChartData.length === 0 ? (
-            <p className="py-8 text-center text-xs text-muted-foreground">
-              No cost data available.
-            </p>
-          ) : (
-            <ChartContainer
-              config={modelConfig}
-              className="aspect-auto h-[200px] w-full"
+          <h3 className="text-xs font-medium mb-3">Daily Cost (last {daily.length} days)</h3>
+          <ChartContainer
+            config={{ totalCost: { label: 'Cost', color: 'var(--chart-1)' } }}
+            className="aspect-auto h-[200px] w-full"
+          >
+            <AreaChart
+              data={chartData}
+              margin={{ top: 4, right: 8, bottom: 0, left: 8 }}
             >
-              <BarChart
-                layout="vertical"
-                data={modelChartData}
-                margin={{ top: 0, right: 60, bottom: 0, left: 8 }}
-              >
-                <CartesianGrid horizontal={false} />
-                <YAxis
-                  dataKey="model"
-                  type="category"
-                  width={160}
-                  tick={{ fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <XAxis
-                  type="number"
-                  tickFormatter={(v: number) => `$${v.toFixed(3)}`}
-                  tick={{ fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => [
-                        `$${Number(value).toFixed(4)}`,
-                        'Cost',
-                      ]}
-                    />
-                  }
-                />
-                <Bar dataKey="cost" radius={[0, 3, 3, 0]}>
-                  {modelChartData.map((_, i) => (
-                    <Cell
-                      key={i}
-                      fill={CHART_COLORS[i % CHART_COLORS.length]}
-                    />
-                  ))}
-                  <LabelList
-                    dataKey="cost"
-                    position="right"
-                    formatter={(v: number) => `$${v.toFixed(3)}`}
-                    style={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 10 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                tickFormatter={(v: number) => `$${v.toFixed(2)}`}
+                tick={{ fontSize: 10 }}
+                tickLine={false}
+                axisLine={false}
+                width={52}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value) => [
+                      `$${Number(value).toFixed(4)}`,
+                      'Cost',
+                    ]}
                   />
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          )}
+                }
+              />
+              <Area
+                type="monotone"
+                dataKey="totalCost"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
+                fillOpacity={0.15}
+                strokeWidth={1.5}
+                dot={false}
+              />
+            </AreaChart>
+          </ChartContainer>
         </CardContent>
       </Card>
 
-      {/* Cost by Session (top 10) */}
-      <Card className="bg-muted/40">
-        <CardContent className="pt-4">
-          <h3 className="text-xs font-medium mb-3">Top Sessions by Cost</h3>
-          {topSessions.length === 0 ? (
-            <p className="py-8 text-center text-xs text-muted-foreground">
-              No session cost data available.
-            </p>
-          ) : (
-            <ChartContainer
-              config={{ cost: { label: 'Cost', color: 'var(--chart-1)' } }}
-              className="aspect-auto h-[200px] w-full"
-            >
-              <BarChart
-                layout="vertical"
-                data={topSessions}
-                margin={{ top: 0, right: 60, bottom: 0, left: 8 }}
-              >
-                <CartesianGrid horizontal={false} />
-                <YAxis
-                  dataKey="session"
-                  type="category"
-                  width={120}
-                  tick={{ fontSize: 10, fontFamily: 'monospace' }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <XAxis
-                  type="number"
-                  tickFormatter={(v: number) => `$${v.toFixed(3)}`}
-                  tick={{ fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => [
-                        `$${Number(value).toFixed(4)}`,
-                        'Cost',
-                      ]}
-                    />
-                  }
-                />
-                <Bar dataKey="cost" fill="var(--chart-1)" radius={[0, 3, 3, 0]}>
-                  <LabelList
-                    dataKey="cost"
-                    position="right"
-                    formatter={(v: number) => `$${v.toFixed(3)}`}
-                    style={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
-                  />
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          )}
-        </CardContent>
-      </Card>
+      {/* Summary row */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Card size="sm" className="bg-muted/40">
+          <CardHeader>
+            <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
+              Total Cost (period)
+            </span>
+          </CardHeader>
+          <CardContent>
+            <span className="text-sm font-semibold tabular-nums">
+              ${totalCost.toFixed(4)}
+            </span>
+          </CardContent>
+        </Card>
+        <Card size="sm" className="bg-muted/40">
+          <CardHeader>
+            <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
+              Total Tokens (period)
+            </span>
+          </CardHeader>
+          <CardContent>
+            <span className="text-sm font-semibold tabular-nums">
+              {totalTokens.toLocaleString()}
+            </span>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
