@@ -406,16 +406,31 @@ export class GatewayManager {
     cursor?: number
   }> {
     const conn = this.getConnection(gatewayId)
-    return (await conn.request('logs.tail', params)) as {
-      lines: Array<{
-        ts: number
-        level: string
-        msg: string
-        source?: string
-        [key: string]: unknown
-      }>
+    const raw = (await conn.request('logs.tail', params)) as {
+      lines: string[]
       cursor?: number
     }
+    const lines = (raw.lines ?? []).map((lineStr) => {
+      try {
+        const parsed = JSON.parse(lineStr)
+        const meta = parsed._meta ?? {}
+        const levelName: string = (meta.logLevelName ?? 'info').toLowerCase()
+        const timeStr: string = meta.date ?? parsed.time ?? ''
+        const ts = timeStr ? new Date(timeStr).getTime() : Date.now()
+        const msg: string = parsed['1'] ?? parsed.msg ?? ''
+        let source: string | undefined
+        try {
+          const sub = JSON.parse(parsed['0'] ?? '{}')
+          source = sub.subsystem
+        } catch {
+          source = parsed['0']
+        }
+        return { ts, level: levelName, msg, source, _raw: parsed }
+      } catch {
+        return { ts: Date.now(), level: 'info', msg: lineStr, source: undefined }
+      }
+    })
+    return { lines, cursor: raw.cursor }
   }
 
   // ── Fleet Aggregation ─────────────────────────────────
