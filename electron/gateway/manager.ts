@@ -20,6 +20,7 @@ import type {
   PresenceEntry,
   CostSummary,
   ExecApprovalsSnapshot,
+  GatewayConfigResponse,
 } from '../api/types'
 
 const debug = createDebugLogger('gw:manager')
@@ -401,6 +402,28 @@ export class GatewayManager {
   async getExecApprovals(gatewayId: string): Promise<ExecApprovalsSnapshot> {
     const conn = this.getConnection(gatewayId)
     return (await conn.request('exec.approvals.get', {})) as ExecApprovalsSnapshot
+  }
+
+  async getConfig(gatewayId: string): Promise<GatewayConfigResponse> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('config.get', {}) as Promise<GatewayConfigResponse>
+  }
+
+  async getConfigSchema(gatewayId: string): Promise<unknown> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('config.schema', {})
+  }
+
+  async patchConfig(gatewayId: string, raw: string, baseHash?: string): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('config.patch', { raw, ...(baseHash ? { baseHash } : {}) })
+    return { ok: true }
+  }
+
+  async applyConfig(gatewayId: string, raw: string, baseHash?: string): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('config.apply', { raw, ...(baseHash ? { baseHash } : {}) })
+    return { ok: true }
   }
 
   async getLogsTail(

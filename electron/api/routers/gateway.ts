@@ -230,4 +230,28 @@ export const gatewayRouter = {
       const { gatewayId, ...params } = input
       return context.gatewayManager.getLogsTail(gatewayId, params)
     }),
+
+  configGet: p
+    .input(z.object({ gatewayId: z.string() }))
+    .handler(async ({ input, context }) => {
+      return context.gatewayManager.getConfig(input.gatewayId)
+    }),
+
+  configSchema: p
+    .input(z.object({ gatewayId: z.string() }))
+    .handler(async ({ input, context }) => {
+      return context.gatewayManager.getConfigSchema(input.gatewayId)
+    }),
+
+  configPatch: p
+    .input(z.object({ gatewayId: z.string(), raw: z.string(), baseHash: z.string().optional() }))
+    .handler(async ({ input, context }) => {
+      return context.gatewayManager.patchConfig(input.gatewayId, input.raw, input.baseHash)
+    }),
+
+  configApply: p
+    .input(z.object({ gatewayId: z.string(), raw: z.string(), baseHash: z.string().optional() }))
+    .handler(async ({ input, context }) => {
+      return context.gatewayManager.applyConfig(input.gatewayId, input.raw, input.baseHash)
+    }),
 }

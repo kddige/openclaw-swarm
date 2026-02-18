@@ -46,6 +46,21 @@ export interface FleetStore {
 }
 
 // ============================================================
+// Gateway Config Response
+// ============================================================
+
+export interface GatewayConfigResponse {
+  path?: string
+  exists?: boolean
+  raw: string
+  parsed?: unknown
+  resolved?: unknown
+  config?: unknown
+  hash?: string
+  issues?: unknown[]
+}
+
+// ============================================================
 // WS Protocol Types (derived from Zod schemas)
 // ============================================================
 
