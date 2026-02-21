@@ -7,8 +7,9 @@
     "index",
     "---Getting Started---",
     "installation",
-    "---Usage---",
     "connecting-gateways",
-    "sessions"
+    "---Using Fleet---",
+    "sessions",
+    "logs-and-search"
   ]
 }

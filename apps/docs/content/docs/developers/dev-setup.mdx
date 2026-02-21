@@ -1,0 +1,66 @@
+---
+title: Dev Setup
+description: Set up the OpenClaw Fleet development environment
+---
+
+## Prerequisites
+
+- **Node 22+**
+- **macOS** (vibrancy and native titlebar features are macOS-only)
+- **[proto](https://moonrepo.dev/proto)** — toolchain manager (installs the correct bun + moon versions)
+
+## Clone and run
+
+```bash
+git clone https://github.com/kddige/openclaw-fleet.git
+cd openclaw-fleet
+proto use        # Installs pinned bun + moon versions
+bun install
+moon run fleet:dev
+```
+
+This starts Vite + Electron with hot reload. A pre-commit hook will run lint + typecheck on staged files automatically.
+
+## Pinned tooling
+
+The monorepo uses [proto](https://moonrepo.dev/proto) to pin exact versions of **bun** and **moon** via `.prototools`. Every contributor gets the same versions — no "works on my machine" issues.
+
+```toml title=".prototools"
+moon = "2.0.1"
+bun = "1.3.9"
+```
+
+Run `proto use` after pulling to ensure you're on the correct versions.
+
+## Common tasks
+
+```bash
+moon run fleet:dev       # Start Electron app with hot reload
+moon run fleet:build     # Build distributable .dmg
+moon run fleet:lint      # ESLint (zero warnings allowed)
+moon run fleet:typecheck # TypeScript type-check
+moon ci                  # Run all affected tasks (CI mode)
+moon run root:format     # Prettier formatting (whole monorepo)
+moon run docs:dev        # Start docs site (localhost:3001)
+```
+
+## Project structure
+
+The fleet app lives in `apps/fleet/`:
+
+```
+apps/fleet/
+├── electron/            # Electron main process
+│   ├── api/routers/     # oRPC procedure handlers
+│   ├── gateway/         # WebSocket connection layer
+│   ├── lib/             # Utilities (debug logger)
+│   ├── main.ts          # App entry point
+│   ├── preload.ts       # Preload script
+│   └── store.ts         # electron-store persistence
+├── src/                 # React renderer
+│   ├── routes/          # TanStack Router file-based routes
+│   ├── components/ui/   # shadcn/ui components
+│   └── lib/             # Utilities and oRPC client
+├── eslint.config.js     # ESLint with custom project rules
+└── moon.yml             # Moon task definitions
+```

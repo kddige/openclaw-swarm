@@ -3,25 +3,43 @@ title: Connecting Gateways
 description: Add and manage OpenClaw Gateway connections
 ---
 
-OpenClaw Fleet connects to one or more [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instances over WebSocket. Each gateway connection is managed by the `GatewayManager` in the Electron main process.
+OpenClaw Fleet connects to your [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instances over WebSocket. You can connect to as many gateways as you need — production, staging, development, all at once.
 
 ## Adding a gateway
 
-Use the gateway management UI to add a new connection. You'll need:
+1. Click the **Add Gateway** button in the sidebar
+2. Enter the gateway's WebSocket URL (e.g. `wss://gateway.example.com`)
+3. The app will initiate a **device pairing** flow using your device identity
 
-1. The gateway's WebSocket URL
-2. Authentication credentials (device identity is handled via Ed25519 keypairs)
+### Device pairing
+
+The first time you connect to a gateway, your device needs to be approved. OpenClaw Fleet uses Ed25519 keypairs for authentication — no passwords.
+
+1. Fleet sends a pairing request to the gateway
+2. Approve the device via the **OpenClaw Gateway Control UI > Devices tab**
+3. Once approved, Fleet connects automatically on future launches
 
 ## Connection states
 
-| State | Indicator | Meaning |
+The sidebar shows a colored status dot for each gateway:
+
+| Indicator | State | Meaning |
 |---|---|---|
-| Connected | Green dot | Active WebSocket connection |
-| Connecting | Amber dot | Establishing connection |
-| Pairing | Blue dot | Device pairing in progress |
-| Auth failed | Red dot | Authentication rejected |
-| Disconnected | Gray dot | No active connection |
+| Green dot | Connected | Active WebSocket connection |
+| Amber dot | Connecting | Establishing connection |
+| Blue dot | Pairing | Device pairing in progress |
+| Red dot | Auth failed | Authentication rejected — re-pair needed |
+| Gray dot | Disconnected | No active connection |
+
+## Managing gateways
+
+Click any gateway in the sidebar to see its detail view with:
+
+- Active sessions and agent count
+- Token usage and cost statistics
+- Streaming log output
+- Security configuration
 
 ## Real-time updates
 
-Fleet uses oRPC event streaming with async generators to push real-time updates from gateways to the UI. Events include session changes, log entries, and presence updates.
+All gateway data is updated in real time via WebSocket event streaming. When a session starts, an agent connects, or a log line appears — you see it instantly without refreshing.

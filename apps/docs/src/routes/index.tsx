@@ -82,8 +82,9 @@ function Hero() {
           className="animate-fade-up mb-12 max-w-xl text-lg leading-relaxed text-fd-muted-foreground md:text-xl"
           style={{ animationDelay: '0.2s' }}
         >
-          Monitor sessions, stream logs, and manage security across every
-          OpenClaw Gateway in your infrastructure. Think{' '}
+          A native macOS desktop app to monitor sessions, stream logs, and
+          manage security across every OpenClaw Gateway in your
+          infrastructure. Think{' '}
           <strong className="text-fd-foreground">Portainer</strong>,
           but for AI agent fleets.
         </p>
@@ -93,22 +94,21 @@ function Hero() {
           className="animate-fade-up flex flex-wrap gap-4"
           style={{ animationDelay: '0.3s' }}
         >
-          <Link
-            to="/docs/$"
-            params={{ _splat: 'guide' }}
+          <a
+            href="https://github.com/kddige/openclaw-fleet/releases"
             className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
             style={{ background: 'var(--landing-accent)' }}
           >
-            Get Started
+            Download for macOS
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-          <a
-            href="https://github.com/kddige/openclaw-fleet"
+          </a>
+          <Link
+            to="/docs/$"
+            params={{ _splat: 'guide' }}
             className="glow-border inline-flex items-center gap-2 rounded-lg border border-fd-border px-6 py-3 text-sm font-medium text-fd-muted-foreground transition-colors"
           >
-            <GitBranch className="size-4" />
-            View on GitHub
-          </a>
+            Read the Docs
+          </Link>
         </div>
 
         {/* Fleet preview */}
@@ -570,26 +570,26 @@ function GetStarted() {
             Ready to take control?
           </h2>
           <p className="mx-auto mb-8 max-w-md leading-relaxed text-fd-muted-foreground">
-            OpenClaw Fleet is open source and free. Start managing your AI agent
-            infrastructure today.
+            OpenClaw Fleet is open source and free. Download the app or start
+            contributing to the codebase.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              to="/docs/$"
-              params={{ _splat: 'guide' }}
+            <a
+              href="https://github.com/kddige/openclaw-fleet/releases"
               className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
               style={{ background: 'var(--landing-accent)' }}
             >
-              Read the Docs
+              Download for macOS
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <a
-              href="https://github.com/kddige/openclaw-fleet"
+            </a>
+            <Link
+              to="/docs/$"
+              params={{ _splat: 'developers' }}
               className="inline-flex items-center gap-2 rounded-lg border border-fd-border px-6 py-3 text-sm font-medium text-fd-muted-foreground transition-colors"
             >
               <GitBranch className="size-4" />
-              Star on GitHub
-            </a>
+              Start Contributing
+            </Link>
           </div>
         </div>
       </div>

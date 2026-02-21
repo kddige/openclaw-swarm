@@ -1,23 +1,30 @@
 ---
 title: Sessions
-description: Monitor and inspect agent sessions
+description: Monitor and inspect active agent sessions
 ---
 
-Sessions represent active connections between AI agents and an OpenClaw Gateway. Fleet provides a live view of all sessions across your fleet.
+Sessions represent active connections between AI agents and an OpenClaw Gateway. OpenClaw Fleet gives you a live view of every session across your entire fleet.
 
 ## Session list
 
-The gateway detail view shows all active and recent sessions. Each session displays:
+From any gateway's detail view, you can see all active and recent sessions. Each session shows:
 
-- Session key (monospace)
-- Agent identity
-- Duration and token usage
-- Cost breakdown
+- **Session key** — unique identifier for the session
+- **Agent identity** — which agent is connected
+- **Duration** — how long the session has been active
+- **Token usage** — input and output tokens consumed
+- **Cost** — estimated cost based on token usage and model pricing
+
+All numbers update in real time as the session progresses.
 
 ## Session detail
 
-Click any session to see its full details including:
+Click any session to open its full detail view:
 
-- Chat history (for chat-type sessions)
-- Token usage statistics
-- Session metadata from the gateway
+- **Chat history** — for chat-type sessions, see the full conversation between the agent and the model
+- **Token statistics** — detailed breakdown of tokens by message
+- **Session metadata** — raw metadata reported by the gateway (model, parameters, timestamps)
+
+## Fleet-wide search
+
+Use `Cmd+K` to open the command palette and search across all sessions in your fleet. You can search by session key, agent name, or gateway — and jump directly to any session detail view.

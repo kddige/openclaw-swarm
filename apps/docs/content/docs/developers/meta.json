@@ -4,8 +4,12 @@
   "icon": "Code",
   "root": true,
   "pages": [
-    "---Architecture---",
+    "index",
+    "---Setup---",
+    "dev-setup",
+    "---Internals---",
     "architecture",
+    "conventions",
     "---Contributing---",
     "contributing"
   ]
