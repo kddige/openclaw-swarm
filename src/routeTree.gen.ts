@@ -14,8 +14,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardGatewaysIndexRouteImport } from './routes/dashboard/gateways/index'
 import { Route as DashboardGatewaysGatewayIdIndexRouteImport } from './routes/dashboard/gateways/$gatewayId/index'
-import { Route as DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport } from './routes/dashboard/gateways/$gatewayId/sessions/$sessionKey'
 import { Route as DashboardGatewaysGatewayIdChatRouteImport } from './routes/dashboard/gateways/$gatewayId/chat'
+import { Route as DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport } from './routes/dashboard/gateways/$gatewayId/sessions/$sessionKey'
 
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
   id: '/dashboard',
@@ -43,16 +43,16 @@ const DashboardGatewaysGatewayIdIndexRoute =
     path: '/gateways/$gatewayId/',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
-const DashboardGatewaysGatewayIdSessionsSessionKeyRoute =
-  DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport.update({
-    id: '/gateways/$gatewayId/sessions/$sessionKey',
-    path: '/gateways/$gatewayId/sessions/$sessionKey',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
 const DashboardGatewaysGatewayIdChatRoute =
   DashboardGatewaysGatewayIdChatRouteImport.update({
     id: '/gateways/$gatewayId/chat',
     path: '/gateways/$gatewayId/chat',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardGatewaysGatewayIdSessionsSessionKeyRoute =
+  DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport.update({
+    id: '/gateways/$gatewayId/sessions/$sessionKey',
+    path: '/gateways/$gatewayId/sessions/$sessionKey',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
 
@@ -61,17 +61,17 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/gateways/': typeof DashboardGatewaysIndexRoute
+  '/dashboard/gateways/$gatewayId/chat': typeof DashboardGatewaysGatewayIdChatRoute
   '/dashboard/gateways/$gatewayId/': typeof DashboardGatewaysGatewayIdIndexRoute
   '/dashboard/gateways/$gatewayId/sessions/$sessionKey': typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
-  '/dashboard/gateways/$gatewayId/chat': typeof DashboardGatewaysGatewayIdChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/gateways': typeof DashboardGatewaysIndexRoute
+  '/dashboard/gateways/$gatewayId/chat': typeof DashboardGatewaysGatewayIdChatRoute
   '/dashboard/gateways/$gatewayId': typeof DashboardGatewaysGatewayIdIndexRoute
   '/dashboard/gateways/$gatewayId/sessions/$sessionKey': typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
-  '/dashboard/gateways/$gatewayId/chat': typeof DashboardGatewaysGatewayIdChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,9 +79,9 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/gateways/': typeof DashboardGatewaysIndexRoute
+  '/dashboard/gateways/$gatewayId/chat': typeof DashboardGatewaysGatewayIdChatRoute
   '/dashboard/gateways/$gatewayId/': typeof DashboardGatewaysGatewayIdIndexRoute
   '/dashboard/gateways/$gatewayId/sessions/$sessionKey': typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
-  '/dashboard/gateways/$gatewayId/chat': typeof DashboardGatewaysGatewayIdChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -90,26 +90,26 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/'
     | '/dashboard/gateways/'
+    | '/dashboard/gateways/$gatewayId/chat'
     | '/dashboard/gateways/$gatewayId/'
     | '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
-    | '/dashboard/gateways/$gatewayId/chat'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
     | '/dashboard/gateways'
+    | '/dashboard/gateways/$gatewayId/chat'
     | '/dashboard/gateways/$gatewayId'
     | '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
-    | '/dashboard/gateways/$gatewayId/chat'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/dashboard/'
     | '/dashboard/gateways/'
+    | '/dashboard/gateways/$gatewayId/chat'
     | '/dashboard/gateways/$gatewayId/'
     | '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
-    | '/dashboard/gateways/$gatewayId/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -154,18 +154,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardGatewaysGatewayIdIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
-    '/dashboard/gateways/$gatewayId/sessions/$sessionKey': {
-      id: '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
-      path: '/gateways/$gatewayId/sessions/$sessionKey'
-      fullPath: '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
     '/dashboard/gateways/$gatewayId/chat': {
       id: '/dashboard/gateways/$gatewayId/chat'
       path: '/gateways/$gatewayId/chat'
       fullPath: '/dashboard/gateways/$gatewayId/chat'
       preLoaderRoute: typeof DashboardGatewaysGatewayIdChatRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/gateways/$gatewayId/sessions/$sessionKey': {
+      id: '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
+      path: '/gateways/$gatewayId/sessions/$sessionKey'
+      fullPath: '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
+      preLoaderRoute: typeof DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
   }
@@ -174,18 +174,18 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardGatewaysIndexRoute: typeof DashboardGatewaysIndexRoute
+  DashboardGatewaysGatewayIdChatRoute: typeof DashboardGatewaysGatewayIdChatRoute
   DashboardGatewaysGatewayIdIndexRoute: typeof DashboardGatewaysGatewayIdIndexRoute
   DashboardGatewaysGatewayIdSessionsSessionKeyRoute: typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
-  DashboardGatewaysGatewayIdChatRoute: typeof DashboardGatewaysGatewayIdChatRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardGatewaysIndexRoute: DashboardGatewaysIndexRoute,
+  DashboardGatewaysGatewayIdChatRoute: DashboardGatewaysGatewayIdChatRoute,
   DashboardGatewaysGatewayIdIndexRoute: DashboardGatewaysGatewayIdIndexRoute,
   DashboardGatewaysGatewayIdSessionsSessionKeyRoute:
     DashboardGatewaysGatewayIdSessionsSessionKeyRoute,
-  DashboardGatewaysGatewayIdChatRoute: DashboardGatewaysGatewayIdChatRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
