@@ -6,19 +6,25 @@ Thanks for your interest in contributing! This guide will help you get up and ru
 
 - **Node 22+**
 - **macOS** (vibrancy and native titlebar features are macOS-only)
-- **[Bun](https://bun.sh/)** — always use `bun` as the package manager. Never `npm`, `yarn`, or `pnpm`.
-- **[moon](https://moonrepo.dev/docs/install)** — task runner for the monorepo
+- **[proto](https://moonrepo.dev/proto)** — toolchain manager (installs the correct bun + moon versions automatically)
+
+Install proto, then from the repo root:
+
+```bash
+proto use        # Installs pinned versions of bun + moon from .prototools
+```
 
 ## Getting started
 
 ```bash
 git clone https://github.com/kddige/openclaw-fleet.git
 cd openclaw-fleet
+proto use
 bun install
 moon run fleet:dev
 ```
 
-This starts Vite + Electron with hot reload.
+This starts Vite + Electron with hot reload. A pre-commit hook runs lint + typecheck on staged files automatically.
 
 ## Common tasks
 
@@ -35,22 +41,72 @@ moon run root:format     # Prettier formatting (whole monorepo)
 
 ```
 ├── .moon/               # moon workspace + toolchain config
-│   ├── workspace.yml
-│   ├── toolchains.yml
-│   └── tasks/           # Inherited task definitions (lint, typecheck)
+│   ├── workspace.yml    # Projects, VCS hooks, pipeline
+│   ├── toolchains.yml   # Bun toolchain
+│   └── tasks/           # Inherited tasks (lint, typecheck)
 ├── apps/
 │   └── fleet/           # Electron desktop app
 │       └── moon.yml     # Fleet-specific tasks (dev, build)
+├── .prototools          # Pinned tool versions (moon, bun)
+├── .editorconfig        # Editor formatting defaults
 ├── .prettierrc          # Shared Prettier config
 └── package.json         # Bun workspaces root
 ```
 
-## Code style
+## Enforced rules
 
-- **Linting**: ESLint with zero warnings allowed. Configured in `apps/fleet/eslint.config.js`.
-- **Formatting**: Prettier. Config lives at the monorepo root (`.prettierrc`).
-- **TypeScript**: strict mode, `noUnusedLocals`, `noUnusedParameters`.
-- All three are enforced in CI via `moon ci`.
+ESLint is configured with custom rules that catch common mistakes **at lint time**. Every rule has a clear error message telling you exactly what to do instead. Zero warnings are allowed.
+
+### Import restrictions
+
+| Banned import | Use instead | Why |
+|---|---|---|
+| `from 'zod'` | `from 'zod/v4'` | We use Zod v4 API exclusively |
+| `from 'clsx'` | `cn()` from `@/lib/utils` | Single utility for class merging |
+| `from 'tailwind-merge'` | `cn()` from `@/lib/utils` | Same — `cn()` wraps both |
+
+### No custom query hooks
+
+`useQuery`, `useMutation`, `useInfiniteQuery`, and `useSuspenseQuery` **must not** be wrapped in custom hooks. Use them directly in components with `orpc.*.queryOptions()`:
+
+```tsx
+// Good — direct in component
+function GatewayList() {
+  const { data } = useQuery(orpc.gateway.list.queryOptions())
+  // ...
+}
+
+// Bad — custom hook wrapper (ESLint will block this in src/hooks/)
+function useGateways() {
+  return useQuery(orpc.gateway.list.queryOptions())
+}
+```
+
+This keeps query keys colocated, makes invalidation obvious, and avoids unnecessary abstraction.
+
+### No `React.FC`
+
+Use plain function components with typed props:
+
+```tsx
+// Good
+function StatusBadge(props: StatusBadgeProps) { ... }
+
+// Bad — ESLint will block this
+const StatusBadge: React.FC<StatusBadgeProps> = (props) => { ... }
+```
+
+### No `console.*` in Electron code
+
+All logging in `electron/` must go through `createDebugLogger`:
+
+```tsx
+import { createDebugLogger } from '../lib/debug'
+const debug = createDebugLogger('my:namespace')
+
+debug.log('connected')    // Only logs in dev
+debug.error('failed', e)  // Only logs in dev
+```
 
 ## Architecture overview
 
@@ -60,19 +116,12 @@ See [CLAUDE.md](CLAUDE.md) for a full breakdown. The short version:
 - **Renderer** (`apps/fleet/src/`) is a React 19 SPA. It talks to the main process exclusively via oRPC over a `MessagePort`.
 - **Routing**: TanStack Router, file-based. Routes live in `src/routes/`. `src/routeTree.gen.ts` is auto-generated — **never edit it manually**.
 - **UI components**: shadcn/ui. Add new ones with `bunx shadcn@latest add <name>`, never copy-paste from shadcn docs.
-- **Queries**: use `useQuery`/`useMutation` directly in components — no custom query hooks.
+- **Styling**: Tailwind CSS 4 + CVA. Always use `cn()` from `@/lib/utils` for class merging.
 
 ## PR process
 
 1. Branch off `main`.
 2. One feature or fix per PR — keep diffs focused.
-3. `moon ci` must pass (zero lint warnings, no type errors).
-4. Keep commit messages clear and in the imperative mood.
-
-## Key conventions
-
-- **oRPC procedures**: defined in `electron/api/routers/`, use `zod/v4` for input validation.
-- **Shared types**: all persistence, protocol, runtime, and domain types go in `electron/api/types.ts`.
-- **Styling**: Tailwind CSS 4 utility classes + CVA for variants. Use the `cn()` utility from `@/lib/utils`.
-- **Debug logging**: use `createDebugLogger` from `electron/lib/debug.ts` in main process code — logs only appear in dev.
-- **Do not** edit `src/routeTree.gen.ts` — it is regenerated automatically by TanStack Router.
+3. The pre-commit hook runs lint + typecheck on staged files. If it fails, fix before committing.
+4. `moon ci` must pass (zero lint warnings, no type errors).
+5. Keep commit messages clear and in the imperative mood.

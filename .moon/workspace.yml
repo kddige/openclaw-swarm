@@ -7,6 +7,10 @@ projects:
 vcs:
   defaultBranch: 'main'
   provider: 'github'
+  hooks:
+    pre-commit:
+      - 'moon run :lint :typecheck --affected --status=staged'
+  sync: true
 
 pipeline:
   logRunningCommand: true

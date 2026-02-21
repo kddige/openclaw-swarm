@@ -47,6 +47,16 @@ bun run --cwd apps/fleet build
 bun run format           # Root-level prettier
 ```
 
+## Enforced ESLint rules
+
+These rules are enforced at lint time with zero warnings allowed. Breaking any of them will fail the pre-commit hook and CI.
+
+- **`from 'zod'` is banned** — always import from `zod/v4`
+- **`from 'clsx'` and `from 'tailwind-merge'` are banned in src/** — use `cn()` from `@/lib/utils`
+- **`React.FC` / `React.FunctionComponent` are banned** — use plain function components with typed props
+- **`console.*` is banned in `electron/`** — use `createDebugLogger` from `electron/lib/debug.ts`
+- **`useQuery`/`useMutation` are banned in `src/hooks/`** — use them directly in components with `orpc.*.queryOptions()`
+
 ## Fleet app architecture
 
 Electron desktop app (macOS vibrancy/hidden titlebar) with a React 19 frontend.
