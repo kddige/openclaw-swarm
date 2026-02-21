@@ -56,7 +56,7 @@ function Page() {
 
   return (
     <DocsLayout {...baseOptions()} tree={data.pageTree}>
-      <Suspense>{clientLoader.useContent(data.path, data)}</Suspense>
+      <Suspense>{clientLoader.useContent(data.path)}</Suspense>
     </DocsLayout>
   )
 }
