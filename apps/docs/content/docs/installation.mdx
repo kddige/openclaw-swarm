@@ -1,0 +1,42 @@
+---
+title: Installation
+description: Set up OpenClaw Fleet for local development
+---
+
+## Prerequisites
+
+- **Node 22+**
+- **macOS** (vibrancy and native titlebar features are macOS-only)
+- **[proto](https://moonrepo.dev/proto)** — toolchain manager
+
+## Quick start
+
+```bash
+git clone https://github.com/kddige/openclaw-fleet.git
+cd openclaw-fleet
+proto use        # Installs pinned bun + moon versions
+bun install
+moon run fleet:dev
+```
+
+This starts Vite + Electron with hot reload.
+
+## Tooling
+
+The monorepo uses [proto](https://moonrepo.dev/proto) to pin exact versions of **bun** and **moon** via `.prototools`. Every contributor gets the same versions automatically.
+
+```toml title=".prototools"
+moon = "2.0.1"
+bun = "1.3.9"
+```
+
+## Common tasks
+
+```bash
+moon run fleet:dev       # Start dev server
+moon run fleet:build     # Build distributable app
+moon run fleet:lint      # ESLint (zero warnings)
+moon run fleet:typecheck # TypeScript check
+moon ci                  # Run all affected tasks
+moon run root:format     # Prettier (whole monorepo)
+```

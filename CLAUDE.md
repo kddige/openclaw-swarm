@@ -13,8 +13,10 @@ This is a **bun workspaces** monorepo with **moon** as the task runner.
 │   └── tasks/
 │       └── typescript.yml  # Inherited tasks (lint, typecheck) for all TS projects
 ├── apps/
-│   └── fleet/           # OpenClaw Fleet — Electron desktop app
-│       └── moon.yml     # Fleet-specific tasks (dev, build)
+│   ├── fleet/           # OpenClaw Fleet — Electron desktop app
+│   │   └── moon.yml     # Fleet-specific tasks (dev, build)
+│   └── docs/            # Documentation site (Fumadocs + TanStack Start)
+│       └── moon.yml     # Docs tasks (dev, build)
 ├── .prettierrc          # Shared Prettier config (root-level)
 ├── .prettierignore      # Shared Prettier ignore (root-level)
 ├── moon.yml             # Root project (format task)

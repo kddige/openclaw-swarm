@@ -1,0 +1,58 @@
+---
+title: Architecture
+description: How the Fleet app is structured
+---
+
+## Overview
+
+The main process owns all WebSocket connections to remote gateways via `GatewayManager`. The renderer never talks to the network directly. Instead it communicates with the main process through oRPC procedures exposed over a `MessagePort`.
+
+```
+Renderer (React)
+  \u2514\u2500\u2500 oRPC client (MessagePort)
+        \u2514\u2500\u2500 Main process (oRPC server)
+              \u2514\u2500\u2500 GatewayManager
+                    \u2514\u2500\u2500 WebSocket connections \u2192 OpenClaw Gateways
+```
+
+## Key directories
+
+All paths relative to `apps/fleet/`:
+
+| Directory | Purpose |
+|---|---|
+| `src/routes/` | File-based routes (TanStack Router) |
+| `src/components/ui/` | shadcn/ui components |
+| `src/lib/` | Utilities and oRPC client |
+| `electron/` | Main process, preload, API |
+| `electron/api/routers/` | oRPC router files |
+| `electron/api/types.ts` | All shared TypeScript types |
+| `electron/gateway/` | WebSocket connection layer |
+
+## oRPC IPC
+
+The renderer creates a `MessageChannel` and sends one port to the main process. The oRPC client uses `RPCLink` over this channel.
+
+```tsx
+// Queries — use directly in components, never in custom hooks
+useQuery(orpc.gateway.list.queryOptions())
+useQuery(orpc.gateway.get.queryOptions({ input: { id: gatewayId } }))
+
+// Mutations
+useMutation(orpc.gateway.add.mutationOptions())
+```
+
+## Procedure definitions
+
+Server-side procedures use `zod/v4` for input validation:
+
+```tsx
+import { z } from 'zod/v4'
+import { p } from '../orpc'
+
+export const exampleRouter = {
+  get: p.input(z.object({ id: z.string() })).handler(({ input, context }) => {
+    return context.gatewayManager.getGateway(input.id)
+  }),
+}
+```

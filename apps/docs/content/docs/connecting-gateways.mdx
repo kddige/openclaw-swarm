@@ -1,0 +1,27 @@
+---
+title: Connecting Gateways
+description: Add and manage OpenClaw Gateway connections
+---
+
+OpenClaw Fleet connects to one or more [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instances over WebSocket. Each gateway connection is managed by the `GatewayManager` in the Electron main process.
+
+## Adding a gateway
+
+Use the gateway management UI to add a new connection. You'll need:
+
+1. The gateway's WebSocket URL
+2. Authentication credentials (device identity is handled via Ed25519 keypairs)
+
+## Connection states
+
+| State | Indicator | Meaning |
+|---|---|---|
+| Connected | Green dot | Active WebSocket connection |
+| Connecting | Amber dot | Establishing connection |
+| Pairing | Blue dot | Device pairing in progress |
+| Auth failed | Red dot | Authentication rejected |
+| Disconnected | Gray dot | No active connection |
+
+## Real-time updates
+
+Fleet uses oRPC event streaming with async generators to push real-time updates from gateways to the UI. Events include session changes, log entries, and presence updates.
