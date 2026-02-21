@@ -2,20 +2,40 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Commands
+## Monorepo structure
 
-```bash
-bun run dev          # Start Vite dev server with Electron
-bun run build        # Typecheck + Vite build + electron-builder
-bun run lint         # ESLint (zero warnings allowed)
-bun run typecheck    # TypeScript type checking
-bun run ci           # Lint + typecheck
-bun run format       # Prettier formatting
+This is a **bun workspaces** monorepo. No monorepo management tool (turborepo, nx, etc.) is used — just bun's native workspace support.
+
+```
+├── apps/
+│   └── fleet/       # OpenClaw Fleet — Electron desktop app
+├── .prettierrc      # Shared Prettier config (root-level)
+├── .prettierignore  # Shared Prettier ignore (root-level)
+└── package.json     # Workspace root
 ```
 
 **Always use `bun` as the package manager** (not npm/yarn/pnpm).
 
-## Architecture
+## Commands
+
+### Root-level
+
+```bash
+bun install          # Install all workspace dependencies
+bun run format       # Prettier formatting (whole monorepo)
+```
+
+### Fleet app (`apps/fleet/`)
+
+```bash
+bun run --cwd apps/fleet dev          # Start Vite dev server with Electron
+bun run --cwd apps/fleet build        # Typecheck + Vite build + electron-builder
+bun run --cwd apps/fleet lint         # ESLint (zero warnings allowed)
+bun run --cwd apps/fleet typecheck    # TypeScript type checking
+bun run --cwd apps/fleet ci           # Lint + typecheck
+```
+
+## Fleet app architecture
 
 Electron desktop app (macOS vibrancy/hidden titlebar) with a React 19 frontend.
 
@@ -31,6 +51,8 @@ Electron desktop app (macOS vibrancy/hidden titlebar) with a React 19 frontend.
 - **Crypto**: Node native Ed25519 for device identity
 
 ### Key directories
+
+All paths below are relative to `apps/fleet/`:
 
 - `src/routes/` — File-based routes, auto-generates `src/routeTree.gen.ts` (never edit)
 - `src/components/ui/` — shadcn/ui components (add new ones via `bunx shadcn@latest add <name>`)

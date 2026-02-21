@@ -1,34 +1,12 @@
-# openclaw-fleet
+# openclaw
 
-Electron desktop app (macOS) for managing a fleet of [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instances.
+Monorepo for OpenClaw desktop and tooling.
 
-## What is this?
+## Apps
 
-openclaw-fleet is a native macOS desktop application that gives you a single pane of glass across all your OpenClaw Gateway deployments. Think Portainer, but for AI agent infrastructure.
-
-**Features:**
-
-- **Multi-gateway management** — connect to and monitor any number of gateway instances simultaneously
-- **Session monitoring** — live view of active agent sessions across the fleet
-- **Real-time logs** — streaming log output per gateway, with filtering
-- **Usage & cost charts** — token usage and cost breakdowns over time (Recharts)
-- **Security config** — execute security configuration changes fleet-wide
-- **Fleet-wide search** — `Cmd+K` command palette for jumping between gateways, sessions, and actions
-- **Presence view** — see which agents are connected and active right now
-
-## Stack
-
-| Layer | Technology |
+| App | Description |
 |---|---|
-| Shell | Electron (macOS — vibrancy + hidden titlebar) |
-| Frontend | React 19 |
-| Routing | TanStack Router (file-based, memory history) |
-| Server state | TanStack Query |
-| IPC | oRPC over MessagePort |
-| UI components | shadcn/ui (base-mira style) + Base UI primitives |
-| Styling | Tailwind CSS 4, CVA |
-| Persistence | electron-store (safeStorage encryption) |
-| Package manager | Bun |
+| [`apps/fleet`](apps/fleet) | Electron desktop app (macOS) for managing a fleet of [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instances |
 
 ## Requirements
 
@@ -36,31 +14,27 @@ openclaw-fleet is a native macOS desktop application that gives you a single pan
 - macOS (vibrancy and native titlebar features are macOS-only)
 - [Bun](https://bun.sh/)
 
-## Dev setup
+## Getting started
 
 ```bash
-bun install
-bun run dev
+bun install          # Install all workspace dependencies
+bun run --cwd apps/fleet dev   # Start the Fleet app in dev mode
 ```
 
-## Build
+## Formatting
+
+Prettier is configured at the workspace root:
 
 ```bash
-bun run build
+bun run format       # Format all files across the monorepo
 ```
 
-This runs `tsc` + Vite build + `electron-builder` and produces a distributable macOS app in `release/`.
-
-## Architecture
-
-The main process owns all WebSocket connections to remote gateways via `GatewayManager`. The renderer never talks to the network directly. Instead it communicates with the main process through oRPC procedures exposed over a `MessagePort` (established at startup via the preload script).
+## Repository structure
 
 ```
-Renderer (React)
-  └── oRPC client (MessagePort)
-        └── Main process (oRPC server)
-              └── GatewayManager
-                    └── WebSocket connections → OpenClaw Gateways
+├── apps/
+│   └── fleet/       # OpenClaw Fleet desktop app
+├── .prettierrc      # Shared Prettier config
+├── package.json     # Workspace root (bun workspaces)
+└── CLAUDE.md        # AI coding guidelines
 ```
-
-See [CLAUDE.md](CLAUDE.md) for detailed architecture notes, conventions, and code patterns.
