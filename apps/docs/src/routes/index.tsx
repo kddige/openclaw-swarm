@@ -95,7 +95,7 @@ function Hero() {
         >
           <Link
             to="/docs/$"
-            params={{ _splat: '' }}
+            params={{ _splat: 'guide' }}
             className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
             style={{ background: 'var(--landing-accent)' }}
           >
@@ -576,7 +576,7 @@ function GetStarted() {
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               to="/docs/$"
-              params={{ _splat: '' }}
+              params={{ _splat: 'guide' }}
               className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
               style={{ background: 'var(--landing-accent)' }}
             >
