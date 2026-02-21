@@ -26,6 +26,11 @@ release
 
 dist-electron
 
+# Fumadocs / TanStack Start
+.output
+.source
+.tanstack
+
 # moon
 .moon/cache
 .moon/docker

@@ -1,0 +1,28 @@
+---
+title: Installation
+description: Download and run OpenClaw Fleet on macOS
+---
+
+## Download
+
+OpenClaw Fleet is distributed as a macOS `.dmg` installer. Download the latest release from GitHub:
+
+[**Download OpenClaw Fleet**](https://github.com/kddige/openclaw-fleet/releases) — grab the `.dmg` for your architecture (Apple Silicon or Intel).
+
+## Install
+
+1. Open the downloaded `.dmg` file
+2. Drag **OpenClaw Fleet** into your Applications folder
+3. Launch the app from Applications or Spotlight
+
+On first launch, macOS may ask you to confirm you want to open an app from an unidentified developer. Go to **System Settings > Privacy & Security** and click "Open Anyway".
+
+## First launch
+
+When you open OpenClaw Fleet for the first time, you'll see an empty gateway list. The app generates a unique **device identity** (Ed25519 keypair) that is stored securely using macOS Keychain via Electron's safeStorage.
+
+This identity is used to authenticate with your OpenClaw Gateway instances — no passwords needed.
+
+## Next steps
+
+You're ready to [connect your first gateway](/docs/guide/connecting-gateways).

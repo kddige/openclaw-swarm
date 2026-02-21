@@ -1,12 +1,13 @@
-# openclaw
+# openclaw-fleet
 
-Monorepo for OpenClaw desktop and tooling. Uses [moon](https://moonrepo.dev/) for task orchestration and [Bun](https://bun.sh/) workspaces for dependency management.
+Monorepo for OpenClaw Fleet desktop app and tooling. Uses [moon](https://moonrepo.dev/) for task orchestration and [Bun](https://bun.sh/) workspaces for dependency management.
 
 ## Apps
 
 | App | Description |
 |---|---|
 | [`apps/fleet`](apps/fleet) | Electron desktop app (macOS) for managing a fleet of [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instances |
+| [`apps/docs`](apps/docs) | Documentation site (Fumadocs + TanStack Start) |
 
 ## Requirements
 
@@ -25,7 +26,8 @@ moon run fleet:dev       # Start the Fleet app in dev mode
 ## Common tasks
 
 ```bash
-moon run fleet:dev       # Start dev server
+moon run fleet:dev       # Start Fleet desktop app
+moon run docs:dev        # Start docs site (localhost:3001)
 moon run fleet:build     # Build the Fleet app
 moon run fleet:lint      # Lint
 moon run fleet:typecheck # Type-check
@@ -45,8 +47,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, code style, and P
 │   ├── toolchains.yml   # Moon toolchain config (bun)
 │   └── tasks/           # Inherited tasks (lint, typecheck)
 ├── apps/
-│   └── fleet/           # OpenClaw Fleet desktop app
-│       └── moon.yml     # Fleet-specific tasks (dev, build)
+│   ├── fleet/           # OpenClaw Fleet desktop app
+│   └── docs/            # Documentation site (Fumadocs + TanStack Start)
 ├── .prettierrc          # Shared Prettier config
 ├── moon.yml             # Root project (format task)
 ├── package.json         # Workspace root (bun workspaces)

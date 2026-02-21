@@ -1,0 +1,78 @@
+---
+title: Conventions
+description: Enforced code patterns and ESLint rules
+---
+
+OpenClaw Fleet enforces project conventions through ESLint rules with zero warnings allowed. Every rule has a clear error message telling you exactly what to do instead.
+
+## Import restrictions
+
+| Banned import | Use instead | Why |
+|---|---|---|
+| `from 'zod'` | `from 'zod/v4'` | We use Zod v4 API exclusively |
+| `from 'clsx'` | `cn()` from `@/lib/utils` | Single utility for class merging |
+| `from 'tailwind-merge'` | `cn()` from `@/lib/utils` | Same — `cn()` wraps both |
+
+## No custom query hooks
+
+`useQuery`, `useMutation`, `useInfiniteQuery`, and `useSuspenseQuery` **must not** be wrapped in custom hooks. Use them directly in components:
+
+```tsx
+// Correct — direct in component
+function GatewayList() {
+  const { data } = useQuery(orpc.gateway.list.queryOptions())
+  // ...
+}
+
+// Blocked by ESLint in src/hooks/
+function useGateways() {
+  return useQuery(orpc.gateway.list.queryOptions())
+}
+```
+
+This keeps query keys colocated, makes cache invalidation obvious, and avoids unnecessary abstraction.
+
+## No React.FC
+
+Use plain function components with typed props:
+
+```tsx
+// Correct
+function StatusBadge(props: StatusBadgeProps) { ... }
+
+// Blocked by ESLint
+const StatusBadge: React.FC<StatusBadgeProps> = (props) => { ... }
+```
+
+## No console in Electron code
+
+All logging in `electron/` must use `createDebugLogger` from `electron/lib/debug.ts`. Direct `console.*` calls are blocked by ESLint.
+
+```tsx
+import { createDebugLogger } from '../lib/debug'
+const debug = createDebugLogger('my:namespace')
+
+debug.log('connected')    // Only logs in dev
+debug.error('failed', e)  // Only logs in dev
+```
+
+## UI patterns
+
+- **Card styling**: `bg-muted/40` with `hover:bg-muted/60` for interactive cards
+- **Status dots**: `size-1.5 rounded-full` with semantic colors
+- **Stat labels**: `text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider`
+- **Monospace IDs**: `font-mono text-[0.625rem]` for keys, device IDs, session keys
+- **Tabular numbers**: `tabular-nums` on all numeric displays
+- **Empty states**: `Empty` + `EmptyHeader` + `EmptyMedia` + `EmptyTitle` + `EmptyDescription`
+- **shadcn/ui**: add new components with `bunx shadcn@latest add <name>`, never copy-paste
+
+## Route files
+
+Routes use TanStack Router's file-based convention. Never edit `src/routeTree.gen.ts` — it is auto-generated.
+
+```tsx
+export const Route = createFileRoute('/dashboard/example/')({
+  component: ExamplePage,
+})
+function ExamplePage() { ... }
+```
