@@ -6,7 +6,7 @@ export const Route = createFileRoute('/llms.txt')({
     handlers: {
       GET: async () => {
         const lines: string[] = []
-        lines.push('# OpenClaw Documentation')
+        lines.push('# OpenClaw Fleet Documentation')
         lines.push('')
         for (const page of source.getPages()) {
           lines.push(

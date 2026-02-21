@@ -1,6 +1,6 @@
-# openclaw
+# openclaw-fleet
 
-Monorepo for OpenClaw desktop and tooling. Uses [moon](https://moonrepo.dev/) for task orchestration and [Bun](https://bun.sh/) workspaces for dependency management.
+Monorepo for OpenClaw Fleet desktop app and tooling. Uses [moon](https://moonrepo.dev/) for task orchestration and [Bun](https://bun.sh/) workspaces for dependency management.
 
 ## Apps
 
