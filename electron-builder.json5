@@ -1,9 +1,9 @@
 // @see - https://www.electron.build/configuration/configuration
 {
   $schema: 'https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json',
-  appId: 'ai.hucomm.fleet',
+  appId: 'dev.dige.openclaw-fleet',
   asar: true,
-  productName: 'Hucomm Fleet',
+  productName: 'Openclaw Fleet',
   directories: {
     output: 'release/${version}',
   },

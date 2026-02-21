@@ -1,10 +1,10 @@
-# hucomm-fleet
+# openclaw-fleet
 
-Electron desktop app (macOS) for managing a fleet of [OpenClaw Gateway](https://github.com/hucomm/openclaw-gateway) instances.
+Electron desktop app (macOS) for managing a fleet of [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instances.
 
 ## What is this?
 
-hucomm-fleet is a native macOS desktop application that gives you a single pane of glass across all your OpenClaw Gateway deployments. Think Portainer, but for AI agent infrastructure.
+openclaw-fleet is a native macOS desktop application that gives you a single pane of glass across all your OpenClaw Gateway deployments. Think Portainer, but for AI agent infrastructure.
 
 **Features:**
 
