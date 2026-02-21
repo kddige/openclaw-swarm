@@ -26,5 +26,9 @@ release
 
 dist-electron
 
+# moon
+.moon/cache
+.moon/docker
+
 # Internal development notes
 progress.txt

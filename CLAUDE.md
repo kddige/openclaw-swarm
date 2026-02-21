@@ -2,20 +2,62 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Commands
+## Monorepo structure
 
-```bash
-bun run dev          # Start Vite dev server with Electron
-bun run build        # Typecheck + Vite build + electron-builder
-bun run lint         # ESLint (zero warnings allowed)
-bun run typecheck    # TypeScript type checking
-bun run ci           # Lint + typecheck
-bun run format       # Prettier formatting
+This is a **bun workspaces** monorepo with **moon** as the task runner.
+
+```
+├── .moon/
+│   ├── workspace.yml    # Projects, VCS, pipeline settings
+│   ├── toolchains.yml   # Bun toolchain config
+│   └── tasks/
+│       └── typescript.yml  # Inherited tasks (lint, typecheck) for all TS projects
+├── apps/
+│   └── fleet/           # OpenClaw Fleet — Electron desktop app
+│       └── moon.yml     # Fleet-specific tasks (dev, build)
+├── .prettierrc          # Shared Prettier config (root-level)
+├── .prettierignore      # Shared Prettier ignore (root-level)
+├── moon.yml             # Root project (format task)
+└── package.json         # Workspace root
 ```
 
 **Always use `bun` as the package manager** (not npm/yarn/pnpm).
 
-## Architecture
+## Commands
+
+### moon tasks (preferred)
+
+```bash
+moon run fleet:dev       # Start Vite dev server with Electron
+moon run fleet:build     # Typecheck + Vite build + electron-builder
+moon run fleet:lint      # ESLint (zero warnings allowed)
+moon run fleet:typecheck # TypeScript type checking
+moon ci                  # Run all affected tasks (native moon CI command)
+moon run root:format     # Prettier formatting (whole monorepo)
+```
+
+Lint and typecheck are inherited from `.moon/tasks/typescript.yml` — do not redefine them in project `moon.yml` files.
+
+### Direct bun commands (fallback)
+
+```bash
+bun install              # Install all workspace dependencies
+bun run --cwd apps/fleet dev
+bun run --cwd apps/fleet build
+bun run format           # Root-level prettier
+```
+
+## Enforced ESLint rules
+
+These rules are enforced at lint time with zero warnings allowed. Breaking any of them will fail the pre-commit hook and CI.
+
+- **`from 'zod'` is banned** — always import from `zod/v4`
+- **`from 'clsx'` and `from 'tailwind-merge'` are banned in src/** — use `cn()` from `@/lib/utils`
+- **`React.FC` / `React.FunctionComponent` are banned** — use plain function components with typed props
+- **`console.*` is banned in `electron/`** — use `createDebugLogger` from `electron/lib/debug.ts`
+- **`useQuery`/`useMutation` are banned in `src/hooks/`** — use them directly in components with `orpc.*.queryOptions()`
+
+## Fleet app architecture
 
 Electron desktop app (macOS vibrancy/hidden titlebar) with a React 19 frontend.
 
@@ -31,6 +73,8 @@ Electron desktop app (macOS vibrancy/hidden titlebar) with a React 19 frontend.
 - **Crypto**: Node native Ed25519 for device identity
 
 ### Key directories
+
+All paths below are relative to `apps/fleet/`:
 
 - `src/routes/` — File-based routes, auto-generates `src/routeTree.gen.ts` (never edit)
 - `src/components/ui/` — shadcn/ui components (add new ones via `bunx shadcn@latest add <name>`)

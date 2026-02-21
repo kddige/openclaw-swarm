@@ -1,0 +1,27 @@
+inheritedBy:
+  language: 'typescript'
+
+fileGroups:
+  sources:
+    - 'src/**/*'
+    - 'electron/**/*'
+  configs:
+    - '*.config.*'
+    - 'tsconfig*.json'
+
+implicitInputs:
+  - 'package.json'
+
+tasks:
+  lint:
+    command: 'eslint --max-warnings 0'
+    inputs:
+      - '@globs(sources)'
+      - '@globs(configs)'
+      - 'eslint.config.js'
+
+  typecheck:
+    command: 'tsc --noEmit'
+    inputs:
+      - '@globs(sources)'
+      - '@globs(configs)'

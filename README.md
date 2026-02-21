@@ -1,66 +1,54 @@
-# hucomm-fleet
+# openclaw
 
-Electron desktop app (macOS) for managing a fleet of [OpenClaw Gateway](https://github.com/hucomm/openclaw-gateway) instances.
+Monorepo for OpenClaw desktop and tooling. Uses [moon](https://moonrepo.dev/) for task orchestration and [Bun](https://bun.sh/) workspaces for dependency management.
 
-## What is this?
+## Apps
 
-hucomm-fleet is a native macOS desktop application that gives you a single pane of glass across all your OpenClaw Gateway deployments. Think Portainer, but for AI agent infrastructure.
-
-**Features:**
-
-- **Multi-gateway management** — connect to and monitor any number of gateway instances simultaneously
-- **Session monitoring** — live view of active agent sessions across the fleet
-- **Real-time logs** — streaming log output per gateway, with filtering
-- **Usage & cost charts** — token usage and cost breakdowns over time (Recharts)
-- **Security config** — execute security configuration changes fleet-wide
-- **Fleet-wide search** — `Cmd+K` command palette for jumping between gateways, sessions, and actions
-- **Presence view** — see which agents are connected and active right now
-
-## Stack
-
-| Layer | Technology |
+| App | Description |
 |---|---|
-| Shell | Electron (macOS — vibrancy + hidden titlebar) |
-| Frontend | React 19 |
-| Routing | TanStack Router (file-based, memory history) |
-| Server state | TanStack Query |
-| IPC | oRPC over MessagePort |
-| UI components | shadcn/ui (base-mira style) + Base UI primitives |
-| Styling | Tailwind CSS 4, CVA |
-| Persistence | electron-store (safeStorage encryption) |
-| Package manager | Bun |
+| [`apps/fleet`](apps/fleet) | Electron desktop app (macOS) for managing a fleet of [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instances |
 
 ## Requirements
 
 - Node 22+
 - macOS (vibrancy and native titlebar features are macOS-only)
 - [Bun](https://bun.sh/)
+- [moon](https://moonrepo.dev/docs/install) (task runner)
 
-## Dev setup
-
-```bash
-bun install
-bun run dev
-```
-
-## Build
+## Getting started
 
 ```bash
-bun run build
+bun install              # Install all workspace dependencies
+moon run fleet:dev       # Start the Fleet app in dev mode
 ```
 
-This runs `tsc` + Vite build + `electron-builder` and produces a distributable macOS app in `release/`.
+## Common tasks
 
-## Architecture
-
-The main process owns all WebSocket connections to remote gateways via `GatewayManager`. The renderer never talks to the network directly. Instead it communicates with the main process through oRPC procedures exposed over a `MessagePort` (established at startup via the preload script).
-
-```
-Renderer (React)
-  └── oRPC client (MessagePort)
-        └── Main process (oRPC server)
-              └── GatewayManager
-                    └── WebSocket connections → OpenClaw Gateways
+```bash
+moon run fleet:dev       # Start dev server
+moon run fleet:build     # Build the Fleet app
+moon run fleet:lint      # Lint
+moon run fleet:typecheck # Type-check
+moon ci                  # Run all affected tasks (CI mode)
+moon run root:format     # Format all files (Prettier)
 ```
 
-See [CLAUDE.md](CLAUDE.md) for detailed architecture notes, conventions, and code patterns.
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, code style, and PR guidelines.
+
+## Repository structure
+
+```
+├── .moon/
+│   ├── workspace.yml    # Moon workspace config (projects, VCS)
+│   ├── toolchains.yml   # Moon toolchain config (bun)
+│   └── tasks/           # Inherited tasks (lint, typecheck)
+├── apps/
+│   └── fleet/           # OpenClaw Fleet desktop app
+│       └── moon.yml     # Fleet-specific tasks (dev, build)
+├── .prettierrc          # Shared Prettier config
+├── moon.yml             # Root project (format task)
+├── package.json         # Workspace root (bun workspaces)
+└── CLAUDE.md            # AI coding guidelines
+```

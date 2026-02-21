@@ -5,6 +5,9 @@ import { RPCHandler } from '@orpc/server/message-port'
 import { onError } from '@orpc/server'
 import { router } from './api/router'
 import { GatewayManager } from './gateway/manager'
+import { createDebugLogger } from './lib/debug'
+
+const debug = createDebugLogger('main')
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -34,7 +37,7 @@ let gatewayManager: GatewayManager | null = null
 const handler = new RPCHandler(router, {
   interceptors: [
     onError((error) => {
-      console.error(error)
+      debug.error('oRPC handler error:', error)
     }),
   ],
 })
