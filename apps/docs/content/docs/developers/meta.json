@@ -1,0 +1,12 @@
+{
+  "title": "Developers",
+  "description": "Contribute to OpenClaw Fleet",
+  "icon": "Code",
+  "root": true,
+  "pages": [
+    "---Architecture---",
+    "architecture",
+    "---Contributing---",
+    "contributing"
+  ]
+}

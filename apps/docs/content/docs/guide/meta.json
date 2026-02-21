@@ -1,0 +1,14 @@
+{
+  "title": "Guide",
+  "description": "Learn how to use OpenClaw Fleet",
+  "icon": "BookOpen",
+  "root": true,
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "installation",
+    "---Usage---",
+    "connecting-gateways",
+    "sessions"
+  ]
+}
