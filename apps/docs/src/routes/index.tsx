@@ -22,12 +22,8 @@ function Home() {
   return (
     <HomeLayout {...baseOptions()}>
       <div
-        className="noise relative"
-        style={{
-          background: 'var(--landing-bg)',
-          color: 'var(--landing-text)',
-          fontFamily: 'var(--font-body)',
-        }}
+        className="noise relative bg-fd-background text-fd-foreground"
+        style={{ fontFamily: 'var(--font-body)' }}
       >
         <Hero />
         <div className="hr-glow mx-auto max-w-5xl" />
@@ -52,11 +48,9 @@ function Hero() {
       <div className="relative mx-auto max-w-6xl px-6 pb-24 pt-32">
         {/* Status bar */}
         <div
-          className="animate-fade-up mb-10 inline-flex items-center gap-2 rounded-full border px-4 py-1.5"
+          className="animate-fade-up mb-10 inline-flex items-center gap-2 rounded-full border border-fd-border bg-fd-card px-4 py-1.5"
           style={{
             animationDelay: '0s',
-            borderColor: 'var(--landing-border)',
-            background: 'var(--landing-surface)',
             fontFamily: 'var(--font-mono)',
             fontSize: '0.75rem',
           }}
@@ -65,7 +59,7 @@ function Hero() {
             className="pulse-dot inline-block size-2 rounded-full"
             style={{ background: '#22c55e' }}
           />
-          <span style={{ color: 'var(--landing-text-muted)' }}>
+          <span className="text-fd-muted-foreground">
             v0.1.0 &middot; Open Source
           </span>
         </div>
@@ -85,15 +79,12 @@ function Hero() {
 
         {/* Subtitle */}
         <p
-          className="animate-fade-up mb-12 max-w-xl text-lg leading-relaxed md:text-xl"
-          style={{
-            animationDelay: '0.2s',
-            color: 'var(--landing-text-muted)',
-          }}
+          className="animate-fade-up mb-12 max-w-xl text-lg leading-relaxed text-fd-muted-foreground md:text-xl"
+          style={{ animationDelay: '0.2s' }}
         >
           Monitor sessions, stream logs, and manage security across every
           OpenClaw Gateway in your infrastructure. Think{' '}
-          <strong style={{ color: 'var(--landing-text)' }}>Portainer</strong>,
+          <strong className="text-fd-foreground">Portainer</strong>,
           but for AI agent fleets.
         </p>
 
@@ -105,22 +96,15 @@ function Hero() {
           <Link
             to="/docs/$"
             params={{ _splat: '' }}
-            className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold transition-all hover:brightness-110"
-            style={{
-              background: 'var(--landing-accent)',
-              color: 'var(--landing-bg)',
-            }}
+            className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
+            style={{ background: 'var(--landing-accent)' }}
           >
             Get Started
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <a
             href="https://github.com/kddige/openclaw-fleet"
-            className="glow-border inline-flex items-center gap-2 rounded-lg border px-6 py-3 text-sm font-medium transition-colors"
-            style={{
-              borderColor: 'var(--landing-border)',
-              color: 'var(--landing-text-muted)',
-            }}
+            className="glow-border inline-flex items-center gap-2 rounded-lg border border-fd-border px-6 py-3 text-sm font-medium text-fd-muted-foreground transition-colors"
           >
             <GitBranch className="size-4" />
             View on GitHub
@@ -129,12 +113,8 @@ function Hero() {
 
         {/* Fleet preview */}
         <div
-          className="animate-fade-up mt-20 overflow-hidden rounded-xl border"
-          style={{
-            animationDelay: '0.5s',
-            borderColor: 'var(--landing-border)',
-            background: 'var(--landing-surface)',
-          }}
+          className="animate-fade-up mt-20 overflow-hidden rounded-xl border border-fd-border bg-fd-card"
+          style={{ animationDelay: '0.5s' }}
         >
           <FleetPreview />
         </div>
@@ -162,21 +142,15 @@ function FleetPreview() {
   return (
     <div className="scan-line relative">
       {/* Title bar */}
-      <div
-        className="flex items-center gap-2 border-b px-4 py-3"
-        style={{ borderColor: 'var(--landing-border)' }}
-      >
+      <div className="flex items-center gap-2 border-b border-fd-border px-4 py-3">
         <div className="flex gap-1.5">
           <span className="size-3 rounded-full bg-red-500/80" />
           <span className="size-3 rounded-full bg-yellow-500/80" />
           <span className="size-3 rounded-full bg-green-500/80" />
         </div>
         <span
-          className="ml-2 text-xs"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--landing-text-muted)',
-          }}
+          className="ml-2 text-xs text-fd-muted-foreground"
+          style={{ fontFamily: 'var(--font-mono)' }}
         >
           OpenClaw Fleet &mdash; 4 gateways
         </span>
@@ -187,31 +161,26 @@ function FleetPreview() {
         <table className="w-full text-left text-sm">
           <thead>
             <tr
-              className="border-b text-xs uppercase tracking-wider"
+              className="border-b border-fd-border text-fd-muted-foreground"
               style={{
-                borderColor: 'var(--landing-border)',
-                color: 'var(--landing-text-muted)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: '0.625rem',
               }}
             >
-              <th className="px-4 py-3 font-medium">Gateway</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 text-right font-medium">Sessions</th>
-              <th className="px-4 py-3 text-right font-medium">Agents</th>
+              <th className="px-4 py-3 font-medium uppercase tracking-wider">Gateway</th>
+              <th className="px-4 py-3 font-medium uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-right font-medium uppercase tracking-wider">Sessions</th>
+              <th className="px-4 py-3 text-right font-medium uppercase tracking-wider">Agents</th>
             </tr>
           </thead>
           <tbody>
             {gateways.map((gw) => (
               <tr
                 key={gw.name}
-                className="border-b transition-colors"
-                style={{
-                  borderColor: 'rgba(63, 63, 70, 0.5)',
-                }}
+                className="border-b border-fd-border/50 transition-colors"
               >
                 <td
-                  className="px-4 py-3"
+                  className="px-4 py-3 text-fd-foreground"
                   style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}
                 >
                   {gw.name}
@@ -222,26 +191,20 @@ function FleetPreview() {
                       className={`inline-block size-1.5 rounded-full ${gw.status === 'connected' ? 'pulse-dot' : ''}`}
                       style={{ background: statusColor[gw.status] }}
                     />
-                    <span style={{ color: 'var(--landing-text-muted)' }}>
+                    <span className="text-fd-muted-foreground">
                       {gw.status}
                     </span>
                   </span>
                 </td>
                 <td
-                  className="px-4 py-3 text-right tabular-nums"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.8125rem',
-                  }}
+                  className="px-4 py-3 text-right tabular-nums text-fd-foreground"
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}
                 >
                   {gw.sessions}
                 </td>
                 <td
-                  className="px-4 py-3 text-right tabular-nums"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.8125rem',
-                  }}
+                  className="px-4 py-3 text-right tabular-nums text-fd-foreground"
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}
                 >
                   {gw.agents}
                 </td>
@@ -319,23 +282,12 @@ function Features() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {features.map((f, i) => (
+        {features.map((f) => (
           <div
             key={f.title}
-            className="glow-border dot-grid group relative overflow-hidden rounded-xl border p-6"
-            style={{
-              borderColor: 'var(--landing-border)',
-              background: 'var(--landing-surface)',
-              animationDelay: `${i * 0.08}s`,
-            }}
+            className="glow-border dot-grid group relative overflow-hidden rounded-xl border border-fd-border bg-fd-card p-6"
           >
-            <div
-              className="mb-4 inline-flex rounded-lg border p-2.5"
-              style={{
-                borderColor: 'var(--landing-border)',
-                background: 'var(--landing-surface-2)',
-              }}
-            >
+            <div className="mb-4 inline-flex rounded-lg border border-fd-border bg-fd-muted p-2.5">
               <f.icon
                 className="size-5"
                 style={{ color: 'var(--landing-accent)' }}
@@ -347,10 +299,7 @@ function Features() {
             >
               {f.title}
             </h3>
-            <p
-              className="text-sm leading-relaxed"
-              style={{ color: 'var(--landing-text-muted)' }}
-            >
+            <p className="text-sm leading-relaxed text-fd-muted-foreground">
               {f.description}
             </p>
           </div>
@@ -384,14 +333,11 @@ function TerminalDemo() {
             <br />
             in 30 seconds
           </h2>
-          <p
-            className="mb-8 max-w-md leading-relaxed"
-            style={{ color: 'var(--landing-text-muted)' }}
-          >
+          <p className="mb-8 max-w-md leading-relaxed text-fd-muted-foreground">
             Clone, install, run. The monorepo uses{' '}
-            <strong style={{ color: 'var(--landing-text)' }}>proto</strong> to
-            pin exact versions of bun and moon, so every contributor gets an
-            identical setup.
+            <strong className="text-fd-foreground">proto</strong> to pin exact
+            versions of bun and moon, so every contributor gets an identical
+            setup.
           </p>
 
           <div className="flex flex-wrap gap-6">
@@ -402,56 +348,34 @@ function TerminalDemo() {
         </div>
 
         {/* Terminal */}
-        <div
-          className="overflow-hidden rounded-xl border"
-          style={{
-            borderColor: 'var(--landing-border)',
-            background: 'var(--landing-surface)',
-          }}
-        >
-          <div
-            className="flex items-center gap-2 border-b px-4 py-3"
-            style={{ borderColor: 'var(--landing-border)' }}
-          >
+        <div className="overflow-hidden rounded-xl border border-fd-border bg-fd-card">
+          <div className="flex items-center gap-2 border-b border-fd-border px-4 py-3">
             <div className="flex gap-1.5">
               <span className="size-3 rounded-full bg-red-500/80" />
               <span className="size-3 rounded-full bg-yellow-500/80" />
               <span className="size-3 rounded-full bg-green-500/80" />
             </div>
             <span
-              className="ml-2 text-xs"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                color: 'var(--landing-text-muted)',
-              }}
+              className="ml-2 text-xs text-fd-muted-foreground"
+              style={{ fontFamily: 'var(--font-mono)' }}
             >
               terminal
             </span>
           </div>
           <div
-            className="p-5 text-sm leading-7"
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.8125rem',
-            }}
+            className="p-5 text-sm leading-7 text-fd-foreground"
+            style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}
           >
             <Line prompt text="git clone https://github.com/kddige/openclaw-fleet.git" />
             <Line prompt text="cd openclaw-fleet" />
             <Line prompt text="proto use" />
-            <Line
-              style={{ color: 'var(--landing-text-muted)' }}
-              text="  moon 2.0.1 installed"
-            />
-            <Line
-              style={{ color: 'var(--landing-text-muted)' }}
-              text="  bun 1.3.9 installed"
-            />
+            <Line muted text="  moon 2.0.1 installed" />
+            <Line muted text="  bun 1.3.9 installed" />
             <Line prompt text="bun install" />
             <Line prompt text="moon run fleet:dev" />
-            <Line
-              style={{ color: '#22c55e' }}
-              text="  VITE v7.3.1  ready in 826ms"
-            />
+            <div style={{ color: '#22c55e' }}>
+              {'  '}VITE v7.3.1{'  '}ready in 826ms
+            </div>
             <span
               className="cursor-blink inline-block"
               style={{
@@ -470,15 +394,15 @@ function TerminalDemo() {
 
 function Line({
   prompt,
+  muted,
   text,
-  style,
 }: {
   prompt?: boolean
+  muted?: boolean
   text: string
-  style?: React.CSSProperties
 }) {
   return (
-    <div style={style}>
+    <div className={muted ? 'text-fd-muted-foreground' : ''}>
       {prompt && (
         <span style={{ color: 'var(--landing-accent)' }}>$ </span>
       )}
@@ -491,11 +415,12 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div
-        className="text-xs uppercase tracking-wider"
+        className="text-fd-muted-foreground"
         style={{
-          color: 'var(--landing-text-muted)',
           fontFamily: 'var(--font-mono)',
           fontSize: '0.625rem',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
         }}
       >
         {label}
@@ -577,15 +502,23 @@ function ArchCard({
     <div
       className="glow-border rounded-xl border p-6"
       style={{
-        borderColor: accent ? 'var(--landing-accent-dim)' : 'var(--landing-border)',
-        background: accent ? 'rgba(249, 115, 22, 0.05)' : 'var(--landing-surface)',
+        borderColor: accent
+          ? 'var(--landing-accent-dim)'
+          : 'var(--color-fd-border)',
+        background: accent
+          ? 'color-mix(in srgb, var(--landing-accent) 5%, var(--color-fd-card))'
+          : 'var(--color-fd-card)',
       }}
     >
       <div
         className="mb-4 inline-flex rounded-lg border p-2.5"
         style={{
-          borderColor: accent ? 'var(--landing-accent-dim)' : 'var(--landing-border)',
-          background: accent ? 'rgba(249, 115, 22, 0.1)' : 'var(--landing-surface-2)',
+          borderColor: accent
+            ? 'var(--landing-accent-dim)'
+            : 'var(--color-fd-border)',
+          background: accent
+            ? 'color-mix(in srgb, var(--landing-accent) 10%, var(--color-fd-muted))'
+            : 'var(--color-fd-muted)',
           color: 'var(--landing-accent)',
         }}
       >
@@ -598,11 +531,8 @@ function ArchCard({
         {title}
       </h3>
       <p
-        className="mb-4 text-xs"
-        style={{
-          color: 'var(--landing-text-muted)',
-          fontFamily: 'var(--font-mono)',
-        }}
+        className="mb-4 text-xs text-fd-muted-foreground"
+        style={{ fontFamily: 'var(--font-mono)' }}
       >
         {subtitle}
       </p>
@@ -610,8 +540,7 @@ function ArchCard({
         {items.map((item) => (
           <li
             key={item}
-            className="flex items-center gap-2 text-sm"
-            style={{ color: 'var(--landing-text-muted)' }}
+            className="flex items-center gap-2 text-sm text-fd-muted-foreground"
           >
             <span
               className="inline-block size-1 rounded-full"
@@ -630,13 +559,7 @@ function ArchCard({
 function GetStarted() {
   return (
     <section className="relative mx-auto max-w-6xl px-6 pb-32 pt-24">
-      <div
-        className="glow-border relative overflow-hidden rounded-2xl border p-12 text-center md:p-16"
-        style={{
-          borderColor: 'var(--landing-border)',
-          background: 'var(--landing-surface)',
-        }}
-      >
+      <div className="glow-border relative overflow-hidden rounded-2xl border border-fd-border bg-fd-card p-12 text-center md:p-16">
         <div className="landing-glow pointer-events-none absolute inset-0" />
 
         <div className="relative">
@@ -646,10 +569,7 @@ function GetStarted() {
           >
             Ready to take control?
           </h2>
-          <p
-            className="mx-auto mb-8 max-w-md leading-relaxed"
-            style={{ color: 'var(--landing-text-muted)' }}
-          >
+          <p className="mx-auto mb-8 max-w-md leading-relaxed text-fd-muted-foreground">
             OpenClaw Fleet is open source and free. Start managing your AI agent
             infrastructure today.
           </p>
@@ -657,22 +577,15 @@ function GetStarted() {
             <Link
               to="/docs/$"
               params={{ _splat: '' }}
-              className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold transition-all hover:brightness-110"
-              style={{
-                background: 'var(--landing-accent)',
-                color: 'var(--landing-bg)',
-              }}
+              className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
+              style={{ background: 'var(--landing-accent)' }}
             >
               Read the Docs
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <a
               href="https://github.com/kddige/openclaw-fleet"
-              className="inline-flex items-center gap-2 rounded-lg border px-6 py-3 text-sm font-medium transition-colors"
-              style={{
-                borderColor: 'var(--landing-border)',
-                color: 'var(--landing-text-muted)',
-              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-fd-border px-6 py-3 text-sm font-medium text-fd-muted-foreground transition-colors"
             >
               <GitBranch className="size-4" />
               Star on GitHub

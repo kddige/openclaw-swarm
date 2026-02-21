@@ -2,33 +2,41 @@
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
 
-/* ── Landing page ──────────────────────────────────────────────────── */
+/* ── Landing page — light mode ─────────────────────────────────────── */
 
 :root {
-  --landing-accent: #f97316;
+  --landing-accent: #ea580c;
   --landing-accent-dim: #c2410c;
-  --landing-bg: #09090b;
-  --landing-surface: #18181b;
-  --landing-surface-2: #27272a;
-  --landing-border: #3f3f46;
-  --landing-text: #fafafa;
-  --landing-text-muted: #a1a1aa;
-  --landing-glow: rgba(249, 115, 22, 0.15);
+  --landing-glow: rgba(234, 88, 12, 0.1);
+  --landing-grid-line: rgba(0, 0, 0, 0.06);
+  --landing-dot: rgba(0, 0, 0, 0.08);
+  --landing-scan: rgba(234, 88, 12, 0.015);
   --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
   --font-mono: 'Fira Code', ui-monospace, monospace;
   --font-body: 'DM Sans', system-ui, sans-serif;
 }
 
-/* Grid background */
+/* ── Landing page — dark mode ──────────────────────────────────────── */
+
+.dark {
+  --landing-accent: #f97316;
+  --landing-accent-dim: #c2410c;
+  --landing-glow: rgba(249, 115, 22, 0.15);
+  --landing-grid-line: rgba(255, 255, 255, 0.06);
+  --landing-dot: rgba(255, 255, 255, 0.06);
+  --landing-scan: rgba(249, 115, 22, 0.02);
+}
+
+/* ── Effects ───────────────────────────────────────────────────────── */
+
 .landing-grid {
   background-image:
-    linear-gradient(rgba(63, 63, 70, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(63, 63, 70, 0.3) 1px, transparent 1px);
+    linear-gradient(var(--landing-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--landing-grid-line) 1px, transparent 1px);
   background-size: 64px 64px;
   background-position: center center;
 }
 
-/* Radial glow overlay */
 .landing-glow {
   background: radial-gradient(
     ellipse 60% 50% at 50% 0%,
@@ -37,17 +45,15 @@
   );
 }
 
-/* Dot grid for feature cards */
 .dot-grid {
   background-image: radial-gradient(
     circle,
-    rgba(161, 161, 170, 0.15) 1px,
+    var(--landing-dot) 1px,
     transparent 1px
   );
   background-size: 16px 16px;
 }
 
-/* Scan line effect */
 .scan-line::after {
   content: '';
   position: absolute;
@@ -56,13 +62,14 @@
     0deg,
     transparent,
     transparent 2px,
-    rgba(249, 115, 22, 0.02) 2px,
-    rgba(249, 115, 22, 0.02) 4px
+    var(--landing-scan) 2px,
+    var(--landing-scan) 4px
   );
   pointer-events: none;
 }
 
-/* Status pulse */
+/* ── Animations ────────────────────────────────────────────────────── */
+
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
@@ -72,7 +79,6 @@
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
-/* Staggered fade-in */
 @keyframes fade-up {
   from {
     opacity: 0;
@@ -88,7 +94,6 @@
   animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Terminal cursor blink */
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
@@ -98,7 +103,8 @@
   animation: blink 1s step-end infinite;
 }
 
-/* Glow border on hover */
+/* ── Interactive ───────────────────────────────────────────────────── */
+
 .glow-border {
   transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
@@ -109,7 +115,6 @@
               inset 0 0 24px -12px var(--landing-glow);
 }
 
-/* Gradient text */
 .text-gradient {
   background: linear-gradient(135deg, var(--landing-accent) 0%, #fbbf24 100%);
   -webkit-background-clip: text;
@@ -117,7 +122,6 @@
   background-clip: text;
 }
 
-/* Horizontal rule glow */
 .hr-glow {
   height: 1px;
   background: linear-gradient(
@@ -126,9 +130,9 @@
     var(--landing-accent-dim) 50%,
     transparent 100%
   );
+  opacity: 0.5;
 }
 
-/* Noise texture overlay */
 .noise::before {
   content: '';
   position: absolute;
