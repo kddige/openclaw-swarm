@@ -1,0 +1,12 @@
+projects:
+  globs:
+    - 'apps/*'
+  sources:
+    root: '.'
+
+vcs:
+  defaultBranch: 'main'
+  provider: 'github'
+
+pipeline:
+  logRunningCommand: true

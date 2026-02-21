@@ -1,0 +1,29 @@
+language: 'typescript'
+layer: 'application'
+stack: 'frontend'
+
+toolchains:
+  default: ['javascript', 'bun']
+
+fileGroups:
+  configs:
+    - 'eslint.config.js'
+    - 'components.json'
+    - 'index.html'
+
+tasks:
+  dev:
+    command: 'bun run dev'
+    inputs:
+      - '@globs(sources)'
+      - '@globs(configs)'
+    preset: 'server'
+
+  build:
+    command: 'bun run build'
+    inputs:
+      - '@globs(sources)'
+      - '@globs(configs)'
+    outputs:
+      - 'dist'
+      - 'dist-electron'

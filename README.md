@@ -1,6 +1,6 @@
 # openclaw
 
-Monorepo for OpenClaw desktop and tooling.
+Monorepo for OpenClaw desktop and tooling. Uses [moon](https://moonrepo.dev/) for task orchestration and [Bun](https://bun.sh/) workspaces for dependency management.
 
 ## Apps
 
@@ -13,28 +13,42 @@ Monorepo for OpenClaw desktop and tooling.
 - Node 22+
 - macOS (vibrancy and native titlebar features are macOS-only)
 - [Bun](https://bun.sh/)
+- [moon](https://moonrepo.dev/docs/install) (task runner)
 
 ## Getting started
 
 ```bash
-bun install          # Install all workspace dependencies
-bun run --cwd apps/fleet dev   # Start the Fleet app in dev mode
+bun install              # Install all workspace dependencies
+moon run fleet:dev       # Start the Fleet app in dev mode
 ```
 
-## Formatting
-
-Prettier is configured at the workspace root:
+## Common tasks
 
 ```bash
-bun run format       # Format all files across the monorepo
+moon run fleet:dev       # Start dev server
+moon run fleet:build     # Build the Fleet app
+moon run fleet:lint      # Lint
+moon run fleet:typecheck # Type-check
+moon ci                  # Run all affected tasks (CI mode)
+moon run root:format     # Format all files (Prettier)
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, code style, and PR guidelines.
 
 ## Repository structure
 
 ```
+├── .moon/
+│   ├── workspace.yml    # Moon workspace config (projects, VCS)
+│   ├── toolchains.yml   # Moon toolchain config (bun)
+│   └── tasks/           # Inherited tasks (lint, typecheck)
 ├── apps/
-│   └── fleet/       # OpenClaw Fleet desktop app
-├── .prettierrc      # Shared Prettier config
-├── package.json     # Workspace root (bun workspaces)
-└── CLAUDE.md        # AI coding guidelines
+│   └── fleet/           # OpenClaw Fleet desktop app
+│       └── moon.yml     # Fleet-specific tasks (dev, build)
+├── .prettierrc          # Shared Prettier config
+├── moon.yml             # Root project (format task)
+├── package.json         # Workspace root (bun workspaces)
+└── CLAUDE.md            # AI coding guidelines
 ```

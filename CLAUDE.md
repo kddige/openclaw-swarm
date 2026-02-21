@@ -4,35 +4,47 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Monorepo structure
 
-This is a **bun workspaces** monorepo. No monorepo management tool (turborepo, nx, etc.) is used — just bun's native workspace support.
+This is a **bun workspaces** monorepo with **moon** as the task runner.
 
 ```
+├── .moon/
+│   ├── workspace.yml    # Projects, VCS, pipeline settings
+│   ├── toolchains.yml   # Bun toolchain config
+│   └── tasks/
+│       └── typescript.yml  # Inherited tasks (lint, typecheck) for all TS projects
 ├── apps/
-│   └── fleet/       # OpenClaw Fleet — Electron desktop app
-├── .prettierrc      # Shared Prettier config (root-level)
-├── .prettierignore  # Shared Prettier ignore (root-level)
-└── package.json     # Workspace root
+│   └── fleet/           # OpenClaw Fleet — Electron desktop app
+│       └── moon.yml     # Fleet-specific tasks (dev, build)
+├── .prettierrc          # Shared Prettier config (root-level)
+├── .prettierignore      # Shared Prettier ignore (root-level)
+├── moon.yml             # Root project (format task)
+└── package.json         # Workspace root
 ```
 
 **Always use `bun` as the package manager** (not npm/yarn/pnpm).
 
 ## Commands
 
-### Root-level
+### moon tasks (preferred)
 
 ```bash
-bun install          # Install all workspace dependencies
-bun run format       # Prettier formatting (whole monorepo)
+moon run fleet:dev       # Start Vite dev server with Electron
+moon run fleet:build     # Typecheck + Vite build + electron-builder
+moon run fleet:lint      # ESLint (zero warnings allowed)
+moon run fleet:typecheck # TypeScript type checking
+moon ci                  # Run all affected tasks (native moon CI command)
+moon run root:format     # Prettier formatting (whole monorepo)
 ```
 
-### Fleet app (`apps/fleet/`)
+Lint and typecheck are inherited from `.moon/tasks/typescript.yml` — do not redefine them in project `moon.yml` files.
+
+### Direct bun commands (fallback)
 
 ```bash
-bun run --cwd apps/fleet dev          # Start Vite dev server with Electron
-bun run --cwd apps/fleet build        # Typecheck + Vite build + electron-builder
-bun run --cwd apps/fleet lint         # ESLint (zero warnings allowed)
-bun run --cwd apps/fleet typecheck    # TypeScript type checking
-bun run --cwd apps/fleet ci           # Lint + typecheck
+bun install              # Install all workspace dependencies
+bun run --cwd apps/fleet dev
+bun run --cwd apps/fleet build
+bun run format           # Root-level prettier
 ```
 
 ## Fleet app architecture
