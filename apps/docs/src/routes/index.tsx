@@ -13,6 +13,7 @@ import {
   Radio,
   Users,
 } from 'lucide-react'
+import logo from '../../assets/logo.png'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -46,11 +47,19 @@ function Hero() {
       <div className="landing-glow pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-6xl px-6 pb-24 pt-32">
+        {/* Logo */}
+        <img
+          src={logo}
+          alt="OpenClaw Swarm"
+          className="animate-fade-up mb-8 size-16 drop-shadow-lg md:size-20"
+          style={{ animationDelay: '0s' }}
+        />
+
         {/* Status bar */}
         <div
           className="animate-fade-up mb-10 inline-flex items-center gap-2 rounded-full border border-fd-border bg-fd-card px-4 py-1.5"
           style={{
-            animationDelay: '0s',
+            animationDelay: '0.05s',
             fontFamily: 'var(--font-mono)',
             fontSize: '0.75rem',
           }}
