@@ -36,16 +36,15 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
+import { CopyableCommand } from '@/components/copyable-command'
+import { getGatewayStatus } from '@/lib/gateway-status'
 import {
   PlusIcon,
   ServerIcon,
   TrashIcon,
   XCircleIcon,
   RefreshCwIcon,
-  CopyIcon,
-  CheckIcon,
   LinkIcon,
-  TerminalIcon,
   PencilIcon,
 } from 'lucide-react'
 
@@ -54,22 +53,6 @@ export const Route = createFileRoute('/dashboard/gateways/')({
   errorComponent: RouteErrorFallback,
 })
 
-function statusConfig(status: string) {
-  switch (status) {
-    case 'connected':
-      return { text: 'Connected', dot: 'bg-emerald-500' }
-    case 'connecting':
-      return { text: 'Connecting', dot: 'bg-amber-500 animate-pulse' }
-    case 'pairing':
-      return { text: 'Pairing Required', dot: 'bg-amber-400 animate-pulse' }
-    case 'auth-failed':
-      return { text: 'Auth Failed', dot: 'bg-destructive' }
-    case 'disconnected':
-    default:
-      return { text: 'Offline', dot: 'bg-muted-foreground/50' }
-  }
-}
-
 function GatewayPairingHint({
   requestId,
   gatewayId,
@@ -77,17 +60,7 @@ function GatewayPairingHint({
   requestId: string | null
   gatewayId: string
 }) {
-  const [copied, setCopied] = useState(false)
-  const command = requestId
-    ? `openclaw devices approve ${requestId}`
-    : null
-
-  const copyCommand = async () => {
-    if (!command) return
-    await navigator.clipboard.writeText(command)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  const command = requestId ? `openclaw devices approve ${requestId}` : null
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -95,20 +68,7 @@ function GatewayPairingHint({
         Device pairing required
       </span>
       {command ? (
-        <button
-          type="button"
-          onClick={copyCommand}
-          className="group flex items-center gap-1.5 rounded border bg-muted/60 px-2 py-1 text-left transition-colors hover:bg-muted"
-        >
-          <code className="flex-1 font-mono text-[0.5625rem] text-foreground truncate">
-            {command}
-          </code>
-          {copied ? (
-            <CheckIcon className="size-2.5 text-emerald-500 shrink-0" />
-          ) : (
-            <CopyIcon className="size-2.5 text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
-          )}
-        </button>
+        <CopyableCommand command={command} />
       ) : (
         <Link
           to="/dashboard/gateways/$gatewayId"
@@ -191,7 +151,7 @@ function GatewaysPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {gateways.map((gw) => {
-            const status = statusConfig(gw.status)
+            const status = getGatewayStatus(gw.status)
             return (
               <Card
                 key={gw.id}
@@ -318,34 +278,6 @@ type DialogPhase =
   | { step: 'error'; message: string }
   | { step: 'pairing'; requestId: string | null }
   | { step: 'saving' }
-
-function CopyableCommand({ command }: { command: string }) {
-  const [copied, setCopied] = useState(false)
-
-  const copy = async () => {
-    await navigator.clipboard.writeText(command)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={copy}
-      className="group flex items-center gap-2 rounded-md border bg-muted/60 px-3 py-2 text-left transition-colors hover:bg-muted"
-    >
-      <TerminalIcon className="size-3 text-muted-foreground shrink-0" />
-      <code className="flex-1 font-mono text-[0.6875rem] text-foreground select-all">
-        {command}
-      </code>
-      {copied ? (
-        <CheckIcon className="size-3 text-emerald-500 shrink-0" />
-      ) : (
-        <CopyIcon className="size-3 text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
-      )}
-    </button>
-  )
-}
 
 function EditGatewayDialog({
   gateway,

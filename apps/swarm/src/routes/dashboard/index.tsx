@@ -12,6 +12,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
+import { MetricCard } from '@/components/metric-card'
 import {
   ServerIcon,
   WifiIcon,
@@ -22,44 +23,11 @@ import {
   LinkIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-
-function activityStatus(lastInputSeconds?: number): { label: string; color: string } {
-  if (lastInputSeconds === undefined || lastInputSeconds === null) {
-    return { label: 'Unknown', color: 'bg-muted-foreground/50' }
-  }
-  if (lastInputSeconds < 60) {
-    return { label: 'Active now', color: 'bg-emerald-500' }
-  }
-  if (lastInputSeconds < 300) {
-    const mins = Math.floor(lastInputSeconds / 60)
-    return { label: `Active ${mins}m ago`, color: 'bg-emerald-500' }
-  }
-  if (lastInputSeconds < 1800) {
-    const mins = Math.floor(lastInputSeconds / 60)
-    return { label: `Idle ${mins}m ago`, color: 'bg-amber-500' }
-  }
-  return { label: 'Away', color: 'bg-muted-foreground/50' }
-}
+import { getGatewayStatus, getActivityStatus } from '@/lib/gateway-status'
 
 export const Route = createFileRoute('/dashboard/')({
   component: SwarmDashboard,
 })
-
-function statusLabel(status: string) {
-  switch (status) {
-    case 'connected':
-      return { text: 'Connected', className: 'text-emerald-600 dark:text-emerald-400' }
-    case 'connecting':
-      return { text: 'Connecting', className: 'text-amber-600 dark:text-amber-400' }
-    case 'pairing':
-      return { text: 'Pairing Required', className: 'text-amber-600 dark:text-amber-400' }
-    case 'auth-failed':
-      return { text: 'Auth Failed', className: 'text-destructive' }
-    case 'disconnected':
-    default:
-      return { text: 'Offline', className: 'text-muted-foreground' }
-  }
-}
 
 function SwarmDashboard() {
   const { data: overview, isLoading: overviewLoading } = useQuery(
@@ -124,23 +92,23 @@ function SwarmDashboard() {
       <h1 className="text-sm font-semibold">Swarm Dashboard</h1>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
+        <MetricCard
           label="Gateways Online"
           value={`${overview?.connectedGateways ?? 0} / ${overview?.totalGateways ?? 0}`}
           icon={<WifiIcon className="size-3.5 text-emerald-500" />}
         />
-        <StatCard
+        <MetricCard
           label="Gateways Offline"
           value={String(overview?.disconnectedGateways ?? 0)}
           icon={<WifiOffIcon className="size-3.5 text-muted-foreground" />}
           alert={(overview?.disconnectedGateways ?? 0) > 0}
         />
-        <StatCard
+        <MetricCard
           label="Active Sessions"
           value={String(overview?.totalActiveSessions ?? 0)}
           icon={<ActivityIcon className="size-3.5 text-blue-500" />}
         />
-        <StatCard
+        <MetricCard
           label="Total Cost (24h)"
           value={
             costLoading
@@ -157,7 +125,7 @@ function SwarmDashboard() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {gateways.map((gw) => {
-          const status = statusLabel(gw.status)
+          const status = getGatewayStatus(gw.status)
           return (
             <Link
               key={gw.id}
@@ -169,20 +137,7 @@ function SwarmDashboard() {
                   <div className="flex items-start justify-between">
                     <CardTitle className="truncate">{gw.label}</CardTitle>
                     <Badge variant="outline" className="shrink-0 gap-1.5">
-                      <span
-                        className={cn(
-                          'size-1.5 rounded-full',
-                          gw.status === 'connected'
-                            ? 'bg-emerald-500'
-                            : gw.status === 'connecting'
-                              ? 'bg-amber-500 animate-pulse'
-                              : gw.status === 'pairing'
-                                ? 'bg-amber-400 animate-pulse'
-                                : gw.status === 'auth-failed'
-                                  ? 'bg-destructive'
-                                  : 'bg-muted-foreground/50',
-                        )}
-                      />
+                      <span className={cn('size-1.5 rounded-full', status.dot)} />
                       {status.text}
                     </Badge>
                   </div>
@@ -234,7 +189,7 @@ function SwarmDashboard() {
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {group.devices.map((device, i) => {
-                      const activity = activityStatus(device.lastInputSeconds)
+                      const activity = getActivityStatus(device.lastInputSeconds)
                       return (
                         <Link
                           key={`${device.host}-${device.ip}-${i}`}
@@ -264,36 +219,3 @@ function SwarmDashboard() {
   )
 }
 
-function StatCard({
-  label,
-  value,
-  icon,
-  alert,
-}: {
-  label: string
-  value: string
-  icon: React.ReactNode
-  alert?: boolean
-}) {
-  return (
-    <Card
-      size="sm"
-      className={cn(
-        'bg-muted/40',
-        alert && 'ring-destructive/30',
-      )}
-    >
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
-            {label}
-          </span>
-          {icon}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <span className="text-lg font-semibold tabular-nums">{value}</span>
-      </CardContent>
-    </Card>
-  )
-}

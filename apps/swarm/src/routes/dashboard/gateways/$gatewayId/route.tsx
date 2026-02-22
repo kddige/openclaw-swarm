@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { createFileRoute, createLink, Link, Outlet } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -9,14 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
-import {
-  ArrowLeftIcon,
-  LinkIcon,
-  TerminalIcon,
-  CopyIcon,
-  CheckIcon,
-  RefreshCwIcon,
-} from 'lucide-react'
+import { CopyableCommand } from '@/components/copyable-command'
+import { getGatewayStatus } from '@/lib/gateway-status'
+import { ArrowLeftIcon, LinkIcon, RefreshCwIcon } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export const Route = createFileRoute('/dashboard/gateways/$gatewayId')({
@@ -24,24 +18,8 @@ export const Route = createFileRoute('/dashboard/gateways/$gatewayId')({
   errorComponent: RouteErrorFallback,
 })
 
-function statusBadge(status: string) {
-  switch (status) {
-    case 'connected':
-      return { text: 'Connected', dot: 'bg-emerald-500' }
-    case 'connecting':
-      return { text: 'Connecting', dot: 'bg-amber-500 animate-pulse' }
-    case 'pairing':
-      return { text: 'Pairing Required', dot: 'bg-amber-400 animate-pulse' }
-    case 'auth-failed':
-      return { text: 'Auth Failed', dot: 'bg-destructive' }
-    default:
-      return { text: 'Offline', dot: 'bg-muted-foreground/50' }
-  }
-}
-
 function PairingBanner({ gatewayId, requestId }: { gatewayId: string; requestId: string | null }) {
   const queryClient = useQueryClient()
-  const [copied, setCopied] = useState(false)
 
   const reconnectMutation = useMutation({
     ...orpc.gateway.reconnect.mutationOptions(),
@@ -57,13 +35,6 @@ function PairingBanner({ gatewayId, requestId }: { gatewayId: string; requestId:
 
   const command = requestId ? `openclaw devices approve ${requestId}` : null
 
-  const copyCommand = async () => {
-    if (!command) return
-    await navigator.clipboard.writeText(command)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
       <div className="flex items-center gap-2">
@@ -77,21 +48,7 @@ function PairingBanner({ gatewayId, requestId }: { gatewayId: string; requestId:
         machine running the gateway:
       </p>
       {command ? (
-        <button
-          type="button"
-          onClick={copyCommand}
-          className="group flex items-center gap-2 rounded-md border bg-muted/60 px-3 py-2 text-left transition-colors hover:bg-muted"
-        >
-          <TerminalIcon className="size-3 text-muted-foreground shrink-0" />
-          <code className="flex-1 font-mono text-[0.6875rem] text-foreground select-all">
-            {command}
-          </code>
-          {copied ? (
-            <CheckIcon className="size-3 text-emerald-500 shrink-0" />
-          ) : (
-            <CopyIcon className="size-3 text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
-          )}
-        </button>
+        <CopyableCommand command={command} />
       ) : (
         <div className="flex flex-col gap-1.5 rounded-md border bg-muted/60 px-3 py-2">
           <code className="font-mono text-[0.6875rem] text-foreground">openclaw devices list</code>
@@ -145,7 +102,7 @@ function GatewayLayout() {
     )
   }
 
-  const status = statusBadge(gateway.status)
+  const status = getGatewayStatus(gateway.status)
 
   return (
     <div className="flex flex-col gap-4 p-6">

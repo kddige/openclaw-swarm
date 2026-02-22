@@ -543,32 +543,24 @@ export class GatewayManager {
     agents: Array<{ gatewayId: string; gatewayLabel: string } & AgentEntry>
   }> {
     const q = query.toLowerCase()
-    const connectedEntries = Array.from(this.connections.entries()).filter(
-      ([, conn]) => conn.getStatus() === 'connected',
-    )
 
-    const results = await Promise.allSettled(
-      connectedEntries.map(async ([id, conn]) => {
-        const [sessions, agents] = await Promise.allSettled([
-          this.getGatewaySessions(id),
-          this.getAgents(id),
-        ])
-        return {
-          id,
-          label: conn.label,
-          sessions: sessions.status === 'fulfilled' ? sessions.value : [],
-          agents: agents.status === 'fulfilled' ? agents.value : [],
-        }
-      }),
-    )
+    const perGateway = await this.aggregateConnected(async (id, conn) => {
+      const [sessions, agents] = await Promise.allSettled([
+        this.getGatewaySessions(id),
+        this.getAgents(id),
+      ])
+      return {
+        id,
+        label: conn.label,
+        sessions: sessions.status === 'fulfilled' ? sessions.value : [],
+        agents: agents.status === 'fulfilled' ? agents.value : [],
+      }
+    })
 
     const matchedSessions: Array<{ gatewayId: string; gatewayLabel: string } & SessionEntry> = []
     const matchedAgents: Array<{ gatewayId: string; gatewayLabel: string } & AgentEntry> = []
 
-    for (const result of results) {
-      if (result.status !== 'fulfilled') continue
-      const { id, label, sessions, agents } = result.value
-
+    for (const { id, label, sessions, agents } of perGateway) {
       for (const session of sessions) {
         if (matchedSessions.length >= 60) break
         const haystack = [
@@ -601,24 +593,10 @@ export class GatewayManager {
   async getSwarmPresence(): Promise<
     Array<{ gatewayId: string; gatewayLabel: string; devices: PresenceEntry[] }>
   > {
-    const connectedEntries = Array.from(this.connections.entries()).filter(
-      ([, conn]) => conn.getStatus() === 'connected',
-    )
-
-    const results = await Promise.allSettled(
-      connectedEntries.map(async ([id, conn]) => {
-        const devices = await this.getPresence(id)
-        return { gatewayId: id, gatewayLabel: conn.label, devices }
-      }),
-    )
-
-    const output: Array<{ gatewayId: string; gatewayLabel: string; devices: PresenceEntry[] }> = []
-    for (const result of results) {
-      if (result.status === 'fulfilled') {
-        output.push(result.value)
-      }
-    }
-    return output
+    return this.aggregateConnected(async (id, conn) => {
+      const devices = await this.getPresence(id)
+      return { gatewayId: id, gatewayLabel: conn.label, devices }
+    })
   }
 
   async getSwarmCost(): Promise<{
@@ -630,28 +608,13 @@ export class GatewayManager {
     const startDate = yesterday.toISOString()
     const endDate = now.toISOString()
 
-    const connectedEntries = Array.from(this.connections.entries()).filter(
-      ([, conn]) => conn.getStatus() === 'connected',
-    )
+    const byGateway = await this.aggregateConnected(async (id, conn) => {
+      const summary = await this.getCost(id, startDate, endDate)
+      const cost = summary.daily.reduce((sum, d) => sum + d.totalCost, 0)
+      return { id, label: conn.label, cost }
+    })
 
-    const results = await Promise.allSettled(
-      connectedEntries.map(async ([id, conn]) => {
-        const summary = await this.getCost(id, startDate, endDate)
-        const cost = summary.daily.reduce((sum, d) => sum + d.totalCost, 0)
-        return { id, label: conn.label, cost }
-      }),
-    )
-
-    const byGateway: { id: string; label: string; cost: number }[] = []
-    let totalCost = 0
-
-    for (const result of results) {
-      if (result.status === 'fulfilled') {
-        byGateway.push(result.value)
-        totalCost += result.value.cost
-      }
-    }
-
+    const totalCost = byGateway.reduce((sum, g) => sum + g.cost, 0)
     return { totalCost, byGateway }
   }
 
@@ -689,6 +652,22 @@ export class GatewayManager {
   }
 
   // ── Helpers ───────────────────────────────────────────
+
+  private async aggregateConnected<T>(
+    mapper: (id: string, conn: GatewayConnection) => Promise<T>,
+  ): Promise<T[]> {
+    const connected = Array.from(this.connections.entries()).filter(
+      ([, conn]) => conn.getStatus() === 'connected',
+    )
+    const results = await Promise.allSettled(
+      connected.map(([id, conn]) => mapper(id, conn)),
+    )
+    const fulfilled: T[] = []
+    for (const r of results) {
+      if (r.status === 'fulfilled') fulfilled.push(r.value)
+    }
+    return fulfilled
+  }
 
   private getConnection(id: string): GatewayConnection {
     const conn = this.connections.get(id)

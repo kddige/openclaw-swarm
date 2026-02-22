@@ -6,30 +6,13 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getActivityStatus } from '@/lib/gateway-status'
 import { formatDistanceToNow } from 'date-fns'
 
 export const Route = createFileRoute('/dashboard/gateways/$gatewayId/devices')({
   component: DevicesPage,
   errorComponent: RouteErrorFallback,
 })
-
-function activityStatus(lastInputSeconds?: number): { label: string; color: string } {
-  if (lastInputSeconds === undefined || lastInputSeconds === null) {
-    return { label: 'Unknown', color: 'bg-muted-foreground/50' }
-  }
-  if (lastInputSeconds < 60) {
-    return { label: 'Active now', color: 'bg-emerald-500' }
-  }
-  if (lastInputSeconds < 300) {
-    const mins = Math.floor(lastInputSeconds / 60)
-    return { label: `Active ${mins}m ago`, color: 'bg-emerald-500' }
-  }
-  if (lastInputSeconds < 1800) {
-    const mins = Math.floor(lastInputSeconds / 60)
-    return { label: `Idle ${mins}m ago`, color: 'bg-amber-500' }
-  }
-  return { label: 'Away', color: 'bg-muted-foreground/50' }
-}
 
 function DevicesPage() {
   const { gatewayId } = Route.useParams()
@@ -68,7 +51,7 @@ function DevicesPage() {
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-2">
       {presence.map((entry, i) => {
-        const activity = activityStatus(entry.lastInputSeconds)
+        const activity = getActivityStatus(entry.lastInputSeconds)
         const connectedSince = entry.ts ? formatDistanceToNow(entry.ts, { addSuffix: true }) : null
         return (
           <Card key={`${entry.host}-${entry.ip}-${i}`} className="bg-muted/40">
