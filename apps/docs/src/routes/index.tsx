@@ -12,6 +12,9 @@ import {
   ArrowRight,
   Radio,
   Users,
+  Laptop,
+  Globe,
+  Rocket,
 } from 'lucide-react'
 import logo from '../../assets/logo.png'
 
@@ -33,6 +36,8 @@ function Home() {
         <TerminalDemo />
         <div className="hr-glow mx-auto max-w-5xl" />
         <Architecture />
+        <div className="hr-glow mx-auto max-w-5xl" />
+        <Roadmap />
         <GetStarted />
       </div>
     </HomeLayout>
@@ -91,11 +96,14 @@ function Hero() {
           className="animate-fade-up mb-12 max-w-xl text-lg leading-relaxed text-fd-muted-foreground md:text-xl"
           style={{ animationDelay: '0.2s' }}
         >
-          A native macOS desktop app to monitor sessions, stream logs, and
-          manage security across every OpenClaw Gateway in your
-          infrastructure. Think{' '}
-          <strong className="text-fd-foreground">Portainer</strong>,
-          but for AI agent swarms.
+          Monitor sessions, stream logs, and manage security across every
+          OpenClaw Gateway in your infrastructure. Starting as a{' '}
+          <strong className="text-fd-foreground">desktop app</strong> for fast
+          iteration, evolving into a{' '}
+          <strong className="text-fd-foreground">
+            self-hostable web dashboard
+          </strong>
+          .
         </p>
 
         {/* CTAs */}
@@ -103,21 +111,22 @@ function Hero() {
           className="animate-fade-up flex flex-wrap gap-4"
           style={{ animationDelay: '0.3s' }}
         >
-          <a
-            href="https://github.com/kddige/openclaw-swarm/releases"
-            className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
-            style={{ background: 'var(--landing-accent)' }}
-          >
-            Download for macOS
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-          </a>
           <Link
             to="/docs/$"
             params={{ _splat: 'guide' }}
+            className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
+            style={{ background: 'var(--landing-accent)' }}
+          >
+            Get Started
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <a
+            href="https://github.com/kddige/openclaw-swarm"
             className="glow-border inline-flex items-center gap-2 rounded-lg border border-fd-border px-6 py-3 text-sm font-medium text-fd-muted-foreground transition-colors"
           >
-            Read the Docs
-          </Link>
+            <GitBranch className="size-4" />
+            View on GitHub
+          </a>
         </div>
 
         {/* Swarm preview */}
@@ -563,6 +572,172 @@ function ArchCard({
   )
 }
 
+/* ── Roadmap ──────────────────────────────────────────────────────── */
+
+const phases = [
+  {
+    icon: Laptop,
+    phase: 'Phase 1',
+    label: 'Now',
+    title: 'Electron Desktop App',
+    description:
+      'A native macOS desktop app for fast iteration and immediate developer feedback. Electron gives us access to system-level APIs — safeStorage, native menus, vibrancy — while keeping the React/TypeScript stack familiar.',
+    items: [
+      'Multi-gateway management over WebSocket',
+      'Live session monitoring with real-time token & cost stats',
+      'Streaming logs with filtering',
+      'Device identity via Ed25519 keypairs',
+      'oRPC over MessagePort for type-safe IPC',
+    ],
+    active: true,
+  },
+  {
+    icon: Globe,
+    phase: 'Phase 2',
+    label: 'Next',
+    title: 'Self-Hostable Web Dashboard',
+    description:
+      'The same monitoring UI, deployed as a standalone web app you host alongside your gateways. No desktop install required — accessible from any browser, any OS.',
+    items: [
+      'Deployable via Docker or bare metal',
+      'Browser-based access from any device',
+      'Team-level auth and access controls',
+      'Persistent storage for historical data',
+      'Same real-time WebSocket architecture',
+    ],
+    active: false,
+  },
+  {
+    icon: Rocket,
+    phase: 'Phase 3',
+    label: 'Later',
+    title: 'Platform Expansion',
+    description:
+      'Cross-platform desktop support, richer analytics, and deeper integration with the OpenClaw ecosystem.',
+    items: [
+      'Windows & Linux desktop builds',
+      'Advanced analytics and alerting',
+      'Plugin system for custom integrations',
+      'Multi-tenant gateway management',
+    ],
+    active: false,
+  },
+]
+
+function Roadmap() {
+  return (
+    <section className="relative mx-auto max-w-6xl px-6 py-24">
+      <div className="mb-16 max-w-2xl">
+        <p
+          className="mb-3 text-xs font-medium uppercase tracking-widest"
+          style={{
+            color: 'var(--landing-accent)',
+            fontFamily: 'var(--font-mono)',
+          }}
+        >
+          Roadmap
+        </p>
+        <h2
+          className="mb-4 text-3xl font-bold tracking-tight md:text-4xl"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          Desktop-first,
+          <br />
+          web-ready
+        </h2>
+        <p className="max-w-lg leading-relaxed text-fd-muted-foreground">
+          We're building OpenClaw Swarm as an Electron desktop app first — it
+          gives us the fastest iteration loop and access to native OS APIs.
+          Once the core experience is solid, we'll ship a self-hostable web
+          dashboard that runs anywhere.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {phases.map((p) => (
+          <div
+            key={p.phase}
+            className="glow-border relative overflow-hidden rounded-xl border p-6"
+            style={{
+              borderColor: p.active
+                ? 'var(--landing-accent-dim)'
+                : 'var(--color-fd-border)',
+              background: p.active
+                ? 'color-mix(in srgb, var(--landing-accent) 5%, var(--color-fd-card))'
+                : 'var(--color-fd-card)',
+            }}
+          >
+            {/* Phase badge */}
+            <div className="mb-4 flex items-center gap-2">
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.625rem] font-medium uppercase tracking-wider"
+                style={{
+                  borderColor: p.active
+                    ? 'var(--landing-accent-dim)'
+                    : 'var(--color-fd-border)',
+                  color: p.active
+                    ? 'var(--landing-accent)'
+                    : 'var(--color-fd-muted-foreground)',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
+                {p.active && (
+                  <span
+                    className="pulse-dot inline-block size-1.5 rounded-full"
+                    style={{ background: 'var(--landing-accent)' }}
+                  />
+                )}
+                {p.phase} &middot; {p.label}
+              </span>
+            </div>
+
+            {/* Icon */}
+            <div
+              className="mb-4 inline-flex rounded-lg border p-2.5"
+              style={{
+                borderColor: p.active
+                  ? 'var(--landing-accent-dim)'
+                  : 'var(--color-fd-border)',
+                background: p.active
+                  ? 'color-mix(in srgb, var(--landing-accent) 10%, var(--color-fd-muted))'
+                  : 'var(--color-fd-muted)',
+                color: 'var(--landing-accent)',
+              }}
+            >
+              <p.icon className="size-5" />
+            </div>
+
+            <h3
+              className="mb-2 text-sm font-semibold"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              {p.title}
+            </h3>
+            <p className="mb-4 text-sm leading-relaxed text-fd-muted-foreground">
+              {p.description}
+            </p>
+
+            <ul className="space-y-2">
+              {p.items.map((item) => (
+                <li
+                  key={item}
+                  className="flex items-center gap-2 text-sm text-fd-muted-foreground"
+                >
+                  <span
+                    className="inline-block size-1 rounded-full"
+                    style={{ background: 'var(--landing-accent)' }}
+                  />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 /* ── Get Started CTA ───────────────────────────────────────────────── */
 
 function GetStarted() {
@@ -579,18 +754,20 @@ function GetStarted() {
             Ready to take control?
           </h2>
           <p className="mx-auto mb-8 max-w-md leading-relaxed text-fd-muted-foreground">
-            OpenClaw Swarm is open source and free. Download the app or start
-            contributing to the codebase.
+            OpenClaw Swarm is open source and free. Run the desktop app today
+            or start contributing to help us build the self-hostable web
+            dashboard.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="https://github.com/kddige/openclaw-swarm/releases"
+            <Link
+              to="/docs/$"
+              params={{ _splat: 'guide' }}
               className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
               style={{ background: 'var(--landing-accent)' }}
             >
-              Download for macOS
+              Get Started
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-            </a>
+            </Link>
             <Link
               to="/docs/$"
               params={{ _splat: 'developers' }}

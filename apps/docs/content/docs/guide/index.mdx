@@ -1,11 +1,21 @@
 ---
 title: What is OpenClaw Swarm?
-description: A native macOS desktop app for managing your OpenClaw Gateway deployments
+description: A command center for managing your OpenClaw Gateway deployments — starting as a desktop app, evolving into a self-hostable web dashboard
 ---
 
-OpenClaw Swarm is a **native macOS desktop application** that gives you a single pane of glass across all your [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) deployments.
+OpenClaw Swarm is a **command center** for all your [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) deployments — a single pane of glass for monitoring sessions, streaming logs, and managing security across your AI agent infrastructure.
 
-Think **Portainer, but for AI agent infrastructure**.
+Think **Portainer, but for AI agent swarms**.
+
+## Vision
+
+We're building OpenClaw Swarm in two phases:
+
+1. **Desktop app (now)** — A native Electron app for macOS. Building on the desktop first gives us the fastest iteration loop, access to system-level APIs (safeStorage, native menus, vibrancy), and a tight feedback cycle with early adopters.
+
+2. **Self-hostable web dashboard (next)** — The same monitoring and management UI, packaged as a standalone web application you deploy alongside your gateways. No desktop install required — accessible from any browser, any OS, with team-level auth and persistent storage.
+
+The desktop app isn't a throwaway prototype. The frontend is a standard React/TypeScript SPA — the same code that will power the web dashboard. Electron is the shell we iterate in today; the web is where we ship for production teams tomorrow.
 
 ## What it does
 
@@ -21,9 +31,9 @@ OpenClaw Swarm connects to one or more OpenClaw Gateway instances over WebSocket
 - **Swarm-wide search** — `Cmd+K` command palette to jump between gateways, sessions, and actions
 - **Presence view** — see which agents are connected and active right now
 
-## Requirements
+## Current requirements
 
-- **macOS** — OpenClaw Swarm is a native macOS app with vibrancy and a hidden titlebar
+- **macOS** — the desktop app currently targets macOS with vibrancy and a hidden titlebar (Windows and Linux support is planned)
 - At least one running [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instance to connect to
 
 ## Next steps
