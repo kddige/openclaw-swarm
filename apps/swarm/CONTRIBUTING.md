@@ -39,5 +39,5 @@ See [CLAUDE.md](CLAUDE.md) for a full breakdown of the architecture, key directo
 - **oRPC procedures**: defined in `electron/api/routers/`, use `zod/v4` for input validation.
 - **Shared types**: all persistence, protocol, runtime, and domain types go in `electron/api/types.ts`.
 - **Styling**: Tailwind CSS 4 utility classes + CVA for variants. Use the `cn()` utility from `@/lib/utils`.
-- **Debug logging**: use `createDebugLogger` from `electron/lib/debug.ts` in main process code — logs only appear in dev.
+- **Logging**: use the `Logger` interface from `electron/logger/` in main process code. Classes receive the logger via constructor injection; oRPC procedures access it via `context.logger`.
 - **Do not** edit `src/routeTree.gen.ts` — it is regenerated automatically by TanStack Router on every dev server start.

@@ -46,20 +46,21 @@ const StatusBadge: React.FC<StatusBadgeProps> = (props) => { ... }
 
 ## No console in Electron code
 
-All logging in `electron/` must use `createDebugLogger` from `electron/lib/debug.ts`. Direct `console.*` calls are blocked by ESLint.
+All logging in `electron/` must go through the `Logger` interface from `electron/logger/`. Direct `console.*` calls are blocked by ESLint. See [Logging](/docs/developers/logging) for full details.
 
 ```tsx
-import { createDebugLogger } from '../lib/debug'
-const debug = createDebugLogger('my:namespace')
+// In classes — use the injected logger
+this.logger.info('connected', { gatewayId })
+this.logger.error('request failed', err.message)
 
-debug.log('connected')    // Only logs in dev
-debug.error('failed', e)  // Only logs in dev
+// In oRPC procedures — use context.logger
+context.logger.info('handling request')
 ```
 
 ## UI patterns
 
 - **Card styling**: `bg-muted/40` with `hover:bg-muted/60` for interactive cards
-- **Status dots**: `size-1.5 rounded-full` with semantic colors
+- **Status dots**: `size-1.5 rounded-full` with semantic colors (emerald=connected, amber=connecting/pairing, destructive=auth-failed, muted-foreground/50=offline)
 - **Stat labels**: `text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider`
 - **Monospace IDs**: `font-mono text-[0.625rem]` for keys, device IDs, session keys
 - **Tabular numbers**: `tabular-nums` on all numeric displays
