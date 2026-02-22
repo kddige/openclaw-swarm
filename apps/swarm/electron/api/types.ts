@@ -205,6 +205,179 @@ export interface ChatMessage {
 export interface AgentEntry {
   id: string
   isDefault: boolean
+  name?: string
+  identity?: {
+    name?: string
+    theme?: string
+    emoji?: string
+    avatar?: string
+    avatarUrl?: string
+  }
+}
+
+export interface AgentFileEntry {
+  name: string
+  size: number
+  modifiedAt?: number
+  content?: string
+}
+
+// ============================================================
+// Model Types
+// ============================================================
+
+export interface ModelEntry {
+  id: string
+  name: string
+  provider: string
+  contextWindow?: number
+  reasoning?: boolean
+}
+
+// ============================================================
+// Device Pairing Types
+// ============================================================
+
+export interface PairedDevice {
+  deviceId: string
+  displayName?: string
+  platform?: string
+  clientId?: string
+  clientMode?: string
+  role?: string
+  roles?: string[]
+  scopes?: string[]
+  remoteIp?: string
+  pairedAt?: number
+  lastSeenAt?: number
+}
+
+export interface PendingPairRequest {
+  requestId: string
+  deviceId: string
+  publicKey?: string
+  displayName?: string
+  platform?: string
+  clientId?: string
+  clientMode?: string
+  role?: string
+  roles?: string[]
+  scopes?: string[]
+  remoteIp?: string
+  silent?: boolean
+  isRepair?: boolean
+  ts: number
+}
+
+export interface DevicePairList {
+  pending: PendingPairRequest[]
+  paired: PairedDevice[]
+}
+
+// ============================================================
+// Node Types
+// ============================================================
+
+export interface NodeEntry {
+  nodeId: string
+  displayName?: string
+  platform?: string
+  version?: string
+  caps?: string[]
+  commands?: string[]
+  paired: boolean
+  connected: boolean
+  lastSeenAt?: number
+}
+
+// ============================================================
+// Cron Types
+// ============================================================
+
+export interface CronSchedule {
+  type: 'at' | 'every' | 'cron'
+  at?: string
+  everyMs?: number
+  expr?: string
+  tz?: string
+  staggerMs?: number
+}
+
+export interface CronPayload {
+  type: 'systemEvent' | 'agentTurn'
+  message?: string
+  agentId?: string
+  sessionKey?: string
+}
+
+export interface CronDelivery {
+  mode: 'none' | 'announce' | 'webhook'
+  destination?: string
+}
+
+export interface CronJob {
+  id: string
+  name: string
+  description?: string
+  enabled: boolean
+  deleteAfterRun?: boolean
+  schedule: CronSchedule
+  sessionTarget?: string
+  wakeMode?: string
+  payload: CronPayload
+  delivery?: CronDelivery
+  agentId?: string
+  sessionKey?: string
+  createdAtMs?: number
+  updatedAtMs?: number
+  nextRunAtMs?: number
+  runningAtMs?: number
+  lastRunAtMs?: number
+  lastStatus?: string
+  lastError?: string
+  consecutiveErrors?: number
+}
+
+export interface CronRunLogEntry {
+  ts: number
+  status: string
+  durationMs?: number
+  error?: string
+}
+
+// ============================================================
+// Skill Types
+// ============================================================
+
+export interface SkillEntry {
+  key: string
+  name: string
+  enabled: boolean
+  installed: boolean
+  hasApiKey?: boolean
+  env?: Record<string, string>
+}
+
+// ============================================================
+// Channel Status Types
+// ============================================================
+
+export interface ChannelsStatusResponse {
+  ts: number
+  channelOrder?: string[]
+  channelLabels?: Record<string, string>
+  channels: Record<string, ChannelHealthDetail>
+  channelAccounts?: Record<string, unknown[]>
+  channelDefaultAccountId?: Record<string, string>
+}
+
+// ============================================================
+// Session Preview Types
+// ============================================================
+
+export interface SessionPreview {
+  key: string
+  messages: { role: string; content: string; ts?: number }[]
 }
 
 // ============================================================
@@ -275,6 +448,35 @@ export interface ExecApprovalsSnapshot {
   exists: boolean
   hash: string
   file: ExecApprovalsFile
+}
+
+// ============================================================
+// Exec Approval Requests (real-time)
+// ============================================================
+
+export interface ExecApprovalRequest {
+  id: string
+  request: {
+    command: string
+    cwd?: string | null
+    host?: string | null
+    security?: string | null
+    ask?: string | null
+    agentId?: string | null
+    resolvedPath?: string | null
+    sessionKey?: string | null
+  }
+  createdAtMs: number
+  expiresAtMs: number
+}
+
+export type ExecApprovalDecision = 'allow-once' | 'allow-always' | 'deny'
+
+export interface ExecApprovalResolved {
+  id: string
+  decision: ExecApprovalDecision
+  resolvedBy: string | null
+  ts: number
 }
 
 // ============================================================

@@ -18,10 +18,22 @@ import type {
   SessionUsageLog,
   ChatMessage,
   AgentEntry,
+  AgentFileEntry,
   PresenceEntry,
   CostSummary,
   ExecApprovalsSnapshot,
+  ExecApprovalsFile,
+  ExecApprovalRequest,
+  ExecApprovalResolved,
+  ExecApprovalDecision,
   GatewayConfigResponse,
+  ModelEntry,
+  DevicePairList,
+  NodeEntry,
+  CronJob,
+  CronRunLogEntry,
+  ChannelsStatusResponse,
+  SessionPreview,
 } from '../api/types'
 
 export class GatewayManager {
@@ -131,6 +143,28 @@ export class GatewayManager {
               this.logger.error('[chat-forward] publish failed', err)
             })
         }
+      }
+      if (event.type === 'exec.approval.requested') {
+        const payload = event.payload as ExecApprovalRequest
+        this.logger.info('[exec-approval] requested', { id: payload.id, command: payload.request?.command })
+        gatewayPublisher
+          .publish('execApproval', {
+            gatewayId: event.gatewayId,
+            type: 'requested',
+            requested: payload,
+          })
+          .catch(() => {})
+      }
+      if (event.type === 'exec.approval.resolved') {
+        const payload = event.payload as ExecApprovalResolved
+        this.logger.info('[exec-approval] resolved', { id: payload.id, decision: payload.decision })
+        gatewayPublisher
+          .publish('execApproval', {
+            gatewayId: event.gatewayId,
+            type: 'resolved',
+            resolved: payload,
+          })
+          .catch(() => {})
       }
     })
 
@@ -431,11 +465,76 @@ export class GatewayManager {
       unknown
     >
     const defaultId = result.defaultId as string | undefined
-    const raw = (result.agents ?? result) as { id: string }[]
+    const raw = (result.agents ?? result) as {
+      id: string
+      name?: string
+      identity?: AgentEntry['identity']
+    }[]
     return raw.map((a) => ({
       id: a.id,
       isDefault: a.id === defaultId,
+      name: a.name,
+      identity: a.identity,
     }))
+  }
+
+  async createAgent(
+    gatewayId: string,
+    params: { name: string; workspace?: string; emoji?: string; avatar?: string },
+  ): Promise<{ ok: true; agentId: string }> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('agents.create', params)) as { ok: true; agentId: string }
+  }
+
+  async updateAgent(
+    gatewayId: string,
+    params: { agentId: string; name?: string; workspace?: string; model?: string; avatar?: string },
+  ): Promise<{ ok: true; agentId: string }> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('agents.update', params)) as { ok: true; agentId: string }
+  }
+
+  async deleteAgent(
+    gatewayId: string,
+    agentId: string,
+    deleteFiles?: boolean,
+  ): Promise<{ ok: true; agentId: string }> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('agents.delete', { agentId, deleteFiles })) as {
+      ok: true
+      agentId: string
+    }
+  }
+
+  async getAgentFiles(gatewayId: string, agentId: string): Promise<AgentFileEntry[]> {
+    const conn = this.getConnection(gatewayId)
+    const result = (await conn.request('agents.files.list', { agentId })) as {
+      files: AgentFileEntry[]
+    }
+    return result.files ?? []
+  }
+
+  async getAgentFile(
+    gatewayId: string,
+    agentId: string,
+    name: string,
+  ): Promise<AgentFileEntry> {
+    const conn = this.getConnection(gatewayId)
+    const result = (await conn.request('agents.files.get', { agentId, name })) as {
+      file: AgentFileEntry
+    }
+    return result.file
+  }
+
+  async setAgentFile(
+    gatewayId: string,
+    agentId: string,
+    name: string,
+    content: string,
+  ): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('agents.files.set', { agentId, name, content })
+    return { ok: true }
   }
 
   async getPresence(gatewayId: string): Promise<PresenceEntry[]> {
@@ -487,6 +586,307 @@ export class GatewayManager {
     const conn = this.getConnection(gatewayId)
     await conn.request('config.apply', { raw, ...(baseHash ? { baseHash } : {}) })
     return { ok: true }
+  }
+
+  // ── Tier 1: Chat Abort ───────────────────────────────
+
+  async abortChat(
+    gatewayId: string,
+    sessionKey: string,
+    runId?: string,
+  ): Promise<{ ok: true; aborted: boolean; runIds?: string[] }> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('chat.abort', {
+      sessionKey,
+      ...(runId ? { runId } : {}),
+    })) as { ok: true; aborted: boolean; runIds?: string[] }
+  }
+
+  // ── Tier 1: Models ─────────────────────────────────────
+
+  async getModels(gatewayId: string): Promise<ModelEntry[]> {
+    const conn = this.getConnection(gatewayId)
+    const result = (await conn.request('models.list', {})) as { models: ModelEntry[] }
+    return result.models ?? []
+  }
+
+  // ── Tier 1: Device Pairing ─────────────────────────────
+
+  async getDevicePairs(gatewayId: string): Promise<DevicePairList> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('device.pair.list', {})) as DevicePairList
+  }
+
+  async approveDevicePair(
+    gatewayId: string,
+    requestId: string,
+  ): Promise<{ requestId: string }> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('device.pair.approve', { requestId })) as {
+      requestId: string
+    }
+  }
+
+  async rejectDevicePair(
+    gatewayId: string,
+    requestId: string,
+  ): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('device.pair.reject', { requestId })
+    return { ok: true }
+  }
+
+  async removeDevicePair(
+    gatewayId: string,
+    deviceId: string,
+  ): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('device.pair.remove', { deviceId })
+    return { ok: true }
+  }
+
+  async rotateDeviceToken(
+    gatewayId: string,
+    deviceId: string,
+    role: string,
+    scopes?: string[],
+  ): Promise<{ deviceId: string; token: string }> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('device.token.rotate', {
+      deviceId,
+      role,
+      ...(scopes ? { scopes } : {}),
+    })) as { deviceId: string; token: string }
+  }
+
+  async revokeDeviceToken(
+    gatewayId: string,
+    deviceId: string,
+    role: string,
+  ): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('device.token.revoke', { deviceId, role })
+    return { ok: true }
+  }
+
+  // ── Tier 1: Exec Approvals Write ───────────────────────
+
+  async setExecApprovals(
+    gatewayId: string,
+    file: ExecApprovalsFile,
+    baseHash?: string,
+  ): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('exec.approvals.set', { file, ...(baseHash ? { baseHash } : {}) })
+    return { ok: true }
+  }
+
+  async resolveExecApproval(
+    gatewayId: string,
+    id: string,
+    decision: ExecApprovalDecision,
+  ): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('exec.approval.resolve', { id, decision })
+    return { ok: true }
+  }
+
+  // ── Tier 1: Session Preview ────────────────────────────
+
+  async getSessionPreviews(
+    gatewayId: string,
+    keys: string[],
+    limit?: number,
+  ): Promise<SessionPreview[]> {
+    const conn = this.getConnection(gatewayId)
+    const result = (await conn.request('sessions.preview', {
+      keys,
+      ...(limit ? { limit } : {}),
+    })) as { previews: SessionPreview[] }
+    return result.previews ?? []
+  }
+
+  // ── Tier 2: Cron ───────────────────────────────────────
+
+  async getCronJobs(gatewayId: string, includeDisabled?: boolean): Promise<CronJob[]> {
+    const conn = this.getConnection(gatewayId)
+    const result = (await conn.request('cron.list', {
+      ...(includeDisabled ? { includeDisabled } : {}),
+    })) as { jobs: CronJob[] }
+    return result.jobs ?? []
+  }
+
+  async getCronStatus(gatewayId: string): Promise<unknown> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('cron.status', {})
+  }
+
+  async addCronJob(
+    gatewayId: string,
+    params: {
+      name: string
+      schedule: CronJob['schedule']
+      payload: CronJob['payload']
+      sessionTarget?: string
+      wakeMode?: string
+      delivery?: CronJob['delivery']
+      agentId?: string
+      sessionKey?: string
+      description?: string
+      enabled?: boolean
+      deleteAfterRun?: boolean
+    },
+  ): Promise<CronJob> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('cron.add', params)) as CronJob
+  }
+
+  async updateCronJob(
+    gatewayId: string,
+    jobId: string,
+    patch: Partial<
+      Pick<
+        CronJob,
+        'name' | 'schedule' | 'payload' | 'delivery' | 'enabled' | 'description' | 'deleteAfterRun'
+      >
+    >,
+  ): Promise<CronJob> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('cron.update', { id: jobId, patch })) as CronJob
+  }
+
+  async removeCronJob(gatewayId: string, jobId: string): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('cron.remove', { id: jobId })
+    return { ok: true }
+  }
+
+  async runCronJob(
+    gatewayId: string,
+    jobId: string,
+    mode?: 'due' | 'force',
+  ): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('cron.run', { id: jobId, ...(mode ? { mode } : {}) })
+    return { ok: true }
+  }
+
+  async getCronRuns(
+    gatewayId: string,
+    jobId: string,
+    limit?: number,
+  ): Promise<CronRunLogEntry[]> {
+    const conn = this.getConnection(gatewayId)
+    const result = (await conn.request('cron.runs', {
+      id: jobId,
+      ...(limit ? { limit } : {}),
+    })) as { entries: CronRunLogEntry[] }
+    return result.entries ?? []
+  }
+
+  // ── Tier 2: Nodes ──────────────────────────────────────
+
+  async getNodes(gatewayId: string): Promise<NodeEntry[]> {
+    const conn = this.getConnection(gatewayId)
+    const result = (await conn.request('node.list', {})) as { nodes: NodeEntry[] }
+    return result.nodes ?? []
+  }
+
+  async describeNode(gatewayId: string, nodeId: string): Promise<unknown> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('node.describe', { nodeId })
+  }
+
+  async invokeNode(
+    gatewayId: string,
+    nodeId: string,
+    command: string,
+    params?: Record<string, unknown>,
+    timeoutMs?: number,
+  ): Promise<unknown> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('node.invoke', {
+      nodeId,
+      command,
+      ...(params ? { params } : {}),
+      ...(timeoutMs ? { timeoutMs } : {}),
+      idempotencyKey: crypto.randomUUID(),
+    })
+  }
+
+  // ── Tier 2: Gateway Update ─────────────────────────────
+
+  async runUpdate(gatewayId: string): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('update.run', {})
+    return { ok: true }
+  }
+
+  // ── Tier 3: Skills ─────────────────────────────────────
+
+  async getSkillsStatus(gatewayId: string, agentId?: string): Promise<unknown> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('skills.status', { ...(agentId ? { agentId } : {}) })
+  }
+
+  async installSkill(
+    gatewayId: string,
+    name: string,
+    installId: string,
+  ): Promise<unknown> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('skills.install', { name, installId })
+  }
+
+  async updateSkill(
+    gatewayId: string,
+    skillKey: string,
+    updates: { enabled?: boolean; apiKey?: string; env?: Record<string, string> },
+  ): Promise<unknown> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('skills.update', { skillKey, ...updates })
+  }
+
+  // ── Tier 3: Channels ───────────────────────────────────
+
+  async getChannelsStatus(
+    gatewayId: string,
+    probe?: boolean,
+  ): Promise<ChannelsStatusResponse> {
+    const conn = this.getConnection(gatewayId)
+    return (await conn.request('channels.status', {
+      ...(probe ? { probe } : {}),
+    })) as ChannelsStatusResponse
+  }
+
+  async logoutChannel(
+    gatewayId: string,
+    channel: string,
+    accountId?: string,
+  ): Promise<{ ok: true }> {
+    const conn = this.getConnection(gatewayId)
+    await conn.request('channels.logout', { channel, ...(accountId ? { accountId } : {}) })
+    return { ok: true }
+  }
+
+  // ── Tier 3: Send Message ───────────────────────────────
+
+  async sendMessage(
+    gatewayId: string,
+    params: {
+      to: string
+      message?: string
+      channel?: string
+      accountId?: string
+      threadId?: string
+      sessionKey?: string
+    },
+  ): Promise<unknown> {
+    const conn = this.getConnection(gatewayId)
+    return conn.request('send', {
+      ...params,
+      idempotencyKey: crypto.randomUUID(),
+    })
   }
 
   async getLogsTail(
@@ -688,6 +1088,10 @@ export class GatewayManager {
       gatewayStatus: conn.getCachedStatus(),
       health: conn.getCachedHealth(),
     }
+  }
+
+  getDeviceId(): string {
+    return this.identity.deviceId
   }
 
   destroy(): void {
