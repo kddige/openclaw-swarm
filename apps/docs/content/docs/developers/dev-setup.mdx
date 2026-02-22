@@ -50,17 +50,18 @@ The swarm app lives in `apps/swarm/`:
 
 ```
 apps/swarm/
-├── electron/            # Electron main process
-│   ├── api/routers/     # oRPC procedure handlers
-│   ├── gateway/         # WebSocket connection layer
-│   ├── lib/             # Utilities (debug logger)
-│   ├── main.ts          # App entry point
-│   ├── preload.ts       # Preload script
-│   └── store.ts         # electron-store persistence
-├── src/                 # React renderer
-│   ├── routes/          # TanStack Router file-based routes
-│   ├── components/ui/   # shadcn/ui components
-│   └── lib/             # Utilities and oRPC client
-├── eslint.config.js     # ESLint with custom project rules
-└── moon.yml             # Moon task definitions
+├── electron/                # Electron main process
+│   ├── api/routers/         # oRPC procedure handlers
+│   ├── gateway/             # WebSocket connection layer
+│   ├── logger/              # Transport-agnostic logging system
+│   ├── main.ts              # App entry point
+│   ├── preload.ts           # Preload script
+│   ├── store.ts             # electron-store persistence
+│   └── device-identity.ts   # Ed25519 keypair + challenge signing
+├── src/                     # React renderer
+│   ├── routes/              # TanStack Router file-based routes
+│   ├── components/ui/       # shadcn/ui components
+│   └── lib/                 # Utilities and oRPC client
+├── eslint.config.js         # ESLint with custom project rules
+└── moon.yml                 # Moon task definitions
 ```

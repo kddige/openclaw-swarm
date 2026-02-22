@@ -45,8 +45,9 @@ moon run root:format     # Prettier formatting (whole monorepo)
 │   ├── toolchains.yml   # Bun toolchain
 │   └── tasks/           # Inherited tasks (lint, typecheck)
 ├── apps/
-│   └── swarm/           # Electron desktop app
-│       └── moon.yml     # Swarm-specific tasks (dev, build)
+│   ├── swarm/           # Electron desktop app
+│   │   └── moon.yml     # Swarm-specific tasks (dev, build)
+│   └── docs/            # Documentation site (Fumadocs + TanStack Start)
 ├── .prototools          # Pinned tool versions (moon, bun)
 ├── .editorconfig        # Editor formatting defaults
 ├── .prettierrc          # Shared Prettier config
@@ -98,14 +99,18 @@ const StatusBadge: React.FC<StatusBadgeProps> = (props) => { ... }
 
 ### No `console.*` in Electron code
 
-All logging in `electron/` must go through `createDebugLogger`:
+All logging in `electron/` must go through the `Logger` interface from `electron/logger/`. Classes receive the logger via constructor injection; oRPC procedures access it via `context.logger`. Three transports run simultaneously: console (dev only), file (NDJSON with rotation), and memory (ring buffer for in-app viewer).
 
 ```tsx
-import { createDebugLogger } from '../lib/debug'
-const debug = createDebugLogger('my:namespace')
+// In classes — use the injected logger
+this.logger.info('connected', { gatewayId })
+this.logger.error('request failed', err.message)
 
-debug.log('connected')    // Only logs in dev
-debug.error('failed', e)  // Only logs in dev
+// Child loggers for sub-components
+const childLogger = this.logger.child('conn')
+
+// In oRPC procedures
+context.logger.info('handling request')
 ```
 
 ## Architecture overview

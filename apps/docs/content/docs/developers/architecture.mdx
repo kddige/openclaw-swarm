@@ -9,10 +9,12 @@ The main process owns all WebSocket connections to remote gateways via `GatewayM
 
 ```
 Renderer (React)
-  \u2514\u2500\u2500 oRPC client (MessagePort)
-        \u2514\u2500\u2500 Main process (oRPC server)
-              \u2514\u2500\u2500 GatewayManager
-                    \u2514\u2500\u2500 WebSocket connections \u2192 OpenClaw Gateways
+  └── oRPC client (MessagePort)
+        └── Main process (oRPC server)
+              ├── GatewayManager
+              │     └── WebSocket connections → OpenClaw Gateways
+              ├── Logger (console + file + memory transports)
+              └── electron-store (safeStorage encryption)
 ```
 
 ## Key directories
@@ -23,15 +25,18 @@ All paths relative to `apps/swarm/`:
 |---|---|
 | `src/routes/` | File-based routes (TanStack Router) |
 | `src/components/ui/` | shadcn/ui components |
-| `src/lib/` | Utilities and oRPC client |
+| `src/lib/` | Utilities, oRPC client, shared helpers |
 | `electron/` | Main process, preload, API |
-| `electron/api/routers/` | oRPC router files |
-| `electron/api/types.ts` | All shared TypeScript types |
-| `electron/gateway/` | WebSocket connection layer |
+| `electron/api/routers/` | oRPC router files (gateway, swarm, events, logs, window) |
+| `electron/api/types.ts` | All shared TypeScript types (persistence, protocol, runtime, domain) |
+| `electron/gateway/` | WebSocket connection layer (manager, connection, protocol, publisher, schemas) |
+| `electron/logger/` | Transport-agnostic logging system |
+| `electron/store.ts` | electron-store persistence with safeStorage encryption |
+| `electron/device-identity.ts` | Ed25519 keypair generation + challenge signing |
 
 ## oRPC IPC
 
-The renderer creates a `MessageChannel` and sends one port to the main process. The oRPC client uses `RPCLink` over this channel.
+The renderer creates a `MessageChannel` and sends one port to the main process via `ipcMain`. The oRPC client (`src/lib/orpc.ts`) uses `RPCLink` over this channel. The server side uses `RPCHandler` from `@orpc/server/message-port`.
 
 ```tsx
 // Queries — use directly in components, never in custom hooks
@@ -40,6 +45,25 @@ useQuery(orpc.gateway.get.queryOptions({ input: { id: gatewayId } }))
 
 // Mutations
 useMutation(orpc.gateway.add.mutationOptions())
+
+// Event streaming (real-time updates from main process)
+useQuery(
+  orpc.events.subscribe.experimental_streamedOptions({
+    queryFnOptions: { refetchMode: 'replace' },
+  }),
+)
+```
+
+## oRPC context
+
+Every procedure receives a context with three fields:
+
+```tsx
+type Context = {
+  win: BrowserWindow
+  gatewayManager: GatewayManager
+  logger: Logger
+}
 ```
 
 ## Procedure definitions
@@ -56,3 +80,63 @@ export const exampleRouter = {
   }),
 }
 ```
+
+## Routers
+
+The app exposes five oRPC routers:
+
+| Router | Purpose |
+|---|---|
+| `gateway` | CRUD for gateway connections, pairing, sessions, session details |
+| `swarm` | Aggregated overview, cost, presence, search across all gateways |
+| `events` | Async generator streaming gateway events to the renderer |
+| `logs` | Tail the memory ring buffer, export log files, get log path |
+| `window` | Window management (maximize, close) |
+
+## Event streaming
+
+Real-time events from the main process use `MemoryPublisher` from `@orpc/experimental-publisher/memory`. The gateway layer publishes events and the `events` router yields them to the renderer via an async generator:
+
+```tsx
+// Server-side (electron/api/routers/events.ts)
+export const eventsRouter = {
+  subscribe: p.handler(async function* ({ context, signal }) {
+    for await (const event of context.gatewayManager.events.subscribe(
+      'gatewayEvent',
+      { signal },
+    )) {
+      yield event
+    }
+  }),
+}
+```
+
+Event types include `sessions`, `presence`, `health`, `chat`, and `execApproval`.
+
+## Device identity
+
+Each Swarm installation generates a persistent Ed25519 keypair on first launch. The `deviceId` is the SHA-256 hex digest of the raw 32-byte public key. This identity is used to authenticate with gateways via challenge-response signing. Keys are stored in electron-store.
+
+## Route structure
+
+Routes use TanStack Router's file-based convention with memory history (for Electron). The app has a dashboard layout with nested routes:
+
+```
+src/routes/
+├── __root.tsx                              # Root layout
+├── index.tsx                               # Landing / redirect
+└── dashboard/
+    ├── route.tsx                            # Dashboard layout (sidebar + Outlet)
+    ├── index.tsx                            # Dashboard overview
+    ├── logs/index.tsx                       # Log viewer
+    └── gateways/
+        ├── index.tsx                        # Gateway list
+        ├── $gatewayId/
+        │   ├── route.tsx                    # Gateway detail layout
+        │   ├── index.tsx                    # Gateway overview
+        │   ├── settings.tsx                 # Gateway settings
+        │   └── sessions/index.tsx           # Session list
+        └── $gatewayId_.sessions.$sessionKey.tsx  # Session detail (flat route)
+```
+
+`src/routeTree.gen.ts` is auto-generated — never edit it manually.
