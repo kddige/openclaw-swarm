@@ -1,4 +1,11 @@
-import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  MenuItem,
+  nativeTheme,
+} from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { RPCHandler } from '@orpc/server/message-port'
@@ -109,7 +116,80 @@ app.whenReady().then(() => {
   })
 
   createWindow()
-  syncTheme()
+
+  // Replace default menu to remove Reload / DevTools shortcuts
+  const template: Electron.MenuItemConstructorOptions[] = [
+    { role: 'appMenu' },
+    { role: 'editMenu' },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' },
+        ...(isDev
+          ? [
+              { type: 'separator' } as Electron.MenuItemConstructorOptions,
+              { role: 'reload' } as Electron.MenuItemConstructorOptions,
+              { role: 'forceReload' } as Electron.MenuItemConstructorOptions,
+              { role: 'toggleDevTools' } as Electron.MenuItemConstructorOptions,
+            ]
+          : []),
+      ],
+    },
+    { role: 'windowMenu' },
+  ]
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+
+  // Block dangerous keyboard shortcuts in production
+  if (!isDev) {
+    win!.webContents.on('before-input-event', (_event, input) => {
+      if (
+        (input.control || input.meta) &&
+        (input.key === 'r' || input.key === 'R')
+      ) {
+        _event.preventDefault()
+      }
+      if (input.key === 'F5' || input.key === 'F12') {
+        _event.preventDefault()
+      }
+    })
+  }
+
+  // Native context menu for editable fields
+  win!.webContents.on('context-menu', (_event, params) => {
+    const menu = new Menu()
+    if (params.isEditable) {
+      if (params.misspelledWord) {
+        for (const suggestion of params.dictionarySuggestions) {
+          menu.append(
+            new MenuItem({
+              label: suggestion,
+              click: () => win!.webContents.replaceMisspelling(suggestion),
+            }),
+          )
+        }
+        if (params.dictionarySuggestions.length > 0) {
+          menu.append(new MenuItem({ type: 'separator' }))
+        }
+      }
+      menu.append(new MenuItem({ role: 'undo' }))
+      menu.append(new MenuItem({ role: 'redo' }))
+      menu.append(new MenuItem({ type: 'separator' }))
+      menu.append(new MenuItem({ role: 'cut' }))
+      menu.append(new MenuItem({ role: 'copy' }))
+      menu.append(new MenuItem({ role: 'paste' }))
+      menu.append(new MenuItem({ role: 'selectAll' }))
+      menu.popup()
+    } else if (params.selectionText) {
+      menu.append(new MenuItem({ role: 'copy' }))
+      menu.popup()
+    }
+  })
+
+  win!.webContents.on('did-finish-load', syncTheme)
   nativeTheme.on('updated', syncTheme)
 })
 
