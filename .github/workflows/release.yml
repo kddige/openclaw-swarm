@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version override (default: YYYY.MM.DD)"
+        description: 'Version override (default: YYYY.MM.DD)'
         required: false
         type: string
 
@@ -40,7 +40,7 @@ jobs:
     needs: prepare
     runs-on: macos-latest
     env:
-      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -103,23 +103,8 @@ jobs:
           git tag "v${{ needs.prepare.outputs.version }}"
           git push origin "v${{ needs.prepare.outputs.version }}"
 
-          cat > /tmp/release-notes.md <<'NOTES'
-## Installation
-
-### macOS
-The app is not yet code-signed. After mounting the DMG and dragging the app to Applications, macOS may show **"OpenClaw Swarm is damaged and can't be opened."** To fix this, run:
-```bash
-xattr -cr "/Applications/OpenClaw Swarm.app"
-```
-Then open the app normally.
-
-### Windows
-Run the `-Setup.exe` installer. Windows SmartScreen may show a warning for unsigned apps — click **"More info"** → **"Run anyway"**.
-NOTES
-
           find artifacts -type f \( -name '*.dmg' -o -name '*.exe' \) -exec \
-            gh release create "v${{ needs.prepare.outputs.version }}" \
+          gh release create "v${{ needs.prepare.outputs.version }}" \
               --title "v${{ needs.prepare.outputs.version }}" \
               --generate-notes \
-              --notes-file /tmp/release-notes.md \
               {} +
