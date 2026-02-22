@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { HomeLayout } from 'fumadocs-ui/layouts/home'
 import { baseOptions } from '@/lib/layout.shared'
@@ -99,22 +100,7 @@ function Hero() {
         />
 
         {/* Status bar */}
-        <div
-          className="animate-fade-up mb-10 inline-flex items-center gap-2 rounded-full border border-fd-border bg-fd-card px-4 py-1.5"
-          style={{
-            animationDelay: '0.05s',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.75rem',
-          }}
-        >
-          <span
-            className="pulse-dot inline-block size-2 rounded-full"
-            style={{ background: 'var(--landing-accent)' }}
-          />
-          <span className="text-fd-muted-foreground">
-            v0.1.0 &middot; Early Alpha &middot; Open Source
-          </span>
-        </div>
+        <ReleaseBadge />
 
         {/* Title */}
         <h1
@@ -176,6 +162,46 @@ function Hero() {
         </div>
       </div>
     </section>
+  )
+}
+
+/* ── Release Badge ────────────────────────────────────────────────── */
+
+function useLatestRelease() {
+  const [tag, setTag] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('https://api.github.com/repos/kddige/openclaw-swarm/releases/latest')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.tag_name) setTag(data.tag_name)
+      })
+      .catch(() => {})
+  }, [])
+
+  return tag
+}
+
+function ReleaseBadge() {
+  const latestTag = useLatestRelease()
+
+  return (
+    <div
+      className="animate-fade-up mb-10 inline-flex items-center gap-2 rounded-full border border-fd-border bg-fd-card px-4 py-1.5"
+      style={{
+        animationDelay: '0.05s',
+        fontFamily: 'var(--font-mono)',
+        fontSize: '0.75rem',
+      }}
+    >
+      <span
+        className="pulse-dot inline-block size-2 rounded-full"
+        style={{ background: 'var(--landing-accent)' }}
+      />
+      <span className="text-fd-muted-foreground">
+        {latestTag ?? 'v0.1.0'} &middot; Early Alpha &middot; Open Source
+      </span>
+    </div>
   )
 }
 
