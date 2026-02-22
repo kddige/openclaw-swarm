@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-windows
-          path: apps/swarm/release/**/*.exe
+          path: apps/swarm/release/**/*-Setup.exe
 
   release:
     needs: [prepare, build-macos, build-windows]
