@@ -1,4 +1,4 @@
-apps/fleet/src/routeTree.gen.ts
+apps/swarm/src/routeTree.gen.ts
 apps/docs/src/routeTree.gen.ts
 apps/docs/.source
 apps/docs/.output

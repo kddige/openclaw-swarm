@@ -1,9 +1,9 @@
 import Store from 'electron-store'
 import { safeStorage } from 'electron'
-import type { FleetStore } from './api/types'
+import type { SwarmStore } from './api/types'
 
-const store = new Store<FleetStore>({
-  name: 'fleet-config',
+const store = new Store<SwarmStore>({
+  name: 'swarm-config',
   defaults: {
     gateways: [],
     deviceIdentity: null,

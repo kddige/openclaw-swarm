@@ -77,7 +77,7 @@ export function buildConnectFrame(opts: {
       signedAt,
       nonce: opts.nonce,
     },
-    userAgent: `fleet-manager/${opts.appVersion}`,
+    userAgent: `swarm-manager/${opts.appVersion}`,
     locale: 'en-US',
   })
 }

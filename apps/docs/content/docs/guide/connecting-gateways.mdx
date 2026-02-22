@@ -3,7 +3,7 @@ title: Connecting Gateways
 description: Add and manage OpenClaw Gateway connections
 ---
 
-OpenClaw Fleet connects to your [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instances over WebSocket. You can connect to as many gateways as you need — production, staging, development, all at once.
+OpenClaw Swarm connects to your [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instances over WebSocket. You can connect to as many gateways as you need — production, staging, development, all at once.
 
 ## Adding a gateway
 
@@ -13,11 +13,11 @@ OpenClaw Fleet connects to your [OpenClaw Gateway](https://github.com/kddige/ope
 
 ### Device pairing
 
-The first time you connect to a gateway, your device needs to be approved. OpenClaw Fleet uses Ed25519 keypairs for authentication — no passwords.
+The first time you connect to a gateway, your device needs to be approved. OpenClaw Swarm uses Ed25519 keypairs for authentication — no passwords.
 
-1. Fleet sends a pairing request to the gateway
+1. Swarm sends a pairing request to the gateway
 2. Approve the device via the **OpenClaw Gateway Control UI > Devices tab**
-3. Once approved, Fleet connects automatically on future launches
+3. Once approved, Swarm connects automatically on future launches
 
 ## Connection states
 

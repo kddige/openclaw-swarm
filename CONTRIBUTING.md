@@ -1,4 +1,4 @@
-# Contributing to OpenClaw Fleet
+# Contributing to OpenClaw Swarm
 
 Thanks for your interest in contributing! This guide will help you get up and running.
 
@@ -17,11 +17,11 @@ proto use        # Installs pinned versions of bun + moon from .prototools
 ## Getting started
 
 ```bash
-git clone https://github.com/kddige/openclaw-fleet.git
-cd openclaw-fleet
+git clone https://github.com/kddige/openclaw-swarm.git
+cd openclaw-swarm
 proto use
 bun install
-moon run fleet:dev
+moon run swarm:dev
 ```
 
 This starts Vite + Electron with hot reload. A pre-commit hook runs lint + typecheck on staged files automatically.
@@ -29,10 +29,10 @@ This starts Vite + Electron with hot reload. A pre-commit hook runs lint + typec
 ## Common tasks
 
 ```bash
-moon run fleet:dev       # Start dev server with Electron
-moon run fleet:build     # Typecheck + Vite build + electron-builder
-moon run fleet:lint      # ESLint (zero warnings allowed)
-moon run fleet:typecheck # TypeScript type-check
+moon run swarm:dev       # Start dev server with Electron
+moon run swarm:build     # Typecheck + Vite build + electron-builder
+moon run swarm:lint      # ESLint (zero warnings allowed)
+moon run swarm:typecheck # TypeScript type-check
 moon ci                  # Run all affected tasks (CI mode)
 moon run root:format     # Prettier formatting (whole monorepo)
 ```
@@ -45,8 +45,8 @@ moon run root:format     # Prettier formatting (whole monorepo)
 │   ├── toolchains.yml   # Bun toolchain
 │   └── tasks/           # Inherited tasks (lint, typecheck)
 ├── apps/
-│   └── fleet/           # Electron desktop app
-│       └── moon.yml     # Fleet-specific tasks (dev, build)
+│   └── swarm/           # Electron desktop app
+│       └── moon.yml     # Swarm-specific tasks (dev, build)
 ├── .prototools          # Pinned tool versions (moon, bun)
 ├── .editorconfig        # Editor formatting defaults
 ├── .prettierrc          # Shared Prettier config
@@ -112,8 +112,8 @@ debug.error('failed', e)  // Only logs in dev
 
 See [CLAUDE.md](CLAUDE.md) for a full breakdown. The short version:
 
-- **Main process** (`apps/fleet/electron/`) owns all WebSocket connections, persistence, and device identity.
-- **Renderer** (`apps/fleet/src/`) is a React 19 SPA. It talks to the main process exclusively via oRPC over a `MessagePort`.
+- **Main process** (`apps/swarm/electron/`) owns all WebSocket connections, persistence, and device identity.
+- **Renderer** (`apps/swarm/src/`) is a React 19 SPA. It talks to the main process exclusively via oRPC over a `MessagePort`.
 - **Routing**: TanStack Router, file-based. Routes live in `src/routes/`. `src/routeTree.gen.ts` is auto-generated — **never edit it manually**.
 - **UI components**: shadcn/ui. Add new ones with `bunx shadcn@latest add <name>`, never copy-paste from shadcn docs.
 - **Styling**: Tailwind CSS 4 + CVA. Always use `cn()` from `@/lib/utils` for class merging.

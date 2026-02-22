@@ -13,8 +13,8 @@ This is a **bun workspaces** monorepo with **moon** as the task runner.
 │   └── tasks/
 │       └── typescript.yml  # Inherited tasks (lint, typecheck) for all TS projects
 ├── apps/
-│   ├── fleet/           # OpenClaw Fleet — Electron desktop app
-│   │   └── moon.yml     # Fleet-specific tasks (dev, build)
+│   ├── swarm/           # OpenClaw Swarm — Electron desktop app
+│   │   └── moon.yml     # Swarm-specific tasks (dev, build)
 │   └── docs/            # Documentation site (Fumadocs + TanStack Start)
 │       └── moon.yml     # Docs tasks (dev, build)
 ├── .prettierrc          # Shared Prettier config (root-level)
@@ -30,10 +30,10 @@ This is a **bun workspaces** monorepo with **moon** as the task runner.
 ### moon tasks (preferred)
 
 ```bash
-moon run fleet:dev       # Start Vite dev server with Electron
-moon run fleet:build     # Typecheck + Vite build + electron-builder
-moon run fleet:lint      # ESLint (zero warnings allowed)
-moon run fleet:typecheck # TypeScript type checking
+moon run swarm:dev       # Start Vite dev server with Electron
+moon run swarm:build     # Typecheck + Vite build + electron-builder
+moon run swarm:lint      # ESLint (zero warnings allowed)
+moon run swarm:typecheck # TypeScript type checking
 moon ci                  # Run all affected tasks (native moon CI command)
 moon run root:format     # Prettier formatting (whole monorepo)
 ```
@@ -44,8 +44,8 @@ Lint and typecheck are inherited from `.moon/tasks/typescript.yml` — do not re
 
 ```bash
 bun install              # Install all workspace dependencies
-bun run --cwd apps/fleet dev
-bun run --cwd apps/fleet build
+bun run --cwd apps/swarm dev
+bun run --cwd apps/swarm build
 bun run format           # Root-level prettier
 ```
 
@@ -59,7 +59,7 @@ These rules are enforced at lint time with zero warnings allowed. Breaking any o
 - **`console.*` is banned in `electron/`** — use `createDebugLogger` from `electron/lib/debug.ts`
 - **`useQuery`/`useMutation` are banned in `src/hooks/`** — use them directly in components with `orpc.*.queryOptions()`
 
-## Fleet app architecture
+## Swarm app architecture
 
 Electron desktop app (macOS vibrancy/hidden titlebar) with a React 19 frontend.
 
@@ -76,14 +76,14 @@ Electron desktop app (macOS vibrancy/hidden titlebar) with a React 19 frontend.
 
 ### Key directories
 
-All paths below are relative to `apps/fleet/`:
+All paths below are relative to `apps/swarm/`:
 
 - `src/routes/` — File-based routes, auto-generates `src/routeTree.gen.ts` (never edit)
 - `src/components/ui/` — shadcn/ui components (add new ones via `bunx shadcn@latest add <name>`)
 - `src/lib/` — Utilities and oRPC client setup
 - `electron/` — Main process, preload script, and API definitions
 - `electron/api/` — oRPC server router and procedures
-- `electron/api/routers/` — Individual oRPC router files (gateway, fleet, events, window)
+- `electron/api/routers/` — Individual oRPC router files (gateway, swarm, events, window)
 - `electron/api/types.ts` — All shared TypeScript types (persistence, protocol, runtime, domain)
 - `electron/gateway/` — WebSocket connection layer (protocol, connection, manager)
 - `electron/lib/` — Utilities (debug logger)

@@ -487,9 +487,9 @@ export class GatewayManager {
     return { lines, cursor: raw.cursor }
   }
 
-  // ── Fleet Aggregation ─────────────────────────────────
+  // ── Swarm Aggregation ─────────────────────────────────
 
-  async searchFleet(query: string): Promise<{
+  async searchSwarm(query: string): Promise<{
     sessions: Array<{ gatewayId: string; gatewayLabel: string } & SessionEntry>
     agents: Array<{ gatewayId: string; gatewayLabel: string } & AgentEntry>
   }> {
@@ -549,7 +549,7 @@ export class GatewayManager {
     return { sessions: matchedSessions, agents: matchedAgents }
   }
 
-  async getFleetPresence(): Promise<
+  async getSwarmPresence(): Promise<
     Array<{ gatewayId: string; gatewayLabel: string; devices: PresenceEntry[] }>
   > {
     const connectedEntries = Array.from(this.connections.entries()).filter(
@@ -572,7 +572,7 @@ export class GatewayManager {
     return output
   }
 
-  async getFleetCost(): Promise<{
+  async getSwarmCost(): Promise<{
     totalCost: number
     byGateway: { id: string; label: string; cost: number }[]
   }> {
@@ -606,7 +606,7 @@ export class GatewayManager {
     return { totalCost, byGateway }
   }
 
-  getFleetOverview(): {
+  getSwarmOverview(): {
     totalGateways: number
     connectedGateways: number
     disconnectedGateways: number

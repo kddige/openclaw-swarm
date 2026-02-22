@@ -1,6 +1,6 @@
 ---
 title: Dev Setup
-description: Set up the OpenClaw Fleet development environment
+description: Set up the OpenClaw Swarm development environment
 ---
 
 ## Prerequisites
@@ -12,11 +12,11 @@ description: Set up the OpenClaw Fleet development environment
 ## Clone and run
 
 ```bash
-git clone https://github.com/kddige/openclaw-fleet.git
-cd openclaw-fleet
+git clone https://github.com/kddige/openclaw-swarm.git
+cd openclaw-swarm
 proto use        # Installs pinned bun + moon versions
 bun install
-moon run fleet:dev
+moon run swarm:dev
 ```
 
 This starts Vite + Electron with hot reload. A pre-commit hook will run lint + typecheck on staged files automatically.
@@ -35,10 +35,10 @@ Run `proto use` after pulling to ensure you're on the correct versions.
 ## Common tasks
 
 ```bash
-moon run fleet:dev       # Start Electron app with hot reload
-moon run fleet:build     # Build distributable .dmg
-moon run fleet:lint      # ESLint (zero warnings allowed)
-moon run fleet:typecheck # TypeScript type-check
+moon run swarm:dev       # Start Electron app with hot reload
+moon run swarm:build     # Build distributable .dmg
+moon run swarm:lint      # ESLint (zero warnings allowed)
+moon run swarm:typecheck # TypeScript type-check
 moon ci                  # Run all affected tasks (CI mode)
 moon run root:format     # Prettier formatting (whole monorepo)
 moon run docs:dev        # Start docs site (localhost:3001)
@@ -46,10 +46,10 @@ moon run docs:dev        # Start docs site (localhost:3001)
 
 ## Project structure
 
-The fleet app lives in `apps/fleet/`:
+The swarm app lives in `apps/swarm/`:
 
 ```
-apps/fleet/
+apps/swarm/
 ├── electron/            # Electron main process
 │   ├── api/routers/     # oRPC procedure handlers
 │   ├── gateway/         # WebSocket connection layer

@@ -39,7 +39,7 @@ export interface StoredDeviceToken {
   updatedAt: number
 }
 
-export interface FleetStore {
+export interface SwarmStore {
   gateways: StoredGateway[]
   deviceIdentity: DeviceIdentity | null
   deviceTokens: Record<string, StoredDeviceToken>
