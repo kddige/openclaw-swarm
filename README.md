@@ -1,6 +1,6 @@
 # OpenClaw Swarm
 
-A command center for managing your [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) deployments — a single pane of glass for monitoring sessions, streaming logs, and managing security across your AI agent infrastructure.
+A command center for managing your [OpenClaw Gateway](https://github.com/openclaw/openclaw) deployments — a single pane of glass for monitoring sessions, streaming logs, and managing security across your AI agent infrastructure.
 
 **Think Portainer, but for AI agent swarms.**
 
@@ -20,7 +20,7 @@ A command center for managing your [OpenClaw Gateway](https://github.com/kddige/
 ## Requirements
 
 - **macOS** — the desktop app currently targets macOS (Windows and Linux support planned)
-- At least one running [OpenClaw Gateway](https://github.com/kddige/openclaw-gateway) instance to connect to
+- At least one running [OpenClaw Gateway](https://github.com/openclaw/openclaw) instance to connect to
 
 ## Download
 
