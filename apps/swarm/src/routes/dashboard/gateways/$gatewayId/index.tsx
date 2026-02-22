@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import MonacoEditor from '@monaco-editor/react'
-import { extractText } from '@/lib/content'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
+import { ChatPanel } from '@/components/chat-panel'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
@@ -13,12 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 import { Spinner } from '@/components/ui/spinner'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table,
   TableBody,
@@ -66,10 +61,7 @@ import {
   AlertTriangleIcon,
   ArrowDownIcon,
   MessageSquareIcon,
-  SendIcon,
-  WrenchIcon,
 } from 'lucide-react'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -81,18 +73,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { formatDistanceToNow } from 'date-fns'
-import {
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  AreaChart,
-  Area,
-} from 'recharts'
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart'
+import { XAxis, YAxis, CartesianGrid, AreaChart, Area } from 'recharts'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
 export const Route = createFileRoute('/dashboard/gateways/$gatewayId/')({
   component: GatewayDetailPage,
@@ -139,13 +121,7 @@ function statusBadge(status: string) {
   }
 }
 
-function PairingBanner({
-  gatewayId,
-  requestId,
-}: {
-  gatewayId: string
-  requestId: string | null
-}) {
+function PairingBanner({ gatewayId, requestId }: { gatewayId: string; requestId: string | null }) {
   const queryClient = useQueryClient()
   const [copied, setCopied] = useState(false)
 
@@ -161,9 +137,7 @@ function PairingBanner({
     },
   })
 
-  const command = requestId
-    ? `openclaw devices approve ${requestId}`
-    : null
+  const command = requestId ? `openclaw devices approve ${requestId}` : null
 
   const copyCommand = async () => {
     if (!command) return
@@ -181,8 +155,8 @@ function PairingBanner({
         </span>
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed">
-        This gateway requires you to approve this device before connecting.
-        Run this command on the machine running the gateway:
+        This gateway requires you to approve this device before connecting. Run this command on the
+        machine running the gateway:
       </p>
       {command ? (
         <button
@@ -202,9 +176,7 @@ function PairingBanner({
         </button>
       ) : (
         <div className="flex flex-col gap-1.5 rounded-md border bg-muted/60 px-3 py-2">
-          <code className="font-mono text-[0.6875rem] text-foreground">
-            openclaw devices list
-          </code>
+          <code className="font-mono text-[0.6875rem] text-foreground">openclaw devices list</code>
           <p className="text-[0.625rem] text-muted-foreground">
             Find the pending request, then run:{' '}
             <code className="font-mono">openclaw devices approve &lt;requestId&gt;</code>
@@ -258,11 +230,7 @@ function GatewayDetailPage() {
   return (
     <div className="flex flex-col gap-4 p-6">
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          render={<Link to="/dashboard" />}
-        >
+        <Button variant="ghost" size="icon-xs" render={<Link to="/dashboard" />}>
           <ArrowLeftIcon />
         </Button>
         <Separator orientation="vertical" className="h-4" />
@@ -275,12 +243,7 @@ function GatewayDetailPage() {
         <Button
           variant="outline"
           size="sm"
-          render={
-            <Link
-              to="/dashboard/gateways/$gatewayId/chat"
-              params={{ gatewayId }}
-            />
-          }
+          render={<Link to="/dashboard/gateways/$gatewayId/chat" params={{ gatewayId }} />}
         >
           <MessageSquareIcon className="size-3" />
           Maintenance Chat
@@ -288,10 +251,7 @@ function GatewayDetailPage() {
       </div>
 
       {gateway.status === 'pairing' && (
-        <PairingBanner
-          gatewayId={gatewayId}
-          requestId={gateway.pairingRequestId}
-        />
+        <PairingBanner gatewayId={gatewayId} requestId={gateway.pairingRequestId} />
       )}
 
       <Tabs defaultValue="status">
@@ -361,9 +321,7 @@ function UsageTab({ gatewayId }: { gatewayId: string }) {
 
   if (daily.length === 0) {
     return (
-      <div className="py-8 text-center text-xs text-muted-foreground">
-        No usage data available.
-      </div>
+      <div className="py-8 text-center text-xs text-muted-foreground">No usage data available.</div>
     )
   }
 
@@ -385,17 +343,9 @@ function UsageTab({ gatewayId }: { gatewayId: string }) {
             config={{ totalCost: { label: 'Cost', color: 'var(--chart-1)' } }}
             className="aspect-auto h-[200px] w-full"
           >
-            <AreaChart
-              data={chartData}
-              margin={{ top: 4, right: 8, bottom: 0, left: 8 }}
-            >
+            <AreaChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 8 }}>
               <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 10 }}
-                tickLine={false}
-                axisLine={false}
-              />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
               <YAxis
                 tickFormatter={(v: number) => `$${v.toFixed(2)}`}
                 tick={{ fontSize: 10 }}
@@ -406,10 +356,7 @@ function UsageTab({ gatewayId }: { gatewayId: string }) {
               <ChartTooltip
                 content={
                   <ChartTooltipContent
-                    formatter={(value) => [
-                      `$${Number(value).toFixed(4)}`,
-                      'Cost',
-                    ]}
+                    formatter={(value) => [`$${Number(value).toFixed(4)}`, 'Cost']}
                   />
                 }
               />
@@ -436,9 +383,7 @@ function UsageTab({ gatewayId }: { gatewayId: string }) {
             </span>
           </CardHeader>
           <CardContent>
-            <span className="text-sm font-semibold tabular-nums">
-              ${totalCost.toFixed(4)}
-            </span>
+            <span className="text-sm font-semibold tabular-nums">${totalCost.toFixed(4)}</span>
           </CardContent>
         </Card>
         <Card size="sm" className="bg-muted/40">
@@ -625,11 +570,7 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
   }
 
   if (!sessions?.length) {
-    return (
-      <div className="py-8 text-center text-xs text-muted-foreground">
-        No sessions found.
-      </div>
-    )
+    return <div className="py-8 text-center text-xs text-muted-foreground">No sessions found.</div>
   }
 
   return (
@@ -656,17 +597,11 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
                   params={{ gatewayId, sessionKey: session.key }}
                   className="font-mono text-[0.625rem] hover:underline"
                 >
-                  {session.key.length > 24
-                    ? `${session.key.slice(0, 12)}...`
-                    : session.key}
+                  {session.key.length > 24 ? `${session.key.slice(0, 12)}...` : session.key}
                 </Link>
               </TableCell>
-              <TableCell className="truncate max-w-32">
-                {session.displayName ?? '--'}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {session.kind ?? '--'}
-              </TableCell>
+              <TableCell className="truncate max-w-32">{session.displayName ?? '--'}</TableCell>
+              <TableCell className="text-muted-foreground">{session.kind ?? '--'}</TableCell>
               <TableCell>{session.agent ?? '--'}</TableCell>
               <TableCell className="text-muted-foreground">
                 {session.lastActiveAt
@@ -678,31 +613,21 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
               <TableCell className="text-right tabular-nums">
                 {(session.tokensIn + session.tokensOut).toLocaleString()}
               </TableCell>
-              <TableCell className="text-right tabular-nums">
-                ${session.cost.toFixed(4)}
-              </TableCell>
+              <TableCell className="text-right tabular-nums">${session.cost.toFixed(4)}</TableCell>
               <TableCell>
                 <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <Button variant="ghost" size="icon-xs" />
-                    }
-                  >
+                  <DropdownMenuTrigger render={<Button variant="ghost" size="icon-xs" />}>
                     <MoreHorizontalIcon />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
-                      onClick={() =>
-                        setActionDialog({ type: 'reset', sessionKey: session.key })
-                      }
+                      onClick={() => setActionDialog({ type: 'reset', sessionKey: session.key })}
                     >
                       <RotateCcwIcon />
                       Reset Session
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() =>
-                        setActionDialog({ type: 'compact', sessionKey: session.key })
-                      }
+                      onClick={() => setActionDialog({ type: 'compact', sessionKey: session.key })}
                     >
                       <MinimizeIcon />
                       Compact Session
@@ -738,7 +663,8 @@ function SessionsTab({ gatewayId }: { gatewayId: string }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Reset Session</AlertDialogTitle>
             <AlertDialogDescription>
-              This will reset the session state. The transcript may be preserved depending on gateway settings.
+              This will reset the session state. The transcript may be preserved depending on
+              gateway settings.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -896,7 +822,10 @@ function HealthTab({
                     </span>
                   </div>
                   {isOk ? (
-                    <Badge variant="outline" className="gap-1 text-emerald-600 dark:text-emerald-400">
+                    <Badge
+                      variant="outline"
+                      className="gap-1 text-emerald-600 dark:text-emerald-400"
+                    >
                       <CheckCircleIcon className="size-2.5" />
                       OK
                     </Badge>
@@ -933,9 +862,7 @@ function AgentsTab({ gatewayId }: { gatewayId: string }) {
 
   if (!agents?.length) {
     return (
-      <div className="py-8 text-center text-xs text-muted-foreground">
-        No agents configured.
-      </div>
+      <div className="py-8 text-center text-xs text-muted-foreground">No agents configured.</div>
     )
   }
 
@@ -951,9 +878,7 @@ function AgentsTab({ gatewayId }: { gatewayId: string }) {
               <div className="flex flex-col">
                 <CardTitle>{agent.id}</CardTitle>
                 {agent.isDefault && (
-                  <span className="text-[0.625rem] text-muted-foreground">
-                    Default agent
-                  </span>
+                  <span className="text-[0.625rem] text-muted-foreground">Default agent</span>
                 )}
               </div>
             </div>
@@ -1001,11 +926,7 @@ function SecurityTab({ gatewayId }: { gatewayId: string }) {
   }
 
   if (!data) {
-    return (
-      <div className="py-8 text-center text-xs text-muted-foreground">
-        Not configured.
-      </div>
-    )
+    return <div className="py-8 text-center text-xs text-muted-foreground">Not configured.</div>
   }
 
   if (!data.exists) {
@@ -1043,16 +964,12 @@ function SecurityTab({ gatewayId }: { gatewayId: string }) {
                   security: {defaults.security}
                 </Badge>
               )}
-              {defaults.ask && (
-                <Badge variant="outline">ask: {defaults.ask}</Badge>
-              )}
+              {defaults.ask && <Badge variant="outline">ask: {defaults.ask}</Badge>}
               {defaults.askFallback && (
                 <Badge variant="outline">fallback: {defaults.askFallback}</Badge>
               )}
               {defaults.autoAllowSkills !== undefined && (
-                <Badge variant="outline">
-                  autoAllowSkills: {String(defaults.autoAllowSkills)}
-                </Badge>
+                <Badge variant="outline">autoAllowSkills: {String(defaults.autoAllowSkills)}</Badge>
               )}
             </div>
           </CardContent>
@@ -1115,9 +1032,7 @@ function SecurityTab({ gatewayId }: { gatewayId: string }) {
                 <TableBody>
                   {config.allowlist.map((entry, i) => (
                     <TableRow key={entry.id ?? i}>
-                      <TableCell className="font-mono text-[0.625rem]">
-                        {entry.pattern}
-                      </TableCell>
+                      <TableCell className="font-mono text-[0.625rem]">{entry.pattern}</TableCell>
                       <TableCell className="text-muted-foreground tabular-nums">
                         {entry.lastUsedAt
                           ? formatDistanceToNow(entry.lastUsedAt, { addSuffix: true })
@@ -1147,250 +1062,14 @@ function SecurityTab({ gatewayId }: { gatewayId: string }) {
 
 const MAINTENANCE_SESSION_KEY = 'swarm-maintenance'
 
-function formatChatTime(timestamp: number): string {
-  const d = new Date(timestamp)
-  const hh = String(d.getHours()).padStart(2, '0')
-  const mm = String(d.getMinutes()).padStart(2, '0')
-  return `${hh}:${mm}`
-}
-
 function ChatTab({ gatewayId }: { gatewayId: string }) {
-  const [message, setMessage] = useState('')
-  const [showNewSessionDialog, setShowNewSessionDialog] = useState(false)
-  const [atBottom, setAtBottom] = useState(true)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  const { data: history, isLoading } = useQuery({
-    ...orpc.gateway.chatHistory.queryOptions({
-      input: { gatewayId, sessionKey: MAINTENANCE_SESSION_KEY },
-    }),
-    refetchInterval: 5000,
-  })
-
-  const resetMutation = useMutation({
-    ...orpc.gateway.resetSession.mutationOptions(),
-    onSuccess: () => {
-      toast.success('Session reset — new conversation started')
-      setShowNewSessionDialog(false)
-    },
-    onError: (err) => {
-      toast.error('Failed to reset session', { description: String(err) })
-    },
-  })
-
-  const sendMutation = useMutation({
-    ...orpc.gateway.sendChatMessage.mutationOptions(),
-    onError: (err) => {
-      toast.error('Failed to send message', { description: String(err) })
-    },
-  })
-
-  const scrollToBottom = useCallback(() => {
-    const el = scrollRef.current
-    if (el) el.scrollTop = el.scrollHeight
-    setAtBottom(true)
-  }, [])
-
-  useEffect(() => {
-    if (atBottom) {
-      const el = scrollRef.current
-      if (el) el.scrollTop = el.scrollHeight
-    }
-  }, [history, atBottom])
-
-  const handleScroll = useCallback(() => {
-    const el = scrollRef.current
-    if (!el) return
-    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
-    setAtBottom(distFromBottom <= 50)
-  }, [])
-
-  const handleSend = useCallback(() => {
-    const text = message.trim()
-    if (!text || sendMutation.isPending) return
-    setMessage('')
-    sendMutation.mutate({
-      gatewayId,
-      sessionKey: MAINTENANCE_SESSION_KEY,
-      message: text,
-    })
-  }, [message, sendMutation, gatewayId])
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        handleSend()
-      }
-    },
-    [handleSend],
-  )
-
-  const messages = Array.isArray(history) ? history : []
-
   return (
-    <div
-      className="flex flex-col gap-3 pt-2"
+    <ChatPanel
+      gatewayId={gatewayId}
+      sessionKey={MAINTENANCE_SESSION_KEY}
+      className="pt-2"
       style={{ height: 'calc(100vh - 220px)', minHeight: '400px' }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <MessageSquareIcon className="size-3.5 text-muted-foreground" />
-          <span className="text-xs font-medium">Maintenance Chat</span>
-          <code className="font-mono text-[0.625rem] text-muted-foreground bg-muted rounded px-1 py-0.5">
-            {MAINTENANCE_SESSION_KEY}
-          </code>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs gap-1.5"
-          onClick={() => setShowNewSessionDialog(true)}
-        >
-          <RotateCcwIcon className="size-3" />
-          New Session
-        </Button>
-      </div>
-
-      {/* Message area */}
-      <div className="relative flex-1 min-h-0">
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="h-full overflow-y-auto rounded-lg border bg-muted/20 p-3 flex flex-col gap-2"
-        >
-          {isLoading ? (
-            <div className="flex flex-col gap-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 rounded-lg" />
-              ))}
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
-              <MessageSquareIcon className="size-6 opacity-30" />
-              <span className="text-xs">
-                No messages yet. Start a conversation with the agent.
-              </span>
-            </div>
-          ) : (
-            messages.map((msg, i) => {
-              if (msg.role === 'tool') {
-                return (
-                  <div key={i} className="flex justify-start">
-                    <div className="flex items-center gap-1.5 rounded-md border bg-muted/40 px-2.5 py-1 text-[0.625rem] text-muted-foreground max-w-[80%]">
-                      <WrenchIcon className="size-2.5 shrink-0" />
-                      <span className="font-mono truncate">{extractText(msg.content)}</span>
-                    </div>
-                  </div>
-                )
-              }
-
-              const isUser = msg.role === 'user'
-
-              return (
-                <div
-                  key={i}
-                  className={cn('flex', isUser ? 'justify-end' : 'justify-start')}
-                >
-                  <div
-                    className={cn(
-                      'flex flex-col gap-0.5 max-w-[80%]',
-                      isUser ? 'items-end' : 'items-start',
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'rounded-lg px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words',
-                        isUser
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground',
-                      )}
-                    >
-                      {extractText(msg.content)}
-                    </div>
-                    <span className="text-[0.5625rem] text-muted-foreground tabular-nums px-1">
-                      {formatChatTime(msg.timestamp)}
-                    </span>
-                  </div>
-                </div>
-              )
-            })
-          )}
-        </div>
-
-        {/* Jump to bottom button */}
-        {!atBottom && (
-          <button
-            type="button"
-            onClick={scrollToBottom}
-            className="absolute bottom-3 right-4 flex items-center gap-1.5 rounded-full border bg-background px-3 py-1 text-[0.625rem] font-medium text-muted-foreground shadow-lg hover:bg-muted transition-colors"
-          >
-            <ArrowDownIcon className="size-3" />
-            Jump to bottom
-          </button>
-        )}
-      </div>
-
-      {/* Input area */}
-      <div className="flex items-end gap-2 shrink-0">
-        <Textarea
-          ref={textareaRef}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Message the agent… (Enter to send, Shift+Enter for newline)"
-          className="min-h-[60px] max-h-[160px] text-xs resize-none"
-          disabled={sendMutation.isPending}
-        />
-        <Button
-          size="sm"
-          onClick={handleSend}
-          disabled={!message.trim() || sendMutation.isPending}
-          className="shrink-0 h-[60px] px-4"
-        >
-          {sendMutation.isPending ? (
-            <Spinner className="size-3.5" />
-          ) : (
-            <SendIcon className="size-3.5" />
-          )}
-        </Button>
-      </div>
-
-      {/* New Session Dialog */}
-      <AlertDialog
-        open={showNewSessionDialog}
-        onOpenChange={setShowNewSessionDialog}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Start New Session</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will reset the{' '}
-              <code className="font-mono text-xs">{MAINTENANCE_SESSION_KEY}</code>{' '}
-              session and clear the current conversation. The agent will start fresh.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                resetMutation.mutate({
-                  gatewayId,
-                  sessionKey: MAINTENANCE_SESSION_KEY,
-                  reason: 'new',
-                })
-              }
-              disabled={resetMutation.isPending}
-            >
-              {resetMutation.isPending && <Spinner className="size-3" />}
-              Reset
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+    />
   )
 }
 
@@ -1467,15 +1146,14 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
     const newLines: LogLine[] = logsData.lines ?? []
     const newCursor: number | undefined = logsData.cursor
     // Skip if we've already processed this exact cursor position
-    if (newCursor !== undefined && newCursor === prevCursorRef.current && newLines.length === 0) return
+    if (newCursor !== undefined && newCursor === prevCursorRef.current && newLines.length === 0)
+      return
     prevCursorRef.current = newCursor
     if (newLines.length === 0) return
     const timer = setTimeout(() => {
       setLines((prev) => {
         const combined = [...prev, ...newLines]
-        return combined.length > MAX_LINES
-          ? combined.slice(combined.length - MAX_LINES)
-          : combined
+        return combined.length > MAX_LINES ? combined.slice(combined.length - MAX_LINES) : combined
       })
       if (newCursor) setCursor(newCursor)
     }, 0)
@@ -1509,7 +1187,10 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 pt-2" style={{ height: 'calc(100vh - 220px)', minHeight: '400px' }}>
+    <div
+      className="flex flex-col gap-3 pt-2"
+      style={{ height: 'calc(100vh - 220px)', minHeight: '400px' }}
+    >
       {/* Filter bar */}
       <div className="flex items-center gap-2 shrink-0">
         <Select value={levelFilter} onValueChange={(v) => setLevelFilter(v ?? 'all')}>
@@ -1530,12 +1211,7 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
           onChange={(e) => setSourceFilter(e.target.value)}
           className="h-7 w-40 text-xs"
         />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleClear}
-          className="h-7 text-xs"
-        >
+        <Button variant="outline" size="sm" onClick={handleClear} className="h-7 text-xs">
           Clear
         </Button>
       </div>
@@ -1557,11 +1233,19 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
               {lines.map((line, i) => {
                 const levelColor = LEVEL_COLORS[line.level] ?? 'text-zinc-400'
                 return (
-                  <div key={i} className="flex items-baseline gap-2 font-mono text-[0.75rem] leading-relaxed">
+                  <div
+                    key={i}
+                    className="flex items-baseline gap-2 font-mono text-[0.75rem] leading-relaxed"
+                  >
                     <span className="text-zinc-500 shrink-0 tabular-nums">
                       {formatLogTime(line.ts)}
                     </span>
-                    <span className={cn('w-10 shrink-0 uppercase text-[0.6rem] font-semibold tabular-nums', levelColor)}>
+                    <span
+                      className={cn(
+                        'w-10 shrink-0 uppercase text-[0.6rem] font-semibold tabular-nums',
+                        levelColor,
+                      )}
+                    >
                       {line.level}
                     </span>
                     {line.source && (
@@ -1569,9 +1253,7 @@ function LogsTab({ gatewayId }: { gatewayId: string }) {
                         {line.source}
                       </span>
                     )}
-                    <span className={cn('break-all', levelColor)}>
-                      {line.msg}
-                    </span>
+                    <span className={cn('break-all', levelColor)}>{line.msg}</span>
                   </div>
                 )
               })}
@@ -1921,11 +1603,7 @@ function ProviderWizard({
       </div>
 
       <div className="flex items-center gap-3">
-        <Button
-          size="sm"
-          disabled={patchMutation.isPending}
-          onClick={handleSave}
-        >
+        <Button size="sm" disabled={patchMutation.isPending} onClick={handleSave}>
           {patchMutation.isPending && <Spinner className="size-3" />}
           Save changes
         </Button>
@@ -1945,10 +1623,7 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
     orpc.gateway.configGet.queryOptions({ input: { gatewayId } }),
   )
 
-  const original = useMemo(
-    () => (data !== undefined ? data.raw : ''),
-    [data],
-  )
+  const original = useMemo(() => (data !== undefined ? data.raw : ''), [data])
 
   const text = draft ?? original
   const isDirty = draft !== null && draft !== original
@@ -2010,7 +1685,9 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
     }
     const { cleaned, redactedCount } = stripRedacted(parsed)
     if (redactedCount > 0) {
-      toast.info(`Stripped ${redactedCount} redacted field(s) from apply — those keys will be omitted`)
+      toast.info(
+        `Stripped ${redactedCount} redacted field(s) from apply — those keys will be omitted`,
+      )
     }
     applyMutation.mutate({ gatewayId, raw: JSON.stringify(cleaned, null, 2), baseHash: data?.hash })
   }
@@ -2026,9 +1703,7 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
 
   if (error) {
     return (
-      <div className="py-8 text-center text-xs text-muted-foreground">
-        Config not available.
-      </div>
+      <div className="py-8 text-center text-xs text-muted-foreground">Config not available.</div>
     )
   }
 
@@ -2082,18 +1757,24 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
               size="sm"
               disabled={!isDirty || applyMutation.isPending || hasRedacted}
               onClick={() => setApplyOpen(true)}
-              title={hasRedacted ? 'Remove all __OPENCLAW_REDACTED__ placeholders before applying — apply replaces the entire config including secrets' : 'Replace entire config and restart gateway'}
+              title={
+                hasRedacted
+                  ? 'Remove all __OPENCLAW_REDACTED__ placeholders before applying — apply replaces the entire config including secrets'
+                  : 'Replace entire config and restart gateway'
+              }
             >
               Replace entire config
             </Button>
             {hasRedacted && isDirty && (
               <p className="text-[0.625rem] text-destructive">
-                Replace all <code>__OPENCLAW_REDACTED__</code> values with real values before using &ldquo;Replace entire config&rdquo;
+                Replace all <code>__OPENCLAW_REDACTED__</code> values with real values before using
+                &ldquo;Replace entire config&rdquo;
               </p>
             )}
           </div>
           <p className="text-[0.625rem] text-muted-foreground -mt-1">
-            <strong>Save changes</strong> = safe incremental patch (recommended) · <strong>Replace entire config</strong> = full overwrite + gateway restart
+            <strong>Save changes</strong> = safe incremental patch (recommended) ·{' '}
+            <strong>Replace entire config</strong> = full overwrite + gateway restart
           </p>
 
           <div className="overflow-hidden rounded-lg border">
@@ -2117,7 +1798,9 @@ function ConfigTab({ gatewayId }: { gatewayId: string }) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Replace entire config?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This sends your full config to the gateway, replacing everything — including secrets. The gateway will restart. This cannot be undone. Use <strong>Save changes</strong> instead if you only want to update specific fields.
+                  This sends your full config to the gateway, replacing everything — including
+                  secrets. The gateway will restart. This cannot be undone. Use{' '}
+                  <strong>Save changes</strong> instead if you only want to update specific fields.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -2186,9 +1869,7 @@ function DevicesTab({ gatewayId }: { gatewayId: string }) {
 
   if (!presence?.length) {
     return (
-      <div className="py-8 text-center text-xs text-muted-foreground">
-        No devices connected.
-      </div>
+      <div className="py-8 text-center text-xs text-muted-foreground">No devices connected.</div>
     )
   }
 
@@ -2196,9 +1877,7 @@ function DevicesTab({ gatewayId }: { gatewayId: string }) {
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-2">
       {presence.map((entry, i) => {
         const activity = activityStatus(entry.lastInputSeconds)
-        const connectedSince = entry.ts
-          ? formatDistanceToNow(entry.ts, { addSuffix: true })
-          : null
+        const connectedSince = entry.ts ? formatDistanceToNow(entry.ts, { addSuffix: true }) : null
         return (
           <Card key={`${entry.host}-${entry.ip}-${i}`} className="bg-muted/40">
             <CardHeader>
@@ -2225,14 +1904,10 @@ function DevicesTab({ gatewayId }: { gatewayId: string }) {
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               {entry.ip && (
-                <span className="font-mono text-[0.625rem] text-muted-foreground">
-                  {entry.ip}
-                </span>
+                <span className="font-mono text-[0.625rem] text-muted-foreground">{entry.ip}</span>
               )}
               {entry.version && (
-                <span className="text-[0.625rem] text-muted-foreground">
-                  v{entry.version}
-                </span>
+                <span className="text-[0.625rem] text-muted-foreground">v{entry.version}</span>
               )}
 
               <div className="flex items-center gap-1.5">

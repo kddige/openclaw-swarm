@@ -1,16 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
+import { ChatPanel } from '@/components/chat-panel'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
-import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
 import {
   Table,
@@ -35,10 +34,6 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   DollarSignIcon,
-  UserIcon,
-  BotIcon,
-  WrenchIcon,
-  InfoIcon,
   RotateCcwIcon,
   MinimizeIcon,
   Trash2Icon,
@@ -47,25 +42,10 @@ import {
   XIcon,
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
-import { extractText } from '@/lib/content'
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from 'recharts'
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart'
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
-export const Route = createFileRoute(
-  '/dashboard/gateways/$gatewayId/sessions/$sessionKey',
-)({
+export const Route = createFileRoute('/dashboard/gateways/$gatewayId/sessions/$sessionKey')({
   component: SessionDetailPage,
   errorComponent: RouteErrorFallback,
 })
@@ -90,11 +70,6 @@ function SessionDetailPage() {
     }),
   )
 
-  const { data: chatHistory } = useQuery(
-    orpc.gateway.chatHistory.queryOptions({
-      input: { gatewayId, sessionKey, limit: 200 },
-    }),
-  )
 
   const { data: usageLogs } = useQuery(
     orpc.gateway.sessionUsageLogs.queryOptions({
@@ -204,12 +179,7 @@ function SessionDetailPage() {
         <Button
           variant="ghost"
           size="icon-xs"
-          render={
-            <Link
-              to="/dashboard/gateways/$gatewayId"
-              params={{ gatewayId }}
-            />
-          }
+          render={<Link to="/dashboard/gateways/$gatewayId" params={{ gatewayId }} />}
         >
           <ArrowLeftIcon />
         </Button>
@@ -239,11 +209,7 @@ function SessionDetailPage() {
             </Button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={startEditLabel}
-            className="group flex items-center gap-1"
-          >
+          <button type="button" onClick={startEditLabel} className="group flex items-center gap-1">
             <Badge variant="outline" className="font-mono text-[0.625rem]">
               {sessionKey.slice(0, 16)}...
             </Badge>
@@ -255,18 +221,17 @@ function SessionDetailPage() {
         <div className="flex-1" />
 
         {/* Action buttons */}
-        <Button
-          variant="outline"
-          size="xs"
-          onClick={() => setDialog('reset')}
-        >
+        <Button variant="outline" size="xs" onClick={() => setDialog('reset')}>
           <RotateCcwIcon />
           Reset
         </Button>
         <Button
           variant="outline"
           size="xs"
-          onClick={() => { setMaxLines(''); setDialog('compact') }}
+          onClick={() => {
+            setMaxLines('')
+            setDialog('compact')
+          }}
         >
           <MinimizeIcon />
           Compact
@@ -274,7 +239,10 @@ function SessionDetailPage() {
         <Button
           variant="destructive"
           size="xs"
-          onClick={() => { setDeleteTranscript(false); setDialog('delete') }}
+          onClick={() => {
+            setDeleteTranscript(false)
+            setDialog('delete')
+          }}
         >
           <Trash2Icon />
           Delete
@@ -285,25 +253,43 @@ function SessionDetailPage() {
       {session && (
         <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground border rounded-lg px-4 py-3 bg-muted/20">
           {session.displayName && (
-            <span><span className="font-medium text-foreground">Label</span> {session.displayName}</span>
+            <span>
+              <span className="font-medium text-foreground">Label</span> {session.displayName}
+            </span>
           )}
           {session.kind && (
-            <span><span className="font-medium text-foreground">Kind</span> {session.kind}</span>
+            <span>
+              <span className="font-medium text-foreground">Kind</span> {session.kind}
+            </span>
           )}
           {session.channel && (
-            <span><span className="font-medium text-foreground">Channel</span> {session.channel}</span>
+            <span>
+              <span className="font-medium text-foreground">Channel</span> {session.channel}
+            </span>
           )}
           {session.agent && (
-            <span><span className="font-medium text-foreground">Agent</span> {session.agent}</span>
+            <span>
+              <span className="font-medium text-foreground">Agent</span> {session.agent}
+            </span>
           )}
           {session.model && (
-            <span><span className="font-medium text-foreground">Model</span> {session.model}</span>
+            <span>
+              <span className="font-medium text-foreground">Model</span> {session.model}
+            </span>
           )}
           {session.lastActiveAt && (
-            <span><span className="font-medium text-foreground">Last active</span> {formatDistanceToNow(session.lastActiveAt, { addSuffix: true })}</span>
+            <span>
+              <span className="font-medium text-foreground">Last active</span>{' '}
+              {formatDistanceToNow(session.lastActiveAt, { addSuffix: true })}
+            </span>
           )}
-          <span><span className="font-medium text-foreground">Tokens</span> {(session.tokensIn + session.tokensOut).toLocaleString()}</span>
-          <span><span className="font-medium text-foreground">Cost</span> ${session.cost.toFixed(4)}</span>
+          <span>
+            <span className="font-medium text-foreground">Tokens</span>{' '}
+            {(session.tokensIn + session.tokensOut).toLocaleString()}
+          </span>
+          <span>
+            <span className="font-medium text-foreground">Cost</span> ${session.cost.toFixed(4)}
+          </span>
         </div>
       )}
 
@@ -383,9 +369,7 @@ function SessionDetailPage() {
                 <TableBody>
                   {usage.modelBreakdown.map((entry) => (
                     <TableRow key={entry.model}>
-                      <TableCell className="font-mono text-[0.625rem]">
-                        {entry.model}
-                      </TableCell>
+                      <TableCell className="font-mono text-[0.625rem]">{entry.model}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         {entry.tokensIn.toLocaleString()}
                       </TableCell>
@@ -402,9 +386,7 @@ function SessionDetailPage() {
             </div>
           )}
 
-          {usageLogs && usageLogs.length > 0 && (
-            <SessionUsageCharts usageLogs={usageLogs} />
-          )}
+          {usageLogs && usageLogs.length > 0 && <SessionUsageCharts usageLogs={usageLogs} />}
 
           {usageLogs && usageLogs.length > 0 && (
             <div>
@@ -429,9 +411,7 @@ function SessionDetailPage() {
                           : '--'}
                       </TableCell>
                       <TableCell>{log.role}</TableCell>
-                      <TableCell className="font-mono text-[0.625rem]">
-                        {log.model}
-                      </TableCell>
+                      <TableCell className="font-mono text-[0.625rem]">{log.model}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         {log.tokensIn.toLocaleString()}
                       </TableCell>
@@ -450,20 +430,12 @@ function SessionDetailPage() {
         </>
       )}
 
-      {Array.isArray(chatHistory) && chatHistory.length > 0 && (
-        <div className="min-w-0">
-          <h2 className="text-xs font-medium mb-2">Chat History</h2>
-          <ScrollArea className="h-[400px] rounded-md border bg-muted/20 p-3 overflow-x-hidden">
-            <div className="flex flex-col gap-2 min-w-0">
-              {chatHistory.map((msg, i) => {
-                const text = extractText(msg.content)
-                if (!text) return null
-                return <ChatBubble key={i} message={{ ...msg, content: text }} />
-              })}
-            </div>
-          </ScrollArea>
-        </div>
-      )}
+      <ChatPanel
+        gatewayId={gatewayId}
+        sessionKey={sessionKey}
+        limit={200}
+        style={{ height: '500px' }}
+      />
 
       {/* Reset Dialog */}
       <AlertDialog open={dialog === 'reset'} onOpenChange={(open) => !open && setDialog('none')}>
@@ -471,7 +443,8 @@ function SessionDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Reset Session</AlertDialogTitle>
             <AlertDialogDescription>
-              This will reset the session state. The transcript may be preserved depending on gateway settings.
+              This will reset the session state. The transcript may be preserved depending on
+              gateway settings.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -496,9 +469,7 @@ function SessionDetailPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-muted-foreground">
-              Max lines (optional)
-            </label>
+            <label className="text-xs text-muted-foreground">Max lines (optional)</label>
             <Input
               type="number"
               placeholder="e.g. 100"
@@ -607,22 +578,11 @@ function SessionUsageCharts({ usageLogs }: { usageLogs: UsageLog[] }) {
             }}
             className="aspect-auto h-[160px] w-full"
           >
-            <AreaChart
-              data={cumulativeData}
-              margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
-            >
+            <AreaChart data={cumulativeData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="var(--chart-1)"
-                    stopOpacity={0.3}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--chart-1)"
-                    stopOpacity={0}
-                  />
+                  <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid vertical={false} />
@@ -643,10 +603,7 @@ function SessionUsageCharts({ usageLogs }: { usageLogs: UsageLog[] }) {
               <ChartTooltip
                 content={
                   <ChartTooltipContent
-                    formatter={(value) => [
-                      `$${Number(value).toFixed(4)}`,
-                      'Cumulative',
-                    ]}
+                    formatter={(value) => [`$${Number(value).toFixed(4)}`, 'Cumulative']}
                   />
                 }
               />
@@ -674,10 +631,7 @@ function SessionUsageCharts({ usageLogs }: { usageLogs: UsageLog[] }) {
             }}
             className="aspect-auto h-[160px] w-full"
           >
-            <BarChart
-              data={tokenData}
-              margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
-            >
+            <BarChart data={tokenData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="time"
@@ -693,9 +647,7 @@ function SessionUsageCharts({ usageLogs }: { usageLogs: UsageLog[] }) {
                 axisLine={false}
                 width={44}
               />
-              <ChartTooltip
-                content={<ChartTooltipContent indicator="dot" />}
-              />
+              <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
               <Bar
                 dataKey="tokensIn"
                 stackId="tokens"
@@ -716,78 +668,3 @@ function SessionUsageCharts({ usageLogs }: { usageLogs: UsageLog[] }) {
   )
 }
 
-function roleIcon(role: string) {
-  switch (role) {
-    case 'user':
-      return <UserIcon className="size-3" />
-    case 'assistant':
-      return <BotIcon className="size-3" />
-    case 'tool':
-      return <WrenchIcon className="size-3" />
-    case 'system':
-    default:
-      return <InfoIcon className="size-3" />
-  }
-}
-
-function ChatBubble({
-  message,
-}: {
-  message: {
-    role: 'user' | 'assistant' | 'system' | 'tool'
-    content: string
-    timestamp: number
-    model?: string
-  }
-}) {
-  const isUser = message.role === 'user'
-  const isSystem = message.role === 'system' || message.role === 'tool'
-
-  return (
-    <div
-      className={cn(
-        'flex gap-2 min-w-0',
-        isUser && 'flex-row-reverse',
-        isSystem && 'justify-center',
-      )}
-    >
-      {!isSystem && (
-        <div
-          className={cn(
-            'flex size-5 shrink-0 items-center justify-center rounded-full mt-0.5',
-            isUser
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-muted-foreground',
-          )}
-        >
-          {roleIcon(message.role)}
-        </div>
-      )}
-      <div
-        className={cn(
-          'rounded-md px-3 py-2 text-xs min-w-0',
-          isUser ? 'max-w-[75%] bg-primary/10 text-foreground' : 'max-w-[80%]',
-          message.role === 'assistant' && 'bg-muted/60 text-foreground',
-          isSystem && 'bg-muted/30 text-muted-foreground text-[0.625rem] italic max-w-full',
-        )}
-      >
-        <p className="break-words overflow-wrap-anywhere whitespace-pre-wrap">{message.content}</p>
-        <div
-          className={cn(
-            'flex items-center gap-2 mt-1 text-[0.5rem] text-muted-foreground',
-            isUser && 'justify-end',
-          )}
-        >
-          {typeof message.timestamp === 'number' && message.timestamp > 0 && (
-            <span>
-              {formatDistanceToNow(message.timestamp, { addSuffix: true })}
-            </span>
-          )}
-          {message.model && (
-            <span className="font-mono">{message.model}</span>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}

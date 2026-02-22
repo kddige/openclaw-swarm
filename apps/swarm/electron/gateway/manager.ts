@@ -98,6 +98,40 @@ export class GatewayManager {
           timestamp: Date.now(),
         })
       }
+      if (event.type === 'chat') {
+        const payload = event.payload as {
+          sessionKey: string
+          state: 'delta' | 'final'
+          message: ChatMessage
+        }
+        this.logger.info('[chat-forward] got chat event', {
+          sessionKey: payload.sessionKey,
+          state: payload.state,
+          hasMessage: !!payload.message,
+        })
+        if (payload.sessionKey && payload.message) {
+          gatewayPublisher
+            .publish('chat', {
+              gatewayId: event.gatewayId,
+              sessionKey: payload.sessionKey,
+              state: payload.state,
+              message: {
+                role: payload.message.role,
+                content: payload.message.content,
+                timestamp: payload.message.timestamp ?? Date.now(),
+                model: payload.message.model,
+                tokensIn: payload.message.tokensIn,
+                tokensOut: payload.message.tokensOut,
+              },
+            })
+            .then(() => {
+              this.logger.info('[chat-forward] published to gatewayPublisher')
+            })
+            .catch((err) => {
+              this.logger.error('[chat-forward] publish failed', err)
+            })
+        }
+      }
     })
 
     conn.on('device-token', (event) => {
@@ -334,6 +368,19 @@ export class GatewayManager {
     message: string,
   ): Promise<void> {
     const conn = this.getConnection(gatewayId)
+    // Publish the user message to the stream immediately
+    gatewayPublisher
+      .publish('chat', {
+        gatewayId,
+        sessionKey,
+        state: 'final',
+        message: {
+          role: 'user',
+          content: message,
+          timestamp: Date.now(),
+        },
+      })
+      .catch(() => {})
     await conn.request('chat.send', {
       sessionKey,
       message,

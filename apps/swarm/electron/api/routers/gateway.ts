@@ -12,19 +12,15 @@ export const gatewayRouter = {
   }),
 
   add: p
-    .input(
-      z.object({ url: z.string(), token: z.string(), label: z.string() }),
-    )
+    .input(z.object({ url: z.string(), token: z.string(), label: z.string() }))
     .handler(({ input, context }) => {
       return context.gatewayManager.addGateway(input)
     }),
 
-  remove: p
-    .input(z.object({ id: z.string() }))
-    .handler(({ input, context }) => {
-      context.gatewayManager.removeGateway(input.id)
-      return { ok: true as const }
-    }),
+  remove: p.input(z.object({ id: z.string() })).handler(({ input, context }) => {
+    context.gatewayManager.removeGateway(input.id)
+    return { ok: true as const }
+  }),
 
   update: p
     .input(
@@ -46,26 +42,19 @@ export const gatewayRouter = {
       return context.gatewayManager.testConnection(input)
     }),
 
-  reconnect: p
-    .input(z.object({ id: z.string() }))
-    .handler(({ input, context }) => {
-      context.gatewayManager.reconnectGateway(input.id)
-      return { ok: true as const }
-    }),
+  reconnect: p.input(z.object({ id: z.string() })).handler(({ input, context }) => {
+    context.gatewayManager.reconnectGateway(input.id)
+    return { ok: true as const }
+  }),
 
-  sessions: p
-    .input(z.object({ gatewayId: z.string() }))
-    .handler(async ({ input, context }) => {
-      return context.gatewayManager.getGatewaySessions(input.gatewayId)
-    }),
+  sessions: p.input(z.object({ gatewayId: z.string() })).handler(async ({ input, context }) => {
+    return context.gatewayManager.getGatewaySessions(input.gatewayId)
+  }),
 
   sessionUsage: p
     .input(z.object({ gatewayId: z.string(), sessionKey: z.string() }))
     .handler(async ({ input, context }) => {
-      return context.gatewayManager.getSessionUsage(
-        input.gatewayId,
-        input.sessionKey,
-      )
+      return context.gatewayManager.getSessionUsage(input.gatewayId, input.sessionKey)
     }),
 
   sessionUsageLogs: p
@@ -92,12 +81,35 @@ export const gatewayRouter = {
         limit: z.number().optional(),
       }),
     )
-    .handler(async ({ input, context }) => {
-      return context.gatewayManager.getChatHistory(
-        input.gatewayId,
-        input.sessionKey,
-        input.limit,
-      )
+    .handler(async function* ({ input, context, signal }) {
+      // First chunk: full history (yield empty if fetch fails)
+      try {
+        const history = await context.gatewayManager.getChatHistory(
+          input.gatewayId,
+          input.sessionKey,
+          input.limit,
+        )
+        context.logger.info('[chatHistory] yielding initial history', { count: history.length })
+        yield { state: 'history' as const, messages: history }
+      } catch (err) {
+        context.logger.error('[chatHistory] failed to fetch history, yielding empty', err)
+        yield { state: 'history' as const, messages: [] }
+      }
+
+      // Then stream live updates from WebSocket chat events
+      context.logger.info('[chatHistory] subscribing to chat events')
+      for await (const payload of gatewayPublisher.subscribe('chat', { signal })) {
+        // Gateway prefixes session keys (e.g. "agent:main:swarm-maintenance"),
+        // but the client sends the short key ("swarm-maintenance")
+        const matches =
+          payload.gatewayId === input.gatewayId &&
+          (payload.sessionKey === input.sessionKey ||
+            payload.sessionKey.endsWith(`:${input.sessionKey}`))
+        if (matches) {
+          context.logger.info('[chatHistory] yielding chat event', { state: payload.state })
+          yield { state: payload.state, messages: [payload.message] }
+        }
+      }
     }),
 
   sendChatMessage: p
@@ -109,11 +121,7 @@ export const gatewayRouter = {
       }),
     )
     .handler(async ({ input, context }) => {
-      await context.gatewayManager.sendChatMessage(
-        input.gatewayId,
-        input.sessionKey,
-        input.message,
-      )
+      await context.gatewayManager.sendChatMessage(input.gatewayId, input.sessionKey, input.message)
       return { ok: true as const }
     }),
 
@@ -126,11 +134,7 @@ export const gatewayRouter = {
       }),
     )
     .handler(async ({ input, context }) => {
-      await context.gatewayManager.resetSession(
-        input.gatewayId,
-        input.sessionKey,
-        input.reason,
-      )
+      await context.gatewayManager.resetSession(input.gatewayId, input.sessionKey, input.reason)
       return { ok: true as const }
     }),
 
@@ -160,11 +164,7 @@ export const gatewayRouter = {
       }),
     )
     .handler(async ({ input, context }) => {
-      await context.gatewayManager.compactSession(
-        input.gatewayId,
-        input.sessionKey,
-        input.maxLines,
-      )
+      await context.gatewayManager.compactSession(input.gatewayId, input.sessionKey, input.maxLines)
       return { ok: true as const }
     }),
 
@@ -183,17 +183,13 @@ export const gatewayRouter = {
       return { ok: true as const }
     }),
 
-  agents: p
-    .input(z.object({ gatewayId: z.string() }))
-    .handler(async ({ input, context }) => {
-      return context.gatewayManager.getAgents(input.gatewayId)
-    }),
+  agents: p.input(z.object({ gatewayId: z.string() })).handler(async ({ input, context }) => {
+    return context.gatewayManager.getAgents(input.gatewayId)
+  }),
 
-  presence: p
-    .input(z.object({ gatewayId: z.string() }))
-    .handler(async ({ input, context }) => {
-      return context.gatewayManager.getPresence(input.gatewayId)
-    }),
+  presence: p.input(z.object({ gatewayId: z.string() })).handler(async ({ input, context }) => {
+    return context.gatewayManager.getPresence(input.gatewayId)
+  }),
 
   cost: p
     .input(
@@ -204,11 +200,7 @@ export const gatewayRouter = {
       }),
     )
     .handler(async ({ input, context }) => {
-      return context.gatewayManager.getCost(
-        input.gatewayId,
-        input.startDate,
-        input.endDate,
-      )
+      return context.gatewayManager.getCost(input.gatewayId, input.startDate, input.endDate)
     }),
 
   execApprovals: p
@@ -232,17 +224,13 @@ export const gatewayRouter = {
       return context.gatewayManager.getLogsTail(gatewayId, params)
     }),
 
-  configGet: p
-    .input(z.object({ gatewayId: z.string() }))
-    .handler(async ({ input, context }) => {
-      return context.gatewayManager.getConfig(input.gatewayId)
-    }),
+  configGet: p.input(z.object({ gatewayId: z.string() })).handler(async ({ input, context }) => {
+    return context.gatewayManager.getConfig(input.gatewayId)
+  }),
 
-  configSchema: p
-    .input(z.object({ gatewayId: z.string() }))
-    .handler(async ({ input, context }) => {
-      return context.gatewayManager.getConfigSchema(input.gatewayId)
-    }),
+  configSchema: p.input(z.object({ gatewayId: z.string() })).handler(async ({ input, context }) => {
+    return context.gatewayManager.getConfigSchema(input.gatewayId)
+  }),
 
   configPatch: p
     .input(z.object({ gatewayId: z.string(), raw: z.string(), baseHash: z.string().optional() }))
@@ -256,19 +244,22 @@ export const gatewayRouter = {
       return context.gatewayManager.applyConfig(input.gatewayId, input.raw, input.baseHash)
     }),
 
-  sessionsStream: p
-    .input(z.object({ gatewayId: z.string() }))
-    .handler(async function* ({ input, signal }) {
-      for await (const payload of gatewayPublisher.subscribe('sessions', { signal })) {
-        if (payload.gatewayId === input.gatewayId) yield payload
-      }
-    }),
+  sessionsStream: p.input(z.object({ gatewayId: z.string() })).handler(async function* ({
+    input,
+    signal,
+  }) {
+    for await (const payload of gatewayPublisher.subscribe('sessions', { signal })) {
+      if (payload.gatewayId === input.gatewayId) yield payload
+    }
+  }),
 
-  presenceStream: p
-    .input(z.object({ gatewayId: z.string() }))
-    .handler(async function* ({ input, signal }) {
-      for await (const payload of gatewayPublisher.subscribe('presence', { signal })) {
-        if (payload.gatewayId === input.gatewayId) yield payload
-      }
-    }),
+  presenceStream: p.input(z.object({ gatewayId: z.string() })).handler(async function* ({
+    input,
+    signal,
+  }) {
+    for await (const payload of gatewayPublisher.subscribe('presence', { signal })) {
+      if (payload.gatewayId === input.gatewayId) yield payload
+    }
+  }),
+
 }
