@@ -1,5 +1,10 @@
 const isDev = !!process.env['VITE_DEV_SERVER_URL']
 
+/**
+ * @deprecated Use `createRootLogger()` from `electron/logger` instead.
+ * This logger is dev-only and writes to console. The new logger persists
+ * to file, supports log levels, and exposes logs via oRPC.
+ */
 export function createDebugLogger(namespace: string) {
   const prefix = `[${namespace}]`
 

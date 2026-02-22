@@ -149,10 +149,10 @@ export default tseslint.config(
   },
 
   // ── Electron main process ─────────────────────────────────────────────
-  // Use createDebugLogger() from electron/lib/debug.ts — never console.*
+  // Use the logger from electron/logger — never console.*
   {
     files: ['electron/**/*.ts'],
-    ignores: ['electron/lib/debug.ts'],
+    ignores: ['electron/lib/debug.ts', 'electron/logger/transports/console.ts'],
     rules: {
       'no-console': 'error',
     },

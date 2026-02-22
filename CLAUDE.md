@@ -56,7 +56,7 @@ These rules are enforced at lint time with zero warnings allowed. Breaking any o
 - **`from 'zod'` is banned** — always import from `zod/v4`
 - **`from 'clsx'` and `from 'tailwind-merge'` are banned in src/** — use `cn()` from `@/lib/utils`
 - **`React.FC` / `React.FunctionComponent` are banned** — use plain function components with typed props
-- **`console.*` is banned in `electron/`** — use `createDebugLogger` from `electron/lib/debug.ts`
+- **`console.*` is banned in `electron/`** — use the injected `Logger` from `electron/logger`
 - **`useQuery`/`useMutation` are banned in `src/hooks/`** — use them directly in components with `orpc.*.queryOptions()`
 
 ## Swarm app architecture
@@ -169,13 +169,20 @@ CSS variables in oklch color space defined in `src/index.css`. Light/dark mode v
 - **Badge statuses**: `Badge variant="outline"` with a colored dot span inside for status indicators
 - **Tables**: shadcn `Table` components, `text-right` for numeric columns
 
-### Debug logging
+### Logging
 
-`electron/lib/debug.ts` provides a dev-only logger. Logs only appear when `VITE_DEV_SERVER_URL` is set (i.e. `bun run dev`):
+`electron/logger/` provides a transport-agnostic logger. Classes receive the logger via constructor injection; oRPC procedures access it via `context.logger`. Direct `console.*` is banned by ESLint.
 
 ```tsx
-import { createDebugLogger } from '../lib/debug'
-const debug = createDebugLogger('my:namespace')
-debug.log('message', data)    // Only logs in dev
-debug.error('failed:', err)   // Only logs in dev
+// In classes — use the injected logger
+this.logger.info('connected', { gatewayId })
+this.logger.error('request failed', err.message)
+
+// Child loggers for sub-components
+const childLogger = this.logger.child('conn')
+
+// In oRPC procedures
+context.logger.info('handling request')
 ```
+
+Three transports run simultaneously: console (dev only, colored), file (NDJSON with rotation at `app.getPath('logs')`), and memory (1000-entry ring buffer for in-app viewer). Namespaces: `main`, `gw`, `gw:conn`, `gw:protocol`.
