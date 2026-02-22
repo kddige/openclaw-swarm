@@ -64,7 +64,7 @@ function DashboardLayout() {
       queryKey: orpc.gateway.list.queryOptions().queryKey,
     })
     queryClient.invalidateQueries({
-      queryKey: orpc.fleet.overview.queryOptions().queryKey,
+      queryKey: orpc.swarm.overview.queryOptions().queryKey,
     })
   }, [events, queryClient])
 
@@ -76,7 +76,7 @@ function DashboardLayout() {
       >
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Fleet</SidebarGroupLabel>
+            <SidebarGroupLabel>Swarm</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>

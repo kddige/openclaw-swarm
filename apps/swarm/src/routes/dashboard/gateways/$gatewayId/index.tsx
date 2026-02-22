@@ -1145,7 +1145,7 @@ function SecurityTab({ gatewayId }: { gatewayId: string }) {
   )
 }
 
-const MAINTENANCE_SESSION_KEY = 'fleet-maintenance'
+const MAINTENANCE_SESSION_KEY = 'swarm-maintenance'
 
 function formatChatTime(timestamp: number): string {
   const d = new Date(timestamp)

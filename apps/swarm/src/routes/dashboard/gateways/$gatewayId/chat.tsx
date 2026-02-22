@@ -39,7 +39,7 @@ export const Route = createFileRoute('/dashboard/gateways/$gatewayId/chat')({
   component: MaintenanceChatPage,
   errorComponent: RouteErrorFallback,
   validateSearch: z.object({
-    sessionKey: z.string().default('fleet-maintenance'),
+    sessionKey: z.string().default('swarm-maintenance'),
   }),
 })
 

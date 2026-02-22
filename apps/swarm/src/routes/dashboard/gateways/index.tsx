@@ -282,7 +282,7 @@ function GatewaysPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Gateway</AlertDialogTitle>
             <AlertDialogDescription>
-              This will disconnect and remove the gateway from your fleet. This
+              This will disconnect and remove the gateway from your swarm. This
               action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

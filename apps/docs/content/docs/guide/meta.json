@@ -1,6 +1,6 @@
 {
   "title": "Guide",
-  "description": "Learn how to use OpenClaw Fleet",
+  "description": "Learn how to use OpenClaw Swarm",
   "icon": "BookOpen",
   "root": true,
   "pages": [
@@ -8,7 +8,7 @@
     "---Getting Started---",
     "installation",
     "connecting-gateways",
-    "---Using Fleet---",
+    "---Using Swarm---",
     "sessions",
     "logs-and-search"
   ]

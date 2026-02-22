@@ -62,7 +62,7 @@ export function CommandPalette() {
   }
 
   const { data, isFetching } = useQuery({
-    ...orpc.fleet.search.queryOptions({ input: { query } }),
+    ...orpc.swarm.search.queryOptions({ input: { query } }),
     enabled: query.length > 0,
   })
 
@@ -101,7 +101,7 @@ export function CommandPalette() {
               }
             >
               <LayoutDashboardIcon />
-              Fleet Dashboard
+              Swarm Dashboard
               <CommandShortcut>⌘D</CommandShortcut>
             </CommandItem>
             <CommandItem

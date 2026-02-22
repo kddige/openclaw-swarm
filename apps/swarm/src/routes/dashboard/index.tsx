@@ -42,7 +42,7 @@ function activityStatus(lastInputSeconds?: number): { label: string; color: stri
 }
 
 export const Route = createFileRoute('/dashboard/')({
-  component: FleetDashboard,
+  component: SwarmDashboard,
 })
 
 function statusLabel(status: string) {
@@ -61,21 +61,21 @@ function statusLabel(status: string) {
   }
 }
 
-function FleetDashboard() {
+function SwarmDashboard() {
   const { data: overview, isLoading: overviewLoading } = useQuery(
-    orpc.fleet.overview.queryOptions(),
+    orpc.swarm.overview.queryOptions(),
   )
   const { data: gateways, isLoading: gatewaysLoading } = useQuery(
     orpc.gateway.list.queryOptions(),
   )
-  const { data: fleetCost, isLoading: costLoading } = useQuery(
-    orpc.fleet.cost.queryOptions(),
+  const { data: swarmCost, isLoading: costLoading } = useQuery(
+    orpc.swarm.cost.queryOptions(),
   )
-  const { data: fleetPresence } = useQuery(
-    orpc.fleet.presence.queryOptions(),
+  const { data: swarmPresence } = useQuery(
+    orpc.swarm.presence.queryOptions(),
   )
 
-  const allDevices = fleetPresence?.flatMap((g) =>
+  const allDevices = swarmPresence?.flatMap((g) =>
     g.devices.map((d) => ({ ...d, gatewayId: g.gatewayId, gatewayLabel: g.gatewayLabel })),
   ) ?? []
 
@@ -108,7 +108,7 @@ function FleetDashboard() {
             </EmptyMedia>
             <EmptyTitle>No gateways configured</EmptyTitle>
             <EmptyDescription>
-              Add a gateway to start monitoring your fleet.
+              Add a gateway to start monitoring your swarm.
             </EmptyDescription>
           </EmptyHeader>
           <Button variant="outline" render={<Link to="/dashboard/gateways" />}>
@@ -121,7 +121,7 @@ function FleetDashboard() {
 
   return (
     <div className="flex flex-col gap-4 p-6">
-      <h1 className="text-sm font-semibold">Fleet Dashboard</h1>
+      <h1 className="text-sm font-semibold">Swarm Dashboard</h1>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -145,7 +145,7 @@ function FleetDashboard() {
           value={
             costLoading
               ? '--'
-              : `$${(fleetCost?.totalCost ?? 0).toFixed(2)}`
+              : `$${(swarmCost?.totalCost ?? 0).toFixed(2)}`
           }
           icon={<DollarSignIcon className="size-3.5 text-muted-foreground" />}
         />
@@ -225,7 +225,7 @@ function FleetDashboard() {
             Connected Devices
           </h2>
           <div className="flex flex-col gap-3">
-            {fleetPresence?.map((group) => {
+            {swarmPresence?.map((group) => {
               if (!group.devices.length) return null
               return (
                 <div key={group.gatewayId} className="flex flex-col gap-2">

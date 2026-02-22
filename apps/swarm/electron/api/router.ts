@@ -1,12 +1,12 @@
 import { windowRouter } from './routers/window'
 import { gatewayRouter } from './routers/gateway'
-import { fleetRouter } from './routers/fleet'
+import { swarmRouter } from './routers/swarm'
 import { eventsRouter } from './routers/events'
 
 export const router = {
   window: windowRouter,
   gateway: gatewayRouter,
-  fleet: fleetRouter,
+  swarm: swarmRouter,
   events: eventsRouter,
 }
 

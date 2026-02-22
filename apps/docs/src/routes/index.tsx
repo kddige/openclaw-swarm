@@ -72,7 +72,7 @@ function Hero() {
             fontFamily: 'var(--font-display)',
           }}
         >
-          Your AI fleet.
+          Your AI swarm.
           <br />
           <span className="text-gradient">One command center.</span>
         </h1>
@@ -86,7 +86,7 @@ function Hero() {
           manage security across every OpenClaw Gateway in your
           infrastructure. Think{' '}
           <strong className="text-fd-foreground">Portainer</strong>,
-          but for AI agent fleets.
+          but for AI agent swarms.
         </p>
 
         {/* CTAs */}
@@ -95,7 +95,7 @@ function Hero() {
           style={{ animationDelay: '0.3s' }}
         >
           <a
-            href="https://github.com/kddige/openclaw-fleet/releases"
+            href="https://github.com/kddige/openclaw-swarm/releases"
             className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
             style={{ background: 'var(--landing-accent)' }}
           >
@@ -111,21 +111,21 @@ function Hero() {
           </Link>
         </div>
 
-        {/* Fleet preview */}
+        {/* Swarm preview */}
         <div
           className="animate-fade-up mt-20 overflow-hidden rounded-xl border border-fd-border bg-fd-card"
           style={{ animationDelay: '0.5s' }}
         >
-          <FleetPreview />
+          <SwarmPreview />
         </div>
       </div>
     </section>
   )
 }
 
-/* ── Fleet Preview (mock UI) ──────────────────────────────────────── */
+/* ── Swarm Preview (mock UI) ──────────────────────────────────────── */
 
-function FleetPreview() {
+function SwarmPreview() {
   const gateways = [
     { name: 'gw-prod-us-east', status: 'connected', sessions: 47, agents: 12 },
     { name: 'gw-prod-eu-west', status: 'connected', sessions: 31, agents: 8 },
@@ -152,7 +152,7 @@ function FleetPreview() {
           className="ml-2 text-xs text-fd-muted-foreground"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
-          OpenClaw Fleet &mdash; 4 gateways
+          OpenClaw Swarm &mdash; 4 gateways
         </span>
       </div>
 
@@ -242,11 +242,11 @@ const features = [
     icon: Shield,
     title: 'Security Configuration',
     description:
-      'Push security policy changes across your entire fleet. Rate limits, allowed models, and access controls.',
+      'Push security policy changes across your entire swarm. Rate limits, allowed models, and access controls.',
   },
   {
     icon: Search,
-    title: 'Fleet-Wide Search',
+    title: 'Swarm-Wide Search',
     description:
       'Cmd+K command palette for jumping between gateways, sessions, and actions across your entire infrastructure.',
   },
@@ -277,7 +277,7 @@ function Features() {
         >
           Everything you need to
           <br />
-          manage your fleet
+          manage your swarm
         </h2>
       </div>
 
@@ -366,13 +366,13 @@ function TerminalDemo() {
             className="p-5 text-sm leading-7 text-fd-foreground"
             style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}
           >
-            <Line prompt text="git clone https://github.com/kddige/openclaw-fleet.git" />
-            <Line prompt text="cd openclaw-fleet" />
+            <Line prompt text="git clone https://github.com/kddige/openclaw-swarm.git" />
+            <Line prompt text="cd openclaw-swarm" />
             <Line prompt text="proto use" />
             <Line muted text="  moon 2.0.1 installed" />
             <Line muted text="  bun 1.3.9 installed" />
             <Line prompt text="bun install" />
-            <Line prompt text="moon run fleet:dev" />
+            <Line prompt text="moon run swarm:dev" />
             <div style={{ color: '#22c55e' }}>
               {'  '}VITE v7.3.1{'  '}ready in 826ms
             </div>
@@ -570,12 +570,12 @@ function GetStarted() {
             Ready to take control?
           </h2>
           <p className="mx-auto mb-8 max-w-md leading-relaxed text-fd-muted-foreground">
-            OpenClaw Fleet is open source and free. Download the app or start
+            OpenClaw Swarm is open source and free. Download the app or start
             contributing to the codebase.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <a
-              href="https://github.com/kddige/openclaw-fleet/releases"
+              href="https://github.com/kddige/openclaw-swarm/releases"
               className="group inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all hover:brightness-110"
               style={{ background: 'var(--landing-accent)' }}
             >
