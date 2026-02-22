@@ -2,12 +2,17 @@ import { useState, useRef, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { ChatPanel } from '@/components/chat-panel'
+import { MetricCard } from '@/components/metric-card'
+import {
+  SessionActionDialogs,
+  type SessionActionDialog,
+} from '@/components/session-action-dialogs'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
@@ -19,16 +24,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import {
   ArrowLeftIcon,
   ArrowDownIcon,
@@ -50,16 +45,12 @@ export const Route = createFileRoute('/dashboard/gateways/$gatewayId/sessions/$s
   errorComponent: RouteErrorFallback,
 })
 
-type DialogState = 'none' | 'reset' | 'compact' | 'delete'
-
 function SessionDetailPage() {
   const { gatewayId, sessionKey } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const [dialog, setDialog] = useState<DialogState>('none')
-  const [deleteTranscript, setDeleteTranscript] = useState(false)
-  const [maxLines, setMaxLines] = useState('')
+  const [dialog, setDialog] = useState<SessionActionDialog>({ type: 'none' })
   const [editingLabel, setEditingLabel] = useState(false)
   const [labelDraft, setLabelDraft] = useState('')
   const labelInputRef = useRef<HTMLInputElement>(null)
@@ -91,7 +82,7 @@ function SessionDetailPage() {
     ...orpc.gateway.resetSession.mutationOptions(),
     onSuccess: () => {
       toast.success('Session reset')
-      setDialog('none')
+      setDialog({ type: 'none' })
       void navigate({ to: '/dashboard/gateways/$gatewayId', params: { gatewayId } })
     },
     onError: (err) => {
@@ -103,7 +94,7 @@ function SessionDetailPage() {
     ...orpc.gateway.deleteSession.mutationOptions(),
     onSuccess: () => {
       toast.success('Session deleted')
-      setDialog('none')
+      setDialog({ type: 'none' })
       queryClient.invalidateQueries({ queryKey: sessionsQueryKey })
       void navigate({ to: '/dashboard/gateways/$gatewayId', params: { gatewayId } })
     },
@@ -116,7 +107,7 @@ function SessionDetailPage() {
     ...orpc.gateway.compactSession.mutationOptions(),
     onSuccess: () => {
       toast.success('Session compacted')
-      setDialog('none')
+      setDialog({ type: 'none' })
       queryClient.invalidateQueries({
         queryKey: orpc.gateway.sessionUsage.queryOptions({
           input: { gatewayId, sessionKey },
@@ -221,17 +212,14 @@ function SessionDetailPage() {
         <div className="flex-1" />
 
         {/* Action buttons */}
-        <Button variant="outline" size="xs" onClick={() => setDialog('reset')}>
+        <Button variant="outline" size="xs" onClick={() => setDialog({ type: 'reset', sessionKey })}>
           <RotateCcwIcon />
           Reset
         </Button>
         <Button
           variant="outline"
           size="xs"
-          onClick={() => {
-            setMaxLines('')
-            setDialog('compact')
-          }}
+          onClick={() => setDialog({ type: 'compact', sessionKey })}
         >
           <MinimizeIcon />
           Compact
@@ -239,10 +227,7 @@ function SessionDetailPage() {
         <Button
           variant="destructive"
           size="xs"
-          onClick={() => {
-            setDeleteTranscript(false)
-            setDialog('delete')
-          }}
+          onClick={() => setDialog({ type: 'delete', sessionKey })}
         >
           <Trash2Icon />
           Delete
@@ -305,53 +290,21 @@ function SessionDetailPage() {
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-3">
-            <Card size="sm" className="bg-muted/40">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <ArrowDownIcon className="size-3 text-blue-500" />
-                  <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
-                    Tokens In
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <span className="text-lg font-semibold tabular-nums">
-                  {(usage?.tokensIn ?? 0).toLocaleString()}
-                </span>
-              </CardContent>
-            </Card>
-
-            <Card size="sm" className="bg-muted/40">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <ArrowUpIcon className="size-3 text-emerald-500" />
-                  <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
-                    Tokens Out
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <span className="text-lg font-semibold tabular-nums">
-                  {(usage?.tokensOut ?? 0).toLocaleString()}
-                </span>
-              </CardContent>
-            </Card>
-
-            <Card size="sm" className="bg-muted/40">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <DollarSignIcon className="size-3 text-muted-foreground" />
-                  <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
-                    Total Cost
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <span className="text-lg font-semibold tabular-nums">
-                  ${(usage?.cost ?? 0).toFixed(4)}
-                </span>
-              </CardContent>
-            </Card>
+            <MetricCard
+              label="Tokens In"
+              value={(usage?.tokensIn ?? 0).toLocaleString()}
+              icon={<ArrowDownIcon className="size-3 text-blue-500" />}
+            />
+            <MetricCard
+              label="Tokens Out"
+              value={(usage?.tokensOut ?? 0).toLocaleString()}
+              icon={<ArrowUpIcon className="size-3 text-emerald-500" />}
+            />
+            <MetricCard
+              label="Total Cost"
+              value={`$${(usage?.cost ?? 0).toFixed(4)}`}
+              icon={<DollarSignIcon className="size-3 text-muted-foreground" />}
+            />
           </div>
 
           {usage?.modelBreakdown && usage.modelBreakdown.length > 0 && (
@@ -437,101 +390,20 @@ function SessionDetailPage() {
         style={{ height: '500px' }}
       />
 
-      {/* Reset Dialog */}
-      <AlertDialog open={dialog === 'reset'} onOpenChange={(open) => !open && setDialog('none')}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reset Session</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will reset the session state. The transcript may be preserved depending on
-              gateway settings.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => resetMutation.mutate({ gatewayId, sessionKey })}
-              disabled={resetMutation.isPending}
-            >
-              Reset
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Compact Dialog */}
-      <AlertDialog open={dialog === 'compact'} onOpenChange={(open) => !open && setDialog('none')}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Compact Session</AlertDialogTitle>
-            <AlertDialogDescription>
-              Summarize and compress the session history to reduce token usage.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-muted-foreground">Max lines (optional)</label>
-            <Input
-              type="number"
-              placeholder="e.g. 100"
-              value={maxLines}
-              onChange={(e) => setMaxLines(e.target.value)}
-              className="h-8 text-xs"
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                compactMutation.mutate({
-                  gatewayId,
-                  sessionKey,
-                  maxLines: maxLines ? Number(maxLines) : undefined,
-                })
-              }
-              disabled={compactMutation.isPending}
-            >
-              Compact
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Delete Dialog */}
-      <AlertDialog open={dialog === 'delete'} onOpenChange={(open) => !open && setDialog('none')}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Session</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete this session. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <label className="flex items-center gap-2 text-xs cursor-pointer">
-            <input
-              type="checkbox"
-              checked={deleteTranscript}
-              onChange={(e) => setDeleteTranscript(e.target.checked)}
-              className="rounded"
-            />
-            Also delete transcript
-          </label>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() =>
-                deleteMutation.mutate({
-                  gatewayId,
-                  sessionKey,
-                  deleteTranscript,
-                })
-              }
-              disabled={deleteMutation.isPending}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <SessionActionDialogs
+        dialog={dialog}
+        onClose={() => setDialog({ type: 'none' })}
+        onReset={(sk) => resetMutation.mutate({ gatewayId, sessionKey: sk })}
+        onCompact={(sk, maxLines) =>
+          compactMutation.mutate({ gatewayId, sessionKey: sk, maxLines })
+        }
+        onDelete={(sk, deleteTranscript) =>
+          deleteMutation.mutate({ gatewayId, sessionKey: sk, deleteTranscript })
+        }
+        resetPending={resetMutation.isPending}
+        compactPending={compactMutation.isPending}
+        deletePending={deleteMutation.isPending}
+      />
     </div>
   )
 }

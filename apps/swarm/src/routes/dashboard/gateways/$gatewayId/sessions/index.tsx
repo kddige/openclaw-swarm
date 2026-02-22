@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
+import {
+  SessionActionDialogs,
+  type SessionActionDialog,
+} from '@/components/session-action-dialogs'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { toast } from 'sonner'
@@ -21,16 +25,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { MoreHorizontalIcon, RotateCcwIcon, MinimizeIcon, Trash2Icon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -38,12 +32,6 @@ export const Route = createFileRoute('/dashboard/gateways/$gatewayId/sessions/')
   component: SessionsPage,
   errorComponent: RouteErrorFallback,
 })
-
-type SessionActionDialog =
-  | { type: 'none' }
-  | { type: 'reset'; sessionKey: string }
-  | { type: 'compact'; sessionKey: string }
-  | { type: 'delete'; sessionKey: string; deleteTranscript: boolean }
 
 function SessionsPage() {
   const { gatewayId } = Route.useParams()
@@ -181,11 +169,7 @@ function SessionsPage() {
                     <DropdownMenuItem
                       variant="destructive"
                       onClick={() =>
-                        setActionDialog({
-                          type: 'delete',
-                          sessionKey: session.key,
-                          deleteTranscript: false,
-                        })
+                        setActionDialog({ type: 'delete', sessionKey: session.key })
                       }
                     >
                       <Trash2Icon />
@@ -199,104 +183,20 @@ function SessionsPage() {
         </TableBody>
       </Table>
 
-      {/* Reset Dialog */}
-      <AlertDialog
-        open={actionDialog.type === 'reset'}
-        onOpenChange={(open) => !open && setActionDialog({ type: 'none' })}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reset Session</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will reset the session state. The transcript may be preserved depending on
-              gateway settings.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                actionDialog.type === 'reset' &&
-                resetMutation.mutate({ gatewayId, sessionKey: actionDialog.sessionKey })
-              }
-              disabled={resetMutation.isPending}
-            >
-              Reset
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Compact Dialog */}
-      <AlertDialog
-        open={actionDialog.type === 'compact'}
-        onOpenChange={(open) => !open && setActionDialog({ type: 'none' })}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Compact Session</AlertDialogTitle>
-            <AlertDialogDescription>
-              Summarize and compress the session history to reduce token usage.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                actionDialog.type === 'compact' &&
-                compactMutation.mutate({ gatewayId, sessionKey: actionDialog.sessionKey })
-              }
-              disabled={compactMutation.isPending}
-            >
-              Compact
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Delete Dialog */}
-      <AlertDialog
-        open={actionDialog.type === 'delete'}
-        onOpenChange={(open) => !open && setActionDialog({ type: 'none' })}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Session</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete this session. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <label className="flex items-center gap-2 text-xs cursor-pointer">
-            <input
-              type="checkbox"
-              checked={actionDialog.type === 'delete' ? actionDialog.deleteTranscript : false}
-              onChange={(e) =>
-                actionDialog.type === 'delete' &&
-                setActionDialog({ ...actionDialog, deleteTranscript: e.target.checked })
-              }
-              className="rounded"
-            />
-            Also delete transcript
-          </label>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() =>
-                actionDialog.type === 'delete' &&
-                deleteMutation.mutate({
-                  gatewayId,
-                  sessionKey: actionDialog.sessionKey,
-                  deleteTranscript: actionDialog.deleteTranscript,
-                })
-              }
-              disabled={deleteMutation.isPending}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <SessionActionDialogs
+        dialog={actionDialog}
+        onClose={() => setActionDialog({ type: 'none' })}
+        onReset={(sessionKey) => resetMutation.mutate({ gatewayId, sessionKey })}
+        onCompact={(sessionKey, maxLines) =>
+          compactMutation.mutate({ gatewayId, sessionKey, maxLines })
+        }
+        onDelete={(sessionKey, deleteTranscript) =>
+          deleteMutation.mutate({ gatewayId, sessionKey, deleteTranscript })
+        }
+        resetPending={resetMutation.isPending}
+        compactPending={compactMutation.isPending}
+        deletePending={deleteMutation.isPending}
+      />
     </div>
   )
 }

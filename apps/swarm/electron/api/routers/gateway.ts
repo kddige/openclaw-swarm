@@ -1,6 +1,18 @@
 import { z } from 'zod/v4'
 import { p } from '../orpc'
 import { gatewayPublisher } from '../../gateway/publisher'
+import type { GatewayEvents } from '../../gateway/publisher'
+
+function createGatewayStream<K extends keyof GatewayEvents>(event: K) {
+  return p.input(z.object({ gatewayId: z.string() })).handler(async function* ({
+    input,
+    signal,
+  }) {
+    for await (const payload of gatewayPublisher.subscribe(event, { signal })) {
+      if (payload.gatewayId === input.gatewayId) yield payload
+    }
+  })
+}
 
 export const gatewayRouter = {
   list: p.handler(({ context }) => {
@@ -244,22 +256,7 @@ export const gatewayRouter = {
       return context.gatewayManager.applyConfig(input.gatewayId, input.raw, input.baseHash)
     }),
 
-  sessionsStream: p.input(z.object({ gatewayId: z.string() })).handler(async function* ({
-    input,
-    signal,
-  }) {
-    for await (const payload of gatewayPublisher.subscribe('sessions', { signal })) {
-      if (payload.gatewayId === input.gatewayId) yield payload
-    }
-  }),
-
-  presenceStream: p.input(z.object({ gatewayId: z.string() })).handler(async function* ({
-    input,
-    signal,
-  }) {
-    for await (const payload of gatewayPublisher.subscribe('presence', { signal })) {
-      if (payload.gatewayId === input.gatewayId) yield payload
-    }
-  }),
+  sessionsStream: createGatewayStream('sessions'),
+  presenceStream: createGatewayStream('presence'),
 
 }
