@@ -31,7 +31,13 @@ import { extractText } from '@/lib/content'
 
 function formatChatTime(timestamp: string | number | undefined): string {
   if (!timestamp) return ''
-  const date = new Date(typeof timestamp === 'number' ? timestamp * 1000 : timestamp)
+  const ms =
+    typeof timestamp === 'number'
+      ? timestamp > 1e12
+        ? timestamp // already milliseconds
+        : timestamp * 1000 // seconds → milliseconds
+      : Date.parse(timestamp)
+  const date = new Date(ms)
   if (isNaN(date.getTime())) return ''
   try {
     return formatDistanceToNow(date, { addSuffix: true })
