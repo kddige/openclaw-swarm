@@ -1,9 +1,12 @@
 {
   "name": "openclaw",
   "private": true,
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "dev": "moon r :dev"
   },
   "devDependencies": {
     "prettier": "^3.8.1"

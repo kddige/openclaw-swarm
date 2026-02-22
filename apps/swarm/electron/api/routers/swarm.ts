@@ -16,4 +16,7 @@ export const swarmRouter = {
     .handler(({ input, context }) => {
       return context.gatewayManager.searchSwarm(input.query)
     }),
+  deviceId: p.handler(({ context }) => {
+    return { deviceId: context.gatewayManager.getDeviceId() }
+  }),
 }

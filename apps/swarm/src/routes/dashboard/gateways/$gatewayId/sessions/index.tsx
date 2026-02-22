@@ -130,10 +130,10 @@ function SessionsPage() {
                   params={{ gatewayId, sessionKey: session.key }}
                   className="font-mono text-[0.625rem] hover:underline"
                 >
-                  {session.key.length > 24 ? `${session.key.slice(0, 12)}...` : session.key}
+                  {session.key}
                 </Link>
               </TableCell>
-              <TableCell className="truncate max-w-32">{session.displayName ?? '--'}</TableCell>
+              <TableCell className="truncate max-w-64">{session.displayName ?? '--'}</TableCell>
               <TableCell className="text-muted-foreground">{session.kind ?? '--'}</TableCell>
               <TableCell>{session.agent ?? '--'}</TableCell>
               <TableCell className="text-muted-foreground">

@@ -1,11 +1,22 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { UserIcon, MonitorIcon, ClockIcon, ServerIcon, ActivityIcon } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
+import {
+  UserIcon,
+  MonitorIcon,
+  ClockIcon,
+  ServerIcon,
+  ActivityIcon,
+  DownloadIcon,
+} from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/dashboard/gateways/$gatewayId/')({
   component: StatusPage,
@@ -17,6 +28,12 @@ function StatusPage() {
   const { data: gateway, isLoading } = useQuery(
     orpc.gateway.get.queryOptions({ input: { id: gatewayId } }),
   )
+
+  const updateMutation = useMutation({
+    ...orpc.gateway.runUpdate.mutationOptions(),
+    onSuccess: () => toast.success('Gateway update started — gateway will restart'),
+    onError: (err) => toast.error('Update failed', { description: String(err) }),
+  })
 
   if (isLoading) {
     return (
@@ -45,6 +62,9 @@ function StatusPage() {
     | { defaultAgentId?: string; agents?: { agentId: string; every: string }[] }
     | undefined
   const channelSummary = (s?.channelSummary ?? []) as string[]
+  const updateAvailable = s?.updateAvailable as
+    | { currentVersion: string; latestVersion: string; channel?: string }
+    | undefined
 
   const items: { label: string; value: string; icon: typeof ServerIcon }[] = []
 
@@ -79,6 +99,38 @@ function StatusPage() {
 
   return (
     <div className="flex flex-col gap-4 pt-2">
+      {/* Update available banner */}
+      {updateAvailable && (
+        <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <DownloadIcon className="size-3.5 text-blue-500 shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                Update Available
+              </span>
+              <span className="text-[0.625rem] text-muted-foreground">
+                {updateAvailable.currentVersion} &rarr; {updateAvailable.latestVersion}
+                {updateAvailable.channel && (
+                  <Badge variant="outline" className="ml-1.5 text-[0.5625rem]">
+                    {updateAvailable.channel}
+                  </Badge>
+                )}
+              </span>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => updateMutation.mutate({ gatewayId })}
+            disabled={updateMutation.isPending}
+          >
+            {updateMutation.isPending && <Spinner className="size-3" />}
+            <DownloadIcon className="size-3" />
+            Update
+          </Button>
+        </div>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {items.map((item) => (
           <Card key={item.label} size="sm" className="bg-muted/40">

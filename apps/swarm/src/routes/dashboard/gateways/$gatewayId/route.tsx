@@ -167,14 +167,6 @@ function GatewayLayout() {
             Usage
           </TabsLink>
           <TabsLink
-            value="health"
-            to="/dashboard/gateways/$gatewayId/health"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Health
-          </TabsLink>
-          <TabsLink
             value="agents"
             to="/dashboard/gateways/$gatewayId/agents"
             params={{ gatewayId }}
@@ -189,6 +181,46 @@ function GatewayLayout() {
             activeProps={{ value: 'active' }}
           >
             Security
+          </TabsLink>
+          <TabsLink
+            value="models"
+            to="/dashboard/gateways/$gatewayId/models"
+            params={{ gatewayId }}
+            activeProps={{ value: 'active' }}
+          >
+            Models
+          </TabsLink>
+          <TabsLink
+            value="cron"
+            to="/dashboard/gateways/$gatewayId/cron"
+            params={{ gatewayId }}
+            activeProps={{ value: 'active' }}
+          >
+            Cron
+          </TabsLink>
+          <TabsLink
+            value="nodes"
+            to="/dashboard/gateways/$gatewayId/nodes"
+            params={{ gatewayId }}
+            activeProps={{ value: 'active' }}
+          >
+            Nodes
+          </TabsLink>
+          <TabsLink
+            value="skills"
+            to="/dashboard/gateways/$gatewayId/skills"
+            params={{ gatewayId }}
+            activeProps={{ value: 'active' }}
+          >
+            Skills
+          </TabsLink>
+          <TabsLink
+            value="channels"
+            to="/dashboard/gateways/$gatewayId/channels"
+            params={{ gatewayId }}
+            activeProps={{ value: 'active' }}
+          >
+            Channels
           </TabsLink>
           <TabsLink
             value="config"

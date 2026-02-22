@@ -24,6 +24,7 @@ import {
   BotIcon,
   UserIcon,
   ArrowDownIcon,
+  SquareIcon,
 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDistanceToNow } from 'date-fns'
@@ -31,7 +32,13 @@ import { extractText } from '@/lib/content'
 
 function formatChatTime(timestamp: string | number | undefined): string {
   if (!timestamp) return ''
-  const date = new Date(typeof timestamp === 'number' ? timestamp * 1000 : timestamp)
+  const ms =
+    typeof timestamp === 'number'
+      ? timestamp > 1e12
+        ? timestamp // already milliseconds
+        : timestamp * 1000 // seconds → milliseconds
+      : Date.parse(timestamp)
+  const date = new Date(ms)
   if (isNaN(date.getTime())) return ''
   try {
     return formatDistanceToNow(date, { addSuffix: true })
@@ -102,6 +109,20 @@ export function ChatPanel({
     },
   })
 
+  const abortMutation = useMutation({
+    ...orpc.gateway.abortChat.mutationOptions(),
+    onSuccess: (data) => {
+      if (data.aborted) {
+        toast.success('Chat aborted')
+      } else {
+        toast.info('No active run to abort')
+      }
+    },
+    onError: (err) => {
+      toast.error('Failed to abort', { description: String(err) })
+    },
+  })
+
   // Show typing indicator after sending until the first assistant response streams in
   const lastRole = messages.length > 0 ? messages[messages.length - 1]?.role : null
   const waitingForReply = sendMutation.isPending || (lastRole === 'user' && sendMutation.isSuccess)
@@ -154,15 +175,33 @@ export function ChatPanel({
             {sessionKey}
           </code>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs gap-1.5"
-          onClick={() => setShowResetDialog(true)}
-        >
-          <RotateCcwIcon className="size-3" />
-          New Session
-        </Button>
+        <div className="flex items-center gap-1.5">
+          {waitingForReply && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-7 text-xs gap-1.5"
+              onClick={() => abortMutation.mutate({ gatewayId, sessionKey })}
+              disabled={abortMutation.isPending}
+            >
+              {abortMutation.isPending ? (
+                <Spinner className="size-3" />
+              ) : (
+                <SquareIcon className="size-3" />
+              )}
+              Stop
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs gap-1.5"
+            onClick={() => setShowResetDialog(true)}
+          >
+            <RotateCcwIcon className="size-3" />
+            New Session
+          </Button>
+        </div>
       </div>
 
       {/* Message area */}
