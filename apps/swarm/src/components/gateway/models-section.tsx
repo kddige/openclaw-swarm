@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useQuery } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
@@ -24,13 +22,7 @@ import {
 } from '@/components/ui/select'
 import { CheckIcon, SearchIcon } from 'lucide-react'
 
-export const Route = createFileRoute('/dashboard/gateways/$gatewayId/models')({
-  component: ModelsPage,
-  errorComponent: RouteErrorFallback,
-})
-
-function ModelsPage() {
-  const { gatewayId } = Route.useParams()
+export function ModelsSection({ gatewayId }: { gatewayId: string }) {
   const [search, setSearch] = useState('')
   const [providerFilter, setProviderFilter] = useState<string>('all')
 
@@ -38,7 +30,6 @@ function ModelsPage() {
     orpc.gateway.models.queryOptions({ input: { gatewayId } }),
   )
 
-  // Cross-reference with config to determine which models are explicitly enabled
   const { data: configData } = useQuery(
     orpc.gateway.configGet.queryOptions({ input: { gatewayId } }),
   )
@@ -49,7 +40,7 @@ function ModelsPage() {
       agents?: { defaults?: { models?: Record<string, unknown> } }
     }
     const modelsMap = config?.agents?.defaults?.models
-    if (!modelsMap || Object.keys(modelsMap).length === 0) return null // all enabled
+    if (!modelsMap || Object.keys(modelsMap).length === 0) return null
     return new Set(Object.keys(modelsMap))
   }, [configData])
 
@@ -69,9 +60,8 @@ function ModelsPage() {
     })
   }, [models, search, providerFilter])
 
-  // Sort: enabled first, then alphabetically
   const sorted = useMemo(() => {
-    if (!enabledModelIds) return filtered // all enabled, just sort alpha
+    if (!enabledModelIds) return filtered
     return [...filtered].sort((a, b) => {
       const aEnabled = enabledModelIds.has(a.id) || enabledModelIds.has(`${a.provider}/${a.id}`)
       const bEnabled = enabledModelIds.has(b.id) || enabledModelIds.has(`${b.provider}/${b.id}`)
@@ -94,7 +84,7 @@ function ModelsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-3 pt-2">
+      <div className="flex flex-col gap-3">
         <Skeleton className="h-7 w-64" />
         {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-8 rounded" />
@@ -110,8 +100,7 @@ function ModelsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 pt-2">
-      {/* Stats */}
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <Badge variant="outline" className="text-[0.625rem]">
           {enabledCount} enabled
@@ -126,7 +115,6 @@ function ModelsPage() {
         )}
       </div>
 
-      {/* Filters */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1 max-w-64">
           <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
@@ -152,7 +140,6 @@ function ModelsPage() {
         </Select>
       </div>
 
-      {/* Table */}
       {sorted.length === 0 ? (
         <div className="py-8 text-center text-xs text-muted-foreground">
           No models match your filters.

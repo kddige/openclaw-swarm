@@ -16,19 +16,7 @@ import { Route as DashboardLogsIndexRouteImport } from './routes/dashboard/logs/
 import { Route as DashboardGatewaysIndexRouteImport } from './routes/dashboard/gateways/index'
 import { Route as DashboardGatewaysGatewayIdRouteRouteImport } from './routes/dashboard/gateways/$gatewayId/route'
 import { Route as DashboardGatewaysGatewayIdIndexRouteImport } from './routes/dashboard/gateways/$gatewayId/index'
-import { Route as DashboardGatewaysGatewayIdUsageRouteImport } from './routes/dashboard/gateways/$gatewayId/usage'
-import { Route as DashboardGatewaysGatewayIdSkillsRouteImport } from './routes/dashboard/gateways/$gatewayId/skills'
-import { Route as DashboardGatewaysGatewayIdSecurityRouteImport } from './routes/dashboard/gateways/$gatewayId/security'
-import { Route as DashboardGatewaysGatewayIdNodesRouteImport } from './routes/dashboard/gateways/$gatewayId/nodes'
-import { Route as DashboardGatewaysGatewayIdModelsRouteImport } from './routes/dashboard/gateways/$gatewayId/models'
-import { Route as DashboardGatewaysGatewayIdLogsRouteImport } from './routes/dashboard/gateways/$gatewayId/logs'
-import { Route as DashboardGatewaysGatewayIdHealthRouteImport } from './routes/dashboard/gateways/$gatewayId/health'
-import { Route as DashboardGatewaysGatewayIdDevicesRouteImport } from './routes/dashboard/gateways/$gatewayId/devices'
-import { Route as DashboardGatewaysGatewayIdCronRouteImport } from './routes/dashboard/gateways/$gatewayId/cron'
-import { Route as DashboardGatewaysGatewayIdConfigRouteImport } from './routes/dashboard/gateways/$gatewayId/config'
-import { Route as DashboardGatewaysGatewayIdChatRouteImport } from './routes/dashboard/gateways/$gatewayId/chat'
-import { Route as DashboardGatewaysGatewayIdChannelsRouteImport } from './routes/dashboard/gateways/$gatewayId/channels'
-import { Route as DashboardGatewaysGatewayIdAgentsRouteImport } from './routes/dashboard/gateways/$gatewayId/agents'
+import { Route as DashboardGatewaysGatewayIdSettingsRouteImport } from './routes/dashboard/gateways/$gatewayId/settings'
 import { Route as DashboardGatewaysGatewayIdSessionsIndexRouteImport } from './routes/dashboard/gateways/$gatewayId/sessions/index'
 import { Route as DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport } from './routes/dashboard/gateways/$gatewayId_.sessions.$sessionKey'
 
@@ -69,82 +57,10 @@ const DashboardGatewaysGatewayIdIndexRoute =
     path: '/',
     getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
   } as any)
-const DashboardGatewaysGatewayIdUsageRoute =
-  DashboardGatewaysGatewayIdUsageRouteImport.update({
-    id: '/usage',
-    path: '/usage',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdSkillsRoute =
-  DashboardGatewaysGatewayIdSkillsRouteImport.update({
-    id: '/skills',
-    path: '/skills',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdSecurityRoute =
-  DashboardGatewaysGatewayIdSecurityRouteImport.update({
-    id: '/security',
-    path: '/security',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdNodesRoute =
-  DashboardGatewaysGatewayIdNodesRouteImport.update({
-    id: '/nodes',
-    path: '/nodes',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdModelsRoute =
-  DashboardGatewaysGatewayIdModelsRouteImport.update({
-    id: '/models',
-    path: '/models',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdLogsRoute =
-  DashboardGatewaysGatewayIdLogsRouteImport.update({
-    id: '/logs',
-    path: '/logs',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdHealthRoute =
-  DashboardGatewaysGatewayIdHealthRouteImport.update({
-    id: '/health',
-    path: '/health',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdDevicesRoute =
-  DashboardGatewaysGatewayIdDevicesRouteImport.update({
-    id: '/devices',
-    path: '/devices',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdCronRoute =
-  DashboardGatewaysGatewayIdCronRouteImport.update({
-    id: '/cron',
-    path: '/cron',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdConfigRoute =
-  DashboardGatewaysGatewayIdConfigRouteImport.update({
-    id: '/config',
-    path: '/config',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdChatRoute =
-  DashboardGatewaysGatewayIdChatRouteImport.update({
-    id: '/chat',
-    path: '/chat',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdChannelsRoute =
-  DashboardGatewaysGatewayIdChannelsRouteImport.update({
-    id: '/channels',
-    path: '/channels',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
-  } as any)
-const DashboardGatewaysGatewayIdAgentsRoute =
-  DashboardGatewaysGatewayIdAgentsRouteImport.update({
-    id: '/agents',
-    path: '/agents',
+const DashboardGatewaysGatewayIdSettingsRoute =
+  DashboardGatewaysGatewayIdSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
     getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
   } as any)
 const DashboardGatewaysGatewayIdSessionsIndexRoute =
@@ -167,19 +83,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/gateways/$gatewayId': typeof DashboardGatewaysGatewayIdRouteRouteWithChildren
   '/dashboard/gateways/': typeof DashboardGatewaysIndexRoute
   '/dashboard/logs/': typeof DashboardLogsIndexRoute
-  '/dashboard/gateways/$gatewayId/agents': typeof DashboardGatewaysGatewayIdAgentsRoute
-  '/dashboard/gateways/$gatewayId/channels': typeof DashboardGatewaysGatewayIdChannelsRoute
-  '/dashboard/gateways/$gatewayId/chat': typeof DashboardGatewaysGatewayIdChatRoute
-  '/dashboard/gateways/$gatewayId/config': typeof DashboardGatewaysGatewayIdConfigRoute
-  '/dashboard/gateways/$gatewayId/cron': typeof DashboardGatewaysGatewayIdCronRoute
-  '/dashboard/gateways/$gatewayId/devices': typeof DashboardGatewaysGatewayIdDevicesRoute
-  '/dashboard/gateways/$gatewayId/health': typeof DashboardGatewaysGatewayIdHealthRoute
-  '/dashboard/gateways/$gatewayId/logs': typeof DashboardGatewaysGatewayIdLogsRoute
-  '/dashboard/gateways/$gatewayId/models': typeof DashboardGatewaysGatewayIdModelsRoute
-  '/dashboard/gateways/$gatewayId/nodes': typeof DashboardGatewaysGatewayIdNodesRoute
-  '/dashboard/gateways/$gatewayId/security': typeof DashboardGatewaysGatewayIdSecurityRoute
-  '/dashboard/gateways/$gatewayId/skills': typeof DashboardGatewaysGatewayIdSkillsRoute
-  '/dashboard/gateways/$gatewayId/usage': typeof DashboardGatewaysGatewayIdUsageRoute
+  '/dashboard/gateways/$gatewayId/settings': typeof DashboardGatewaysGatewayIdSettingsRoute
   '/dashboard/gateways/$gatewayId/': typeof DashboardGatewaysGatewayIdIndexRoute
   '/dashboard/gateways/$gatewayId/sessions/$sessionKey': typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
   '/dashboard/gateways/$gatewayId/sessions/': typeof DashboardGatewaysGatewayIdSessionsIndexRoute
@@ -189,19 +93,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/gateways': typeof DashboardGatewaysIndexRoute
   '/dashboard/logs': typeof DashboardLogsIndexRoute
-  '/dashboard/gateways/$gatewayId/agents': typeof DashboardGatewaysGatewayIdAgentsRoute
-  '/dashboard/gateways/$gatewayId/channels': typeof DashboardGatewaysGatewayIdChannelsRoute
-  '/dashboard/gateways/$gatewayId/chat': typeof DashboardGatewaysGatewayIdChatRoute
-  '/dashboard/gateways/$gatewayId/config': typeof DashboardGatewaysGatewayIdConfigRoute
-  '/dashboard/gateways/$gatewayId/cron': typeof DashboardGatewaysGatewayIdCronRoute
-  '/dashboard/gateways/$gatewayId/devices': typeof DashboardGatewaysGatewayIdDevicesRoute
-  '/dashboard/gateways/$gatewayId/health': typeof DashboardGatewaysGatewayIdHealthRoute
-  '/dashboard/gateways/$gatewayId/logs': typeof DashboardGatewaysGatewayIdLogsRoute
-  '/dashboard/gateways/$gatewayId/models': typeof DashboardGatewaysGatewayIdModelsRoute
-  '/dashboard/gateways/$gatewayId/nodes': typeof DashboardGatewaysGatewayIdNodesRoute
-  '/dashboard/gateways/$gatewayId/security': typeof DashboardGatewaysGatewayIdSecurityRoute
-  '/dashboard/gateways/$gatewayId/skills': typeof DashboardGatewaysGatewayIdSkillsRoute
-  '/dashboard/gateways/$gatewayId/usage': typeof DashboardGatewaysGatewayIdUsageRoute
+  '/dashboard/gateways/$gatewayId/settings': typeof DashboardGatewaysGatewayIdSettingsRoute
   '/dashboard/gateways/$gatewayId': typeof DashboardGatewaysGatewayIdIndexRoute
   '/dashboard/gateways/$gatewayId/sessions/$sessionKey': typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
   '/dashboard/gateways/$gatewayId/sessions': typeof DashboardGatewaysGatewayIdSessionsIndexRoute
@@ -214,19 +106,7 @@ export interface FileRoutesById {
   '/dashboard/gateways/$gatewayId': typeof DashboardGatewaysGatewayIdRouteRouteWithChildren
   '/dashboard/gateways/': typeof DashboardGatewaysIndexRoute
   '/dashboard/logs/': typeof DashboardLogsIndexRoute
-  '/dashboard/gateways/$gatewayId/agents': typeof DashboardGatewaysGatewayIdAgentsRoute
-  '/dashboard/gateways/$gatewayId/channels': typeof DashboardGatewaysGatewayIdChannelsRoute
-  '/dashboard/gateways/$gatewayId/chat': typeof DashboardGatewaysGatewayIdChatRoute
-  '/dashboard/gateways/$gatewayId/config': typeof DashboardGatewaysGatewayIdConfigRoute
-  '/dashboard/gateways/$gatewayId/cron': typeof DashboardGatewaysGatewayIdCronRoute
-  '/dashboard/gateways/$gatewayId/devices': typeof DashboardGatewaysGatewayIdDevicesRoute
-  '/dashboard/gateways/$gatewayId/health': typeof DashboardGatewaysGatewayIdHealthRoute
-  '/dashboard/gateways/$gatewayId/logs': typeof DashboardGatewaysGatewayIdLogsRoute
-  '/dashboard/gateways/$gatewayId/models': typeof DashboardGatewaysGatewayIdModelsRoute
-  '/dashboard/gateways/$gatewayId/nodes': typeof DashboardGatewaysGatewayIdNodesRoute
-  '/dashboard/gateways/$gatewayId/security': typeof DashboardGatewaysGatewayIdSecurityRoute
-  '/dashboard/gateways/$gatewayId/skills': typeof DashboardGatewaysGatewayIdSkillsRoute
-  '/dashboard/gateways/$gatewayId/usage': typeof DashboardGatewaysGatewayIdUsageRoute
+  '/dashboard/gateways/$gatewayId/settings': typeof DashboardGatewaysGatewayIdSettingsRoute
   '/dashboard/gateways/$gatewayId/': typeof DashboardGatewaysGatewayIdIndexRoute
   '/dashboard/gateways/$gatewayId_/sessions/$sessionKey': typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
   '/dashboard/gateways/$gatewayId/sessions/': typeof DashboardGatewaysGatewayIdSessionsIndexRoute
@@ -240,19 +120,7 @@ export interface FileRouteTypes {
     | '/dashboard/gateways/$gatewayId'
     | '/dashboard/gateways/'
     | '/dashboard/logs/'
-    | '/dashboard/gateways/$gatewayId/agents'
-    | '/dashboard/gateways/$gatewayId/channels'
-    | '/dashboard/gateways/$gatewayId/chat'
-    | '/dashboard/gateways/$gatewayId/config'
-    | '/dashboard/gateways/$gatewayId/cron'
-    | '/dashboard/gateways/$gatewayId/devices'
-    | '/dashboard/gateways/$gatewayId/health'
-    | '/dashboard/gateways/$gatewayId/logs'
-    | '/dashboard/gateways/$gatewayId/models'
-    | '/dashboard/gateways/$gatewayId/nodes'
-    | '/dashboard/gateways/$gatewayId/security'
-    | '/dashboard/gateways/$gatewayId/skills'
-    | '/dashboard/gateways/$gatewayId/usage'
+    | '/dashboard/gateways/$gatewayId/settings'
     | '/dashboard/gateways/$gatewayId/'
     | '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
     | '/dashboard/gateways/$gatewayId/sessions/'
@@ -262,19 +130,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/gateways'
     | '/dashboard/logs'
-    | '/dashboard/gateways/$gatewayId/agents'
-    | '/dashboard/gateways/$gatewayId/channels'
-    | '/dashboard/gateways/$gatewayId/chat'
-    | '/dashboard/gateways/$gatewayId/config'
-    | '/dashboard/gateways/$gatewayId/cron'
-    | '/dashboard/gateways/$gatewayId/devices'
-    | '/dashboard/gateways/$gatewayId/health'
-    | '/dashboard/gateways/$gatewayId/logs'
-    | '/dashboard/gateways/$gatewayId/models'
-    | '/dashboard/gateways/$gatewayId/nodes'
-    | '/dashboard/gateways/$gatewayId/security'
-    | '/dashboard/gateways/$gatewayId/skills'
-    | '/dashboard/gateways/$gatewayId/usage'
+    | '/dashboard/gateways/$gatewayId/settings'
     | '/dashboard/gateways/$gatewayId'
     | '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
     | '/dashboard/gateways/$gatewayId/sessions'
@@ -286,19 +142,7 @@ export interface FileRouteTypes {
     | '/dashboard/gateways/$gatewayId'
     | '/dashboard/gateways/'
     | '/dashboard/logs/'
-    | '/dashboard/gateways/$gatewayId/agents'
-    | '/dashboard/gateways/$gatewayId/channels'
-    | '/dashboard/gateways/$gatewayId/chat'
-    | '/dashboard/gateways/$gatewayId/config'
-    | '/dashboard/gateways/$gatewayId/cron'
-    | '/dashboard/gateways/$gatewayId/devices'
-    | '/dashboard/gateways/$gatewayId/health'
-    | '/dashboard/gateways/$gatewayId/logs'
-    | '/dashboard/gateways/$gatewayId/models'
-    | '/dashboard/gateways/$gatewayId/nodes'
-    | '/dashboard/gateways/$gatewayId/security'
-    | '/dashboard/gateways/$gatewayId/skills'
-    | '/dashboard/gateways/$gatewayId/usage'
+    | '/dashboard/gateways/$gatewayId/settings'
     | '/dashboard/gateways/$gatewayId/'
     | '/dashboard/gateways/$gatewayId_/sessions/$sessionKey'
     | '/dashboard/gateways/$gatewayId/sessions/'
@@ -360,95 +204,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardGatewaysGatewayIdIndexRouteImport
       parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
     }
-    '/dashboard/gateways/$gatewayId/usage': {
-      id: '/dashboard/gateways/$gatewayId/usage'
-      path: '/usage'
-      fullPath: '/dashboard/gateways/$gatewayId/usage'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdUsageRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/skills': {
-      id: '/dashboard/gateways/$gatewayId/skills'
-      path: '/skills'
-      fullPath: '/dashboard/gateways/$gatewayId/skills'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdSkillsRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/security': {
-      id: '/dashboard/gateways/$gatewayId/security'
-      path: '/security'
-      fullPath: '/dashboard/gateways/$gatewayId/security'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdSecurityRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/nodes': {
-      id: '/dashboard/gateways/$gatewayId/nodes'
-      path: '/nodes'
-      fullPath: '/dashboard/gateways/$gatewayId/nodes'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdNodesRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/models': {
-      id: '/dashboard/gateways/$gatewayId/models'
-      path: '/models'
-      fullPath: '/dashboard/gateways/$gatewayId/models'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdModelsRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/logs': {
-      id: '/dashboard/gateways/$gatewayId/logs'
-      path: '/logs'
-      fullPath: '/dashboard/gateways/$gatewayId/logs'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdLogsRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/health': {
-      id: '/dashboard/gateways/$gatewayId/health'
-      path: '/health'
-      fullPath: '/dashboard/gateways/$gatewayId/health'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdHealthRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/devices': {
-      id: '/dashboard/gateways/$gatewayId/devices'
-      path: '/devices'
-      fullPath: '/dashboard/gateways/$gatewayId/devices'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdDevicesRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/cron': {
-      id: '/dashboard/gateways/$gatewayId/cron'
-      path: '/cron'
-      fullPath: '/dashboard/gateways/$gatewayId/cron'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdCronRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/config': {
-      id: '/dashboard/gateways/$gatewayId/config'
-      path: '/config'
-      fullPath: '/dashboard/gateways/$gatewayId/config'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdConfigRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/chat': {
-      id: '/dashboard/gateways/$gatewayId/chat'
-      path: '/chat'
-      fullPath: '/dashboard/gateways/$gatewayId/chat'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdChatRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/channels': {
-      id: '/dashboard/gateways/$gatewayId/channels'
-      path: '/channels'
-      fullPath: '/dashboard/gateways/$gatewayId/channels'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdChannelsRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
-    }
-    '/dashboard/gateways/$gatewayId/agents': {
-      id: '/dashboard/gateways/$gatewayId/agents'
-      path: '/agents'
-      fullPath: '/dashboard/gateways/$gatewayId/agents'
-      preLoaderRoute: typeof DashboardGatewaysGatewayIdAgentsRouteImport
+    '/dashboard/gateways/$gatewayId/settings': {
+      id: '/dashboard/gateways/$gatewayId/settings'
+      path: '/settings'
+      fullPath: '/dashboard/gateways/$gatewayId/settings'
+      preLoaderRoute: typeof DashboardGatewaysGatewayIdSettingsRouteImport
       parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
     }
     '/dashboard/gateways/$gatewayId/sessions/': {
@@ -469,46 +229,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardGatewaysGatewayIdRouteRouteChildren {
-  DashboardGatewaysGatewayIdAgentsRoute: typeof DashboardGatewaysGatewayIdAgentsRoute
-  DashboardGatewaysGatewayIdChannelsRoute: typeof DashboardGatewaysGatewayIdChannelsRoute
-  DashboardGatewaysGatewayIdChatRoute: typeof DashboardGatewaysGatewayIdChatRoute
-  DashboardGatewaysGatewayIdConfigRoute: typeof DashboardGatewaysGatewayIdConfigRoute
-  DashboardGatewaysGatewayIdCronRoute: typeof DashboardGatewaysGatewayIdCronRoute
-  DashboardGatewaysGatewayIdDevicesRoute: typeof DashboardGatewaysGatewayIdDevicesRoute
-  DashboardGatewaysGatewayIdHealthRoute: typeof DashboardGatewaysGatewayIdHealthRoute
-  DashboardGatewaysGatewayIdLogsRoute: typeof DashboardGatewaysGatewayIdLogsRoute
-  DashboardGatewaysGatewayIdModelsRoute: typeof DashboardGatewaysGatewayIdModelsRoute
-  DashboardGatewaysGatewayIdNodesRoute: typeof DashboardGatewaysGatewayIdNodesRoute
-  DashboardGatewaysGatewayIdSecurityRoute: typeof DashboardGatewaysGatewayIdSecurityRoute
-  DashboardGatewaysGatewayIdSkillsRoute: typeof DashboardGatewaysGatewayIdSkillsRoute
-  DashboardGatewaysGatewayIdUsageRoute: typeof DashboardGatewaysGatewayIdUsageRoute
+  DashboardGatewaysGatewayIdSettingsRoute: typeof DashboardGatewaysGatewayIdSettingsRoute
   DashboardGatewaysGatewayIdIndexRoute: typeof DashboardGatewaysGatewayIdIndexRoute
   DashboardGatewaysGatewayIdSessionsIndexRoute: typeof DashboardGatewaysGatewayIdSessionsIndexRoute
 }
 
 const DashboardGatewaysGatewayIdRouteRouteChildren: DashboardGatewaysGatewayIdRouteRouteChildren =
   {
-    DashboardGatewaysGatewayIdAgentsRoute:
-      DashboardGatewaysGatewayIdAgentsRoute,
-    DashboardGatewaysGatewayIdChannelsRoute:
-      DashboardGatewaysGatewayIdChannelsRoute,
-    DashboardGatewaysGatewayIdChatRoute: DashboardGatewaysGatewayIdChatRoute,
-    DashboardGatewaysGatewayIdConfigRoute:
-      DashboardGatewaysGatewayIdConfigRoute,
-    DashboardGatewaysGatewayIdCronRoute: DashboardGatewaysGatewayIdCronRoute,
-    DashboardGatewaysGatewayIdDevicesRoute:
-      DashboardGatewaysGatewayIdDevicesRoute,
-    DashboardGatewaysGatewayIdHealthRoute:
-      DashboardGatewaysGatewayIdHealthRoute,
-    DashboardGatewaysGatewayIdLogsRoute: DashboardGatewaysGatewayIdLogsRoute,
-    DashboardGatewaysGatewayIdModelsRoute:
-      DashboardGatewaysGatewayIdModelsRoute,
-    DashboardGatewaysGatewayIdNodesRoute: DashboardGatewaysGatewayIdNodesRoute,
-    DashboardGatewaysGatewayIdSecurityRoute:
-      DashboardGatewaysGatewayIdSecurityRoute,
-    DashboardGatewaysGatewayIdSkillsRoute:
-      DashboardGatewaysGatewayIdSkillsRoute,
-    DashboardGatewaysGatewayIdUsageRoute: DashboardGatewaysGatewayIdUsageRoute,
+    DashboardGatewaysGatewayIdSettingsRoute:
+      DashboardGatewaysGatewayIdSettingsRoute,
     DashboardGatewaysGatewayIdIndexRoute: DashboardGatewaysGatewayIdIndexRoute,
     DashboardGatewaysGatewayIdSessionsIndexRoute:
       DashboardGatewaysGatewayIdSessionsIndexRoute,

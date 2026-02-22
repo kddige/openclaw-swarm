@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useQuery } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
@@ -14,11 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ArrowDownIcon, TerminalIcon } from 'lucide-react'
-
-export const Route = createFileRoute('/dashboard/gateways/$gatewayId/logs')({
-  component: LogsPage,
-  errorComponent: RouteErrorFallback,
-})
 
 type LogLine = {
   ts: number
@@ -45,8 +38,7 @@ function formatLogTime(ts: number): string {
 
 const MAX_LINES = 1000
 
-function LogsPage() {
-  const { gatewayId } = Route.useParams()
+export function LogsPanel({ gatewayId, className }: { gatewayId: string; className?: string }) {
   const [levelFilter, setLevelFilter] = useState('all')
   const [sourceFilter, setSourceFilter] = useState('')
   const [lines, setLines] = useState<LogLine[]>([])
@@ -129,10 +121,7 @@ function LogsPage() {
   }
 
   return (
-    <div
-      className="flex flex-col gap-3 pt-2"
-      style={{ height: 'calc(100vh - 220px)', minHeight: '400px' }}
-    >
+    <div className={cn('flex flex-col gap-3', className)} style={{ height: '100%', minHeight: '400px' }}>
       {/* Filter bar */}
       <div className="flex items-center gap-2 shrink-0">
         <Select value={levelFilter} onValueChange={(v) => setLevelFilter(v ?? 'all')}>
