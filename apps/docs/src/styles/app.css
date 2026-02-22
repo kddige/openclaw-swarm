@@ -27,6 +27,32 @@
   --landing-scan: rgba(249, 115, 22, 0.02);
 }
 
+/* ── Alpha Banner ─────────────────────────────────────────────────── */
+
+.alpha-banner {
+  background: color-mix(in srgb, var(--landing-accent) 3%, var(--color-fd-background, transparent));
+}
+
+.alpha-banner-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--landing-accent) 6%, transparent) 50%,
+    transparent 100%
+  );
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+
+.alpha-feedback-link:hover {
+  background: color-mix(in srgb, var(--landing-accent) 10%, transparent);
+  box-shadow: 0 0 12px -2px var(--landing-glow);
+}
+
 /* ── Effects ───────────────────────────────────────────────────────── */
 
 .landing-grid {

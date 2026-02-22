@@ -15,6 +15,8 @@ import {
   Laptop,
   Globe,
   Rocket,
+  FlaskConical,
+  MessageSquare,
 } from 'lucide-react'
 import logo from '../../assets/logo.png'
 
@@ -51,7 +53,43 @@ function Hero() {
     <section className="landing-grid relative overflow-hidden">
       <div className="landing-glow pointer-events-none absolute inset-0" />
 
-      <div className="relative mx-auto max-w-6xl px-6 pb-24 pt-32">
+      {/* Early Alpha Banner */}
+      <div className="alpha-banner relative overflow-hidden border-b border-fd-border/50">
+        <div className="alpha-banner-shimmer pointer-events-none absolute inset-0" />
+        <div className="relative mx-auto flex max-w-6xl items-center justify-center gap-3 px-6 py-2.5">
+          <FlaskConical
+            className="size-3.5 shrink-0"
+            style={{ color: 'var(--landing-accent)' }}
+          />
+          <p
+            className="text-center text-xs text-fd-muted-foreground"
+            style={{ fontFamily: 'var(--font-body)' }}
+          >
+            <strong
+              className="font-semibold"
+              style={{ color: 'var(--landing-accent)' }}
+            >
+              Early Alpha
+            </strong>
+            {' '}&mdash;{' '}
+            OpenClaw Swarm is in active development. Things may break.
+          </p>
+          <a
+            href="https://github.com/kddige/openclaw-swarm/issues"
+            className="alpha-feedback-link inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-[0.6875rem] font-medium transition-all"
+            style={{
+              borderColor: 'var(--landing-accent-dim)',
+              color: 'var(--landing-accent)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            <MessageSquare className="size-3" />
+            Feedback
+          </a>
+        </div>
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-6 pb-24 pt-24">
         {/* Logo */}
         <img
           src={logo}
@@ -71,10 +109,10 @@ function Hero() {
         >
           <span
             className="pulse-dot inline-block size-2 rounded-full"
-            style={{ background: '#22c55e' }}
+            style={{ background: 'var(--landing-accent)' }}
           />
           <span className="text-fd-muted-foreground">
-            v0.1.0 &middot; Open Source
+            v0.1.0 &middot; Early Alpha &middot; Open Source
           </span>
         </div>
 
