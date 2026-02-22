@@ -102,6 +102,10 @@ export function ChatPanel({
     },
   })
 
+  // Show typing indicator after sending until the first assistant response streams in
+  const lastRole = messages.length > 0 ? messages[messages.length - 1]?.role : null
+  const waitingForReply = sendMutation.isPending || (lastRole === 'user' && sendMutation.isSuccess)
+
   const scrollToBottom = useCallback(() => {
     const el = scrollRef.current
     if (el) el.scrollTop = el.scrollHeight
@@ -251,6 +255,20 @@ export function ChatPanel({
                 </div>
               )
             })
+          )}
+          {waitingForReply && (
+            <div className="flex items-end gap-2 min-w-0">
+              <div className="size-6 rounded-full bg-muted border flex items-center justify-center shrink-0 mb-4">
+                <BotIcon className="size-3 text-muted-foreground" />
+              </div>
+              <div className="rounded-lg bg-muted px-3 py-2">
+                <div className="flex gap-1">
+                  <span className="size-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="size-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="size-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
