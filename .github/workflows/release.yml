@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-windows
-          path: apps/swarm/release/**/*.exe
+          path: apps/swarm/release/**/*-Setup.exe
 
   release:
     needs: [prepare, build-macos, build-windows]
@@ -103,8 +103,23 @@ jobs:
           git tag "v${{ needs.prepare.outputs.version }}"
           git push origin "v${{ needs.prepare.outputs.version }}"
 
+          cat > /tmp/release-notes.md <<'NOTES'
+## Installation
+
+### macOS
+The app is not yet code-signed. After mounting the DMG and dragging the app to Applications, macOS may show **"OpenClaw Swarm is damaged and can't be opened."** To fix this, run:
+```bash
+xattr -cr "/Applications/OpenClaw Swarm.app"
+```
+Then open the app normally.
+
+### Windows
+Run the `-Setup.exe` installer. Windows SmartScreen may show a warning for unsigned apps — click **"More info"** → **"Run anyway"**.
+NOTES
+
           find artifacts -type f \( -name '*.dmg' -o -name '*.exe' \) -exec \
             gh release create "v${{ needs.prepare.outputs.version }}" \
               --title "v${{ needs.prepare.outputs.version }}" \
               --generate-notes \
+              --notes-file /tmp/release-notes.md \
               {} +

@@ -118,6 +118,22 @@
   }
   body {
     @apply bg-sidebar/70 text-foreground;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    overscroll-behavior: none;
+  }
+
+  /* Re-enable selection & text cursor only where users expect to type/copy */
+  input,
+  textarea,
+  [contenteditable='true'],
+  pre,
+  code,
+  .select-text {
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
   }
 }
 
