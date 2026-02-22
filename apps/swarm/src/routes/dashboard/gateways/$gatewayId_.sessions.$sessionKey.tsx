@@ -40,7 +40,7 @@ import { format, formatDistanceToNow } from 'date-fns'
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
-export const Route = createFileRoute('/dashboard/gateways/$gatewayId/sessions/$sessionKey')({
+export const Route = createFileRoute('/dashboard/gateways/$gatewayId_/sessions/$sessionKey')({
   component: SessionDetailPage,
   errorComponent: RouteErrorFallback,
 })

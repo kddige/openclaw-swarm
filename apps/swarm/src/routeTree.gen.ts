@@ -25,7 +25,7 @@ import { Route as DashboardGatewaysGatewayIdConfigRouteImport } from './routes/d
 import { Route as DashboardGatewaysGatewayIdChatRouteImport } from './routes/dashboard/gateways/$gatewayId/chat'
 import { Route as DashboardGatewaysGatewayIdAgentsRouteImport } from './routes/dashboard/gateways/$gatewayId/agents'
 import { Route as DashboardGatewaysGatewayIdSessionsIndexRouteImport } from './routes/dashboard/gateways/$gatewayId/sessions/index'
-import { Route as DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport } from './routes/dashboard/gateways/$gatewayId/sessions/$sessionKey'
+import { Route as DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport } from './routes/dashboard/gateways/$gatewayId_.sessions.$sessionKey'
 
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
   id: '/dashboard',
@@ -120,9 +120,9 @@ const DashboardGatewaysGatewayIdSessionsIndexRoute =
   } as any)
 const DashboardGatewaysGatewayIdSessionsSessionKeyRoute =
   DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport.update({
-    id: '/sessions/$sessionKey',
-    path: '/sessions/$sessionKey',
-    getParentRoute: () => DashboardGatewaysGatewayIdRouteRoute,
+    id: '/gateways/$gatewayId_/sessions/$sessionKey',
+    path: '/gateways/$gatewayId/sessions/$sessionKey',
+    getParentRoute: () => DashboardRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -178,7 +178,7 @@ export interface FileRoutesById {
   '/dashboard/gateways/$gatewayId/security': typeof DashboardGatewaysGatewayIdSecurityRoute
   '/dashboard/gateways/$gatewayId/usage': typeof DashboardGatewaysGatewayIdUsageRoute
   '/dashboard/gateways/$gatewayId/': typeof DashboardGatewaysGatewayIdIndexRoute
-  '/dashboard/gateways/$gatewayId/sessions/$sessionKey': typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
+  '/dashboard/gateways/$gatewayId_/sessions/$sessionKey': typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
   '/dashboard/gateways/$gatewayId/sessions/': typeof DashboardGatewaysGatewayIdSessionsIndexRoute
 }
 export interface FileRouteTypes {
@@ -235,7 +235,7 @@ export interface FileRouteTypes {
     | '/dashboard/gateways/$gatewayId/security'
     | '/dashboard/gateways/$gatewayId/usage'
     | '/dashboard/gateways/$gatewayId/'
-    | '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
+    | '/dashboard/gateways/$gatewayId_/sessions/$sessionKey'
     | '/dashboard/gateways/$gatewayId/sessions/'
   fileRoutesById: FileRoutesById
 }
@@ -358,12 +358,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardGatewaysGatewayIdSessionsIndexRouteImport
       parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
     }
-    '/dashboard/gateways/$gatewayId/sessions/$sessionKey': {
-      id: '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
-      path: '/sessions/$sessionKey'
+    '/dashboard/gateways/$gatewayId_/sessions/$sessionKey': {
+      id: '/dashboard/gateways/$gatewayId_/sessions/$sessionKey'
+      path: '/gateways/$gatewayId/sessions/$sessionKey'
       fullPath: '/dashboard/gateways/$gatewayId/sessions/$sessionKey'
       preLoaderRoute: typeof DashboardGatewaysGatewayIdSessionsSessionKeyRouteImport
-      parentRoute: typeof DashboardGatewaysGatewayIdRouteRoute
+      parentRoute: typeof DashboardRouteRoute
     }
   }
 }
@@ -378,7 +378,6 @@ interface DashboardGatewaysGatewayIdRouteRouteChildren {
   DashboardGatewaysGatewayIdSecurityRoute: typeof DashboardGatewaysGatewayIdSecurityRoute
   DashboardGatewaysGatewayIdUsageRoute: typeof DashboardGatewaysGatewayIdUsageRoute
   DashboardGatewaysGatewayIdIndexRoute: typeof DashboardGatewaysGatewayIdIndexRoute
-  DashboardGatewaysGatewayIdSessionsSessionKeyRoute: typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
   DashboardGatewaysGatewayIdSessionsIndexRoute: typeof DashboardGatewaysGatewayIdSessionsIndexRoute
 }
 
@@ -398,8 +397,6 @@ const DashboardGatewaysGatewayIdRouteRouteChildren: DashboardGatewaysGatewayIdRo
       DashboardGatewaysGatewayIdSecurityRoute,
     DashboardGatewaysGatewayIdUsageRoute: DashboardGatewaysGatewayIdUsageRoute,
     DashboardGatewaysGatewayIdIndexRoute: DashboardGatewaysGatewayIdIndexRoute,
-    DashboardGatewaysGatewayIdSessionsSessionKeyRoute:
-      DashboardGatewaysGatewayIdSessionsSessionKeyRoute,
     DashboardGatewaysGatewayIdSessionsIndexRoute:
       DashboardGatewaysGatewayIdSessionsIndexRoute,
   }
@@ -414,6 +411,7 @@ interface DashboardRouteRouteChildren {
   DashboardGatewaysGatewayIdRouteRoute: typeof DashboardGatewaysGatewayIdRouteRouteWithChildren
   DashboardGatewaysIndexRoute: typeof DashboardGatewaysIndexRoute
   DashboardLogsIndexRoute: typeof DashboardLogsIndexRoute
+  DashboardGatewaysGatewayIdSessionsSessionKeyRoute: typeof DashboardGatewaysGatewayIdSessionsSessionKeyRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
@@ -422,6 +420,8 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
     DashboardGatewaysGatewayIdRouteRouteWithChildren,
   DashboardGatewaysIndexRoute: DashboardGatewaysIndexRoute,
   DashboardLogsIndexRoute: DashboardLogsIndexRoute,
+  DashboardGatewaysGatewayIdSessionsSessionKeyRoute:
+    DashboardGatewaysGatewayIdSessionsSessionKeyRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
