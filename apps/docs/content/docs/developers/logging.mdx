@@ -1,0 +1,143 @@
+---
+title: Logging
+description: Structured logging for the main process
+---
+
+## Overview
+
+The main process uses a transport-agnostic logging system defined in `electron/logger/`. All code in `electron/` uses the injected `Logger` interface — direct `console.*` calls are banned by ESLint.
+
+The logger is designed to be portable. When the backend is extracted into a standalone package, the `Logger` interface and `LoggerImpl` class travel with it. Only the transports need to change per environment.
+
+## Logger interface
+
+```ts
+interface Logger {
+  debug(msg: string, data?: unknown): void
+  info(msg: string, data?: unknown): void
+  warn(msg: string, data?: unknown): void
+  error(msg: string, data?: unknown): void
+  child(namespace: string): Logger
+}
+```
+
+Child loggers inherit all transports and join namespaces with `:` separators (e.g. `gw:conn`).
+
+## Using the logger
+
+Classes receive the logger via constructor injection:
+
+```ts
+class GatewayManager {
+  private readonly logger: Logger
+
+  constructor(logger: Logger) {
+    this.logger = logger
+    this.logger.info('manager started')
+  }
+
+  private initConnection(gw: StoredGateway) {
+    const conn = new GatewayConnection({
+      // ...
+      logger: this.logger.child('conn'),
+    })
+  }
+}
+```
+
+For pure-function modules that cannot accept constructor injection, use a module-level setter:
+
+```ts
+// protocol.ts
+let _logger: Logger | null = null
+export function setProtocolLogger(logger: Logger): void {
+  _logger = logger
+}
+
+// In a function:
+_logger?.warn('validation failed', details)
+```
+
+The logger is also available in oRPC procedures via `context.logger`:
+
+```ts
+export const exampleRouter = {
+  doSomething: p.handler(({ context }) => {
+    context.logger.info('handling request')
+  }),
+}
+```
+
+## Log levels
+
+| Level | Use for |
+|---|---|
+| `debug` | Verbose trace info (WS frames, state transitions). Only written in dev. |
+| `info` | Normal operational events (connected, restored gateways). |
+| `warn` | Recoverable issues (validation fallbacks, unexpected frame types). |
+| `error` | Failures (connection errors, timeouts, handler errors). |
+
+In production builds, `minLevel` is set to `info` — debug entries are dropped before reaching any transport.
+
+## Transports
+
+Three transports are active simultaneously:
+
+| Transport | When active | Output |
+|---|---|---|
+| `ConsoleTransport` | Dev only (`VITE_DEV_SERVER_URL` set) | Colored ANSI output to terminal |
+| `FileTransport` | Always | NDJSON to rotating log files |
+| `MemoryTransport` | Always | Ring buffer (1000 entries) for in-app viewer |
+
+### File transport
+
+Writes one JSON object per line to `app.getPath('logs')`:
+
+- **macOS**: `~/Library/Logs/<appName>/swarm.log`
+- **Windows**: `%APPDATA%/<appName>/logs/swarm.log`
+- **Linux**: `~/.config/<appName>/logs/swarm.log`
+
+Rotation: max 5 MB per file, 5 files total (25 MB cap). Files are named `swarm.log`, `swarm.1.log`, ..., `swarm.4.log`.
+
+Each line is a JSON object:
+
+```json
+{"ts":1740230400000,"level":"info","ns":"gw:conn","msg":"handshake SUCCESS"}
+```
+
+### Memory transport
+
+A fixed-capacity ring buffer supporting cursor-based tailing. The renderer polls `logs.tail` with `afterCursor` from the previous response to get only new entries since the last poll.
+
+## oRPC procedures
+
+The `logs` router exposes three procedures:
+
+| Procedure | Description |
+|---|---|
+| `logs.tail` | Read recent entries from the memory ring buffer. Supports `limit`, `afterCursor`, `level`, and `ns` filters. |
+| `logs.export` | Opens a native save dialog and copies the current log file to the chosen location. |
+| `logs.logPath` | Returns the absolute path of the current log file. |
+
+## Initialization
+
+The root logger is created in `main.ts` during `app.whenReady()`:
+
+```ts
+const logger = createRootLogger({
+  logDir: app.getPath('logs'),
+  isDev: !!VITE_DEV_SERVER_URL,
+})
+
+setProtocolLogger(logger.child('gw:protocol'))
+gatewayManager = new GatewayManager(logger.child('gw'))
+```
+
+## Namespace conventions
+
+| Namespace | Source |
+|---|---|
+| `main` | Root logger (main.ts, oRPC errors) |
+| `gw` | GatewayManager |
+| `gw:conn` | GatewayConnection instances |
+| `gw:protocol` | WS frame encoding/decoding |

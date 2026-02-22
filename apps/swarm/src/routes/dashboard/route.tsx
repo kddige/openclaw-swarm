@@ -22,9 +22,9 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboardIcon,
   PlusIcon,
+  ScrollTextIcon,
   SearchIcon,
   ServerIcon,
-  SettingsIcon,
 } from 'lucide-react'
 
 export const Route = createFileRoute('/dashboard')({
@@ -148,9 +148,9 @@ function DashboardLayout() {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton>
-                <SettingsIcon />
-                Settings
+              <SidebarMenuButton render={<Link to="/dashboard/logs" />}>
+                <ScrollTextIcon />
+                Logs
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

@@ -5,9 +5,8 @@ import { RPCHandler } from '@orpc/server/message-port'
 import { onError } from '@orpc/server'
 import { router } from './api/router'
 import { GatewayManager } from './gateway/manager'
-import { createDebugLogger } from './lib/debug'
-
-const debug = createDebugLogger('main')
+import { createRootLogger, type Logger } from './logger'
+import { setProtocolLogger } from './gateway/protocol'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -33,14 +32,9 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 
 let win: BrowserWindow | null
 let gatewayManager: GatewayManager | null = null
-
-const handler = new RPCHandler(router, {
-  interceptors: [
-    onError((error) => {
-      debug.error('oRPC handler error:', error)
-    }),
-  ],
-})
+let logger: Logger | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let handler: RPCHandler<any> | null = null
 
 function createWindow() {
   win = new BrowserWindow({
@@ -89,7 +83,31 @@ function syncTheme() {
 }
 
 app.whenReady().then(() => {
-  gatewayManager = new GatewayManager()
+  const isDev = !!VITE_DEV_SERVER_URL
+
+  logger = createRootLogger({
+    logDir: app.getPath('logs'),
+    isDev,
+  })
+
+  setProtocolLogger(logger.child('gw:protocol'))
+
+  logger.info('app starting', {
+    version: app.getVersion(),
+    isDev,
+    logDir: app.getPath('logs'),
+  })
+
+  gatewayManager = new GatewayManager(logger.child('gw'))
+
+  handler = new RPCHandler(router, {
+    interceptors: [
+      onError((error) => {
+        logger!.error('oRPC handler error', error)
+      }),
+    ],
+  })
+
   createWindow()
   syncTheme()
   nativeTheme.on('updated', syncTheme)
@@ -101,8 +119,8 @@ app.on('before-quit', () => {
 
 ipcMain.on('start-orpc-server', (event) => {
   const [serverPort] = event.ports
-  handler.upgrade(serverPort, {
-    context: { win: win!, gatewayManager: gatewayManager! },
+  handler!.upgrade(serverPort, {
+    context: { win: win!, gatewayManager: gatewayManager!, logger: logger! },
   })
   serverPort.start()
 })

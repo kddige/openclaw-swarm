@@ -18,9 +18,7 @@ import type {
   GatewayStatusPayload,
   HealthPayload,
 } from '../api/types'
-import { createDebugLogger } from '../lib/debug'
-
-const debug = createDebugLogger('gw:conn')
+import type { Logger } from '../logger'
 
 interface PairingError extends Error {
   code?: string
@@ -41,6 +39,7 @@ export interface GatewayConnectionConfig {
   identity: DeviceIdentity
   appVersion: string
   platform: string
+  logger: Logger
 }
 
 export class GatewayConnection extends EventEmitter {
@@ -52,6 +51,7 @@ export class GatewayConnection extends EventEmitter {
   private identity: DeviceIdentity
   private appVersion: string
   private platform: string
+  private readonly logger: Logger
 
   private ws: WebSocket | null = null
   private status: GatewayConnectionStatus = 'disconnected'
@@ -79,6 +79,7 @@ export class GatewayConnection extends EventEmitter {
     this.identity = config.identity
     this.appVersion = config.appVersion
     this.platform = config.platform
+    this.logger = config.logger
   }
 
   get url(): string {
@@ -109,7 +110,7 @@ export class GatewayConnection extends EventEmitter {
 
   connect(): void {
     if (this.destroyed) return
-    debug.log(`[${this.id}] connecting to ${this._url}`)
+    this.logger.debug(`[${this.id}] connecting to ${this._url}`)
     this.setStatus('connecting')
     this.lastError = null
     this._pairingRequestId = null
@@ -117,7 +118,7 @@ export class GatewayConnection extends EventEmitter {
     try {
       this.ws = new WebSocket(this._url)
     } catch (err) {
-      debug.error(`[${this.id}] WebSocket constructor threw:`, err)
+      this.logger.error(`[${this.id}] WebSocket constructor threw`, err)
       this.lastError = String(err)
       this.setStatus('disconnected')
       this.scheduleReconnect()
@@ -125,22 +126,22 @@ export class GatewayConnection extends EventEmitter {
     }
 
     this.ws.on('open', () => {
-      debug.log(`[${this.id}] WebSocket open, waiting for challenge...`)
+      this.logger.debug(`[${this.id}] WebSocket open, waiting for challenge...`)
     })
 
     this.ws.on('message', (data: WebSocket.RawData) => {
       const raw = data.toString()
-      debug.log(`[${this.id}] << recv`, raw.slice(0, 300))
+      this.logger.debug(`[${this.id}] << recv`, raw.slice(0, 300))
       this.handleMessage(raw)
     })
 
     this.ws.on('error', (err: Error) => {
-      debug.error(`[${this.id}] WebSocket error:`, err.message)
+      this.logger.error(`[${this.id}] WebSocket error`, err.message)
       this.lastError = err.message
     })
 
     this.ws.on('close', (code: number, reason: Buffer) => {
-      debug.warn(
+      this.logger.warn(
         `[${this.id}] WebSocket closed: code=${code} reason=${reason.toString() || '(none)'}`,
       )
       this.cleanup()
@@ -156,19 +157,19 @@ export class GatewayConnection extends EventEmitter {
     try {
       frame = decodeFrame(data)
     } catch (err) {
-      debug.error(`[${this.id}] failed to decode frame:`, err, data.slice(0, 200))
+      this.logger.error(`[${this.id}] failed to decode frame`, { err, data: data.slice(0, 200) })
       return
     }
 
     if (frame.type === 'event') {
-      debug.log(`[${this.id}] event: ${(frame as WsEventFrame).event}`)
+      this.logger.debug(`[${this.id}] event: ${(frame as WsEventFrame).event}`)
       this.handleEvent(frame as WsEventFrame)
     } else if (frame.type === 'res') {
       const res = frame as WsResFrame
-      debug.log(`[${this.id}] response: id=${res.id} ok=${res.ok}`)
+      this.logger.debug(`[${this.id}] response: id=${res.id} ok=${res.ok}`)
       this.handleResponse(res)
     } else {
-      debug.warn(`[${this.id}] unknown frame type:`, frame)
+      this.logger.warn(`[${this.id}] unknown frame type`, frame)
     }
   }
 
@@ -187,7 +188,7 @@ export class GatewayConnection extends EventEmitter {
     if (frame.event === 'connect.challenge') {
       const challenge = ChallengeEventSchema.safeParse(frame.payload)
       if (!challenge.success) {
-        debug.error(`[${this.id}] invalid challenge payload:`, challenge.error.message)
+        this.logger.error(`[${this.id}] invalid challenge payload`, challenge.error.message)
         return
       }
       this.handleChallenge(challenge.data)
@@ -203,7 +204,7 @@ export class GatewayConnection extends EventEmitter {
   }
 
   private handleChallenge(payload: { nonce: string }): void {
-    debug.log(`[${this.id}] received challenge, nonce=${payload.nonce.slice(0, 16)}...`)
+    this.logger.debug(`[${this.id}] received challenge, nonce=${payload.nonce.slice(0, 16)}...`)
 
     const frame = buildConnectFrame({
       identity: this.identity,
@@ -213,23 +214,23 @@ export class GatewayConnection extends EventEmitter {
       platform: this.platform,
     })
 
-    debug.log(`[${this.id}] sending connect request id=${frame.id}`)
-    debug.log(`[${this.id}] connect params:`, JSON.stringify(frame.params, null, 2).slice(0, 500))
+    this.logger.debug(`[${this.id}] sending connect request id=${frame.id}`)
+    this.logger.debug(`[${this.id}] connect params`, JSON.stringify(frame.params, null, 2).slice(0, 500))
 
     this.sendRequest(frame)
       .then((res) => {
         const raw = res as Record<string, unknown>
-        debug.log(`[${this.id}] connect response:`, JSON.stringify(raw).slice(0, 500))
+        this.logger.debug(`[${this.id}] connect response`, JSON.stringify(raw).slice(0, 500))
 
         const parsed = HelloOkSchema.safeParse(raw)
         if (!parsed.success) {
-          debug.warn(`[${this.id}] hello-ok validation failed, falling back:`, parsed.error.message)
+          this.logger.warn(`[${this.id}] hello-ok validation failed, falling back`, parsed.error.message)
         }
 
         const helloOk: HelloOk | null = parsed.success ? parsed.data : null
 
         if (raw.type === 'hello-ok') {
-          debug.log(`[${this.id}] handshake SUCCESS`)
+          this.logger.info(`[${this.id}] handshake SUCCESS`)
           this.setStatus('connected')
           this.lastConnectedAt = Date.now()
           this.reconnectBackoff = 800
@@ -246,7 +247,7 @@ export class GatewayConnection extends EventEmitter {
 
           const auth = helloOk?.auth ?? (raw.auth as { deviceToken?: string } | undefined)
           if (auth?.deviceToken) {
-            debug.log(`[${this.id}] received device token`)
+            this.logger.debug(`[${this.id}] received device token`)
             this.emit('device-token', {
               gatewayId: this.id,
               deviceToken: auth.deviceToken,
@@ -255,18 +256,18 @@ export class GatewayConnection extends EventEmitter {
 
           const policy = helloOk?.policy ?? (raw.policy as { tickIntervalMs?: number } | undefined)
           if (policy?.tickIntervalMs) {
-            debug.log(`[${this.id}] tick interval: ${policy.tickIntervalMs}ms`)
+            this.logger.debug(`[${this.id}] tick interval: ${policy.tickIntervalMs}ms`)
             this.startTick(policy.tickIntervalMs)
           }
 
           this.refreshState()
           this.startStatusPolling()
         } else {
-          debug.warn(`[${this.id}] unexpected connect response type: ${raw.type}`)
+          this.logger.warn(`[${this.id}] unexpected connect response type: ${raw.type}`)
         }
       })
       .catch((err: PairingError | Error) => {
-        debug.error(`[${this.id}] connect request FAILED:`, err.message)
+        this.logger.error(`[${this.id}] connect request FAILED`, err.message)
         this.lastError = err.message
 
         if (
@@ -283,7 +284,7 @@ export class GatewayConnection extends EventEmitter {
         ) {
           if ('requestId' in err && err.requestId) {
             this._pairingRequestId = err.requestId
-            debug.log(`[${this.id}] pairing required, requestId=${err.requestId}`)
+            this.logger.info(`[${this.id}] pairing required, requestId=${err.requestId}`)
           }
           this.setStatus('pairing')
           // Do NOT auto-reconnect while pairing — user must retry manually
@@ -311,7 +312,7 @@ export class GatewayConnection extends EventEmitter {
   private sendRequest(frame: WsReqFrame): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
-        debug.error(
+        this.logger.error(
           `[${this.id}] request TIMED OUT after 15s: method=${frame.method} id=${frame.id}`,
         )
         this.pendingRequests.delete(frame.id)
@@ -321,7 +322,7 @@ export class GatewayConnection extends EventEmitter {
       this.pendingRequests.set(frame.id, { resolve, reject, timer })
 
       const encoded = encodeFrame(frame)
-      debug.log(`[${this.id}] >> send`, encoded.slice(0, 300))
+      this.logger.debug(`[${this.id}] >> send`, encoded.slice(0, 300))
       this.ws!.send(encoded)
     })
   }
@@ -424,7 +425,7 @@ export class GatewayConnection extends EventEmitter {
 
   private scheduleReconnect(): void {
     if (this.destroyed || this.status === 'auth-failed' || this.status === 'pairing') return
-    debug.log(`[${this.id}] scheduling reconnect in ${Math.round(this.reconnectBackoff)}ms`)
+    this.logger.debug(`[${this.id}] scheduling reconnect in ${Math.round(this.reconnectBackoff)}ms`)
     this.reconnectTimer = setTimeout(() => {
       this.connect()
     }, this.reconnectBackoff)
@@ -435,7 +436,7 @@ export class GatewayConnection extends EventEmitter {
     const prev = this.status
     this.status = s
     if (prev !== s) {
-      debug.log(`[${this.id}] status: ${prev} -> ${s}`)
+      this.logger.debug(`[${this.id}] status: ${prev} -> ${s}`)
       this.emit('status-change', {
         gatewayId: this.id,
         status: s,

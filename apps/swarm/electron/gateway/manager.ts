@@ -7,8 +7,8 @@ import {
 } from './connection'
 import { store, encryptToken, decryptToken } from '../store'
 import { getOrCreateDeviceIdentity } from '../device-identity'
-import { createDebugLogger } from '../lib/debug'
 import { gatewayPublisher } from './publisher'
+import type { Logger } from '../logger'
 import type {
   StoredGateway,
   GatewayRuntimeState,
@@ -24,16 +24,16 @@ import type {
   GatewayConfigResponse,
 } from '../api/types'
 
-const debug = createDebugLogger('gw:manager')
-
 export class GatewayManager {
   private connections = new Map<string, GatewayConnection>()
   private identity = getOrCreateDeviceIdentity()
   readonly events = new EventPublisher<{ gatewayEvent: GatewayEvent }>()
+  private readonly logger: Logger
 
-  constructor() {
+  constructor(logger: Logger) {
+    this.logger = logger
     const gateways = store.get('gateways')
-    debug.log(`restoring ${gateways.length} gateways from store`)
+    this.logger.info(`restoring ${gateways.length} gateways from store`)
     for (const gw of gateways) {
       this.initConnection(gw)
     }
@@ -48,6 +48,7 @@ export class GatewayManager {
       identity: this.identity,
       appVersion: app.getVersion(),
       platform: process.platform,
+      logger: this.logger.child('conn'),
     }
 
     const conn = new GatewayConnection(config)
@@ -192,7 +193,7 @@ export class GatewayManager {
     error?: string
     pairingRequestId?: string
   }> {
-    debug.log(`testConnection: url=${params.url}`)
+    this.logger.debug(`testConnection: url=${params.url}`)
     const tempConn = new GatewayConnection({
       id: 'test-' + crypto.randomUUID(),
       url: params.url,
@@ -201,11 +202,12 @@ export class GatewayManager {
       identity: this.identity,
       appVersion: app.getVersion(),
       platform: process.platform,
+      logger: this.logger.child('conn'),
     })
 
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
-        debug.error(
+        this.logger.error(
           `testConnection: TIMED OUT after 10s — last error: ${tempConn.getLastError() ?? 'none'}`,
         )
         tempConn.destroy()
@@ -216,7 +218,7 @@ export class GatewayManager {
       }, 10_000)
 
       tempConn.on('status-change', ({ status }: { status: string }) => {
-        debug.log(`testConnection: status changed to ${status}`)
+        this.logger.debug(`testConnection: status changed to ${status}`)
         if (status === 'connected') {
           clearTimeout(timeout)
           tempConn.destroy()
