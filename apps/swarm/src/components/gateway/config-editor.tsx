@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react'
 import MonacoEditor from '@monaco-editor/react'
-import { createFileRoute } from '@tanstack/react-router'
-import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { toast } from 'sonner'
@@ -18,11 +16,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-
-export const Route = createFileRoute('/dashboard/gateways/$gatewayId/config')({
-  component: ConfigPage,
-  errorComponent: RouteErrorFallback,
-})
 
 const REDACTED = '__OPENCLAW_REDACTED__'
 
@@ -49,8 +42,7 @@ function stripRedacted(obj: unknown): { cleaned: unknown; redactedCount: number 
   return { cleaned: walk(obj), redactedCount }
 }
 
-function ConfigPage() {
-  const { gatewayId } = Route.useParams()
+export function ConfigEditor({ gatewayId }: { gatewayId: string }) {
   const queryClient = useQueryClient()
   const [draft, setDraft] = useState<string | null>(null)
   const [applyOpen, setApplyOpen] = useState(false)
@@ -130,7 +122,7 @@ function ConfigPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-3 pt-2">
+      <div className="flex flex-col gap-3">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="rounded-lg" style={{ minHeight: '400px' }} />
       </div>
@@ -144,7 +136,7 @@ function ConfigPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 pt-2">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2 flex-wrap">
         <Button
           variant="outline"
@@ -185,7 +177,7 @@ function ConfigPage() {
         <MonacoEditor
           language="json"
           theme="vs-dark"
-          height="60vh"
+          height="500px"
           value={text}
           onChange={(val) => setDraft(val ?? '')}
           options={{

@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useQuery } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { Badge } from '@/components/ui/badge'
@@ -15,13 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { UserIcon, FileIcon, StarIcon } from 'lucide-react'
 
-export const Route = createFileRoute('/dashboard/gateways/$gatewayId/agents')({
-  component: AgentsPage,
-  errorComponent: RouteErrorFallback,
-})
-
-function AgentsPage() {
-  const { gatewayId } = Route.useParams()
+export function AgentsSection({ gatewayId }: { gatewayId: string }) {
   const [filesTarget, setFilesTarget] = useState<string | null>(null)
 
   const { data: agents, isLoading } = useQuery(
@@ -37,7 +29,7 @@ function AgentsPage() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} className="h-28 rounded-lg" />
         ))}
@@ -52,7 +44,7 @@ function AgentsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 pt-2">
+    <div className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {agents.map((agent) => (
           <Card key={agent.id} size="sm" className="bg-muted/40">
@@ -109,11 +101,10 @@ function AgentsPage() {
       </div>
 
       <p className="text-[0.625rem] text-muted-foreground">
-        Agent configuration is managed through the gateway&apos;s workspace. Use the Config tab or
-        gateway CLI to create or modify agents.
+        Agent configuration is managed through the gateway&apos;s workspace. Use the Config section
+        or gateway CLI to create or modify agents.
       </p>
 
-      {/* Agent Files Dialog */}
       <Dialog open={filesTarget !== null} onOpenChange={(open) => !open && setFilesTarget(null)}>
         <DialogContent>
           <DialogHeader>

@@ -1,5 +1,3 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { Badge } from '@/components/ui/badge'
@@ -9,13 +7,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { CheckCircleIcon, XCircleIcon, LogOutIcon, RefreshCwIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
-export const Route = createFileRoute('/dashboard/gateways/$gatewayId/channels')({
-  component: ChannelsPage,
-  errorComponent: RouteErrorFallback,
-})
-
-function ChannelsPage() {
-  const { gatewayId } = Route.useParams()
+export function ChannelsSection({ gatewayId }: { gatewayId: string }) {
   const queryClient = useQueryClient()
 
   const channelsQueryKey = orpc.gateway.channelsStatus.queryOptions({
@@ -52,7 +44,7 @@ function ChannelsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-3 pt-2">
+      <div className="flex flex-col gap-3">
         <Skeleton className="h-8 rounded-lg" />
         <Skeleton className="h-32 rounded-lg" />
       </div>
@@ -80,7 +72,7 @@ function ChannelsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 pt-2">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <Button
           variant="outline"

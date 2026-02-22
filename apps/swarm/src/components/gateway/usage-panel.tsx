@@ -1,5 +1,3 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useQuery } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -7,20 +5,14 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { XAxis, YAxis, CartesianGrid, AreaChart, Area } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
-export const Route = createFileRoute('/dashboard/gateways/$gatewayId/usage')({
-  component: UsagePage,
-  errorComponent: RouteErrorFallback,
-})
-
-function UsagePage() {
-  const { gatewayId } = Route.useParams()
+export function UsagePanel({ gatewayId }: { gatewayId: string }) {
   const { data: costData, isLoading } = useQuery(
     orpc.gateway.cost.queryOptions({ input: { gatewayId } }),
   )
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4 pt-2">
+      <div className="flex flex-col gap-4">
         <Skeleton className="h-48 rounded-lg" />
         <Skeleton className="h-16 rounded-lg" />
       </div>
@@ -44,7 +36,7 @@ function UsagePage() {
   }))
 
   return (
-    <div className="flex flex-col gap-4 pt-2">
+    <div className="flex flex-col gap-4">
       <Card className="bg-muted/40">
         <CardContent className="pt-4">
           <h3 className="text-xs font-medium mb-3">Daily Cost (last {daily.length} days)</h3>

@@ -1,5 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { RouteErrorFallback } from '@/components/route-error-fallback'
+import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
@@ -18,12 +17,6 @@ import {
   CheckCircleIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useMemo } from 'react'
-
-export const Route = createFileRoute('/dashboard/gateways/$gatewayId/skills')({
-  component: SkillsPage,
-  errorComponent: RouteErrorFallback,
-})
 
 interface SkillStatusEntry {
   name: string
@@ -48,8 +41,7 @@ interface SkillStatusResponse {
   skills?: SkillStatusEntry[]
 }
 
-function SkillsPage() {
-  const { gatewayId } = Route.useParams()
+export function SkillsSection({ gatewayId }: { gatewayId: string }) {
   const queryClient = useQueryClient()
 
   const skillsQueryKey = orpc.gateway.skillsStatus.queryOptions({ input: { gatewayId } }).queryKey
@@ -70,7 +62,6 @@ function SkillsPage() {
     onError: (err) => toast.error('Failed to update skill', { description: String(err) }),
   })
 
-  // Group by source
   const grouped = useMemo(() => {
     const groups = new Map<string, SkillStatusEntry[]>()
     for (const skill of skills) {
@@ -79,7 +70,6 @@ function SkillsPage() {
       list.push(skill)
       groups.set(key, list)
     }
-    // Sort: eligible first within each group
     for (const [, list] of groups) {
       list.sort((a, b) => {
         if (a.eligible !== b.eligible) return a.eligible ? -1 : 1
@@ -97,7 +87,7 @@ function SkillsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-3 pt-2">
+      <div className="flex flex-col gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-24 rounded-lg" />
         ))}
@@ -120,7 +110,7 @@ function SkillsPage() {
   const eligibleCount = skills.filter((s) => s.eligible).length
 
   return (
-    <div className="flex flex-col gap-4 pt-2">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <Badge variant="outline" className="text-[0.625rem]">
           {eligibleCount} eligible

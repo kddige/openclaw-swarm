@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { createFileRoute, createLink, Link, Outlet } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -8,9 +9,16 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { CopyableCommand } from '@/components/copyable-command'
+import { ChatPanel } from '@/components/chat-panel'
 import { getGatewayStatus } from '@/lib/gateway-status'
-import { ArrowLeftIcon, LinkIcon, RefreshCwIcon } from 'lucide-react'
+import { ArrowLeftIcon, LinkIcon, RefreshCwIcon, MessageCircleIcon } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export const Route = createFileRoute('/dashboard/gateways/$gatewayId')({
@@ -76,10 +84,12 @@ function PairingBanner({ gatewayId, requestId }: { gatewayId: string; requestId:
   )
 }
 
+const MAINTENANCE_SESSION_KEY = 'swarm-maintenance'
 const TabsLink = createLink(TabsTrigger)
 
 function GatewayLayout() {
   const { gatewayId } = Route.useParams()
+  const [chatOpen, setChatOpen] = useState(false)
   const { data: gateway, isLoading } = useQuery(
     orpc.gateway.get.queryOptions({ input: { id: gatewayId } }),
   )
@@ -131,7 +141,7 @@ function GatewayLayout() {
             activeOptions={{ exact: true }}
             activeProps={{ value: 'active' }}
           >
-            Status
+            Overview
           </TabsLink>
           <TabsLink
             value="sessions"
@@ -143,105 +153,44 @@ function GatewayLayout() {
             Sessions
           </TabsLink>
           <TabsLink
-            value="chat"
-            to="/dashboard/gateways/$gatewayId/chat"
+            value="settings"
+            to="/dashboard/gateways/$gatewayId/settings"
             params={{ gatewayId }}
             activeProps={{ value: 'active' }}
           >
-            Chat
-          </TabsLink>
-          <TabsLink
-            value="logs"
-            to="/dashboard/gateways/$gatewayId/logs"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Logs
-          </TabsLink>
-          <TabsLink
-            value="usage"
-            to="/dashboard/gateways/$gatewayId/usage"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Usage
-          </TabsLink>
-          <TabsLink
-            value="agents"
-            to="/dashboard/gateways/$gatewayId/agents"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Agents
-          </TabsLink>
-          <TabsLink
-            value="security"
-            to="/dashboard/gateways/$gatewayId/security"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Security
-          </TabsLink>
-          <TabsLink
-            value="models"
-            to="/dashboard/gateways/$gatewayId/models"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Models
-          </TabsLink>
-          <TabsLink
-            value="cron"
-            to="/dashboard/gateways/$gatewayId/cron"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Cron
-          </TabsLink>
-          <TabsLink
-            value="nodes"
-            to="/dashboard/gateways/$gatewayId/nodes"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Nodes
-          </TabsLink>
-          <TabsLink
-            value="skills"
-            to="/dashboard/gateways/$gatewayId/skills"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Skills
-          </TabsLink>
-          <TabsLink
-            value="channels"
-            to="/dashboard/gateways/$gatewayId/channels"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Channels
-          </TabsLink>
-          <TabsLink
-            value="config"
-            to="/dashboard/gateways/$gatewayId/config"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Config
-          </TabsLink>
-          <TabsLink
-            value="devices"
-            to="/dashboard/gateways/$gatewayId/devices"
-            params={{ gatewayId }}
-            activeProps={{ value: 'active' }}
-          >
-            Devices
+            Settings
           </TabsLink>
         </TabsList>
       </Tabs>
 
       <Outlet />
+
+      {/* Chat FAB */}
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed bottom-6 right-6 z-40 size-10 rounded-full shadow-lg"
+        onClick={() => setChatOpen(true)}
+        title="Maintenance Chat"
+      >
+        <MessageCircleIcon className="size-4" />
+      </Button>
+
+      {/* Chat Sheet */}
+      <Sheet open={chatOpen} onOpenChange={setChatOpen}>
+        <SheetContent side="right" className="sm:max-w-lg flex flex-col">
+          <SheetHeader>
+            <SheetTitle>Maintenance Chat</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 min-h-0 px-6 pb-6">
+            <ChatPanel
+              gatewayId={gatewayId}
+              sessionKey={MAINTENANCE_SESSION_KEY}
+              style={{ height: '100%', minHeight: '400px' }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

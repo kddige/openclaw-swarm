@@ -1,5 +1,3 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useQuery } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
@@ -9,20 +7,14 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { HardDriveIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
-export const Route = createFileRoute('/dashboard/gateways/$gatewayId/nodes')({
-  component: NodesPage,
-  errorComponent: RouteErrorFallback,
-})
-
-function NodesPage() {
-  const { gatewayId } = Route.useParams()
+export function NodesSection({ gatewayId }: { gatewayId: string }) {
   const { data: nodes, isLoading, error } = useQuery(
     orpc.gateway.nodes.queryOptions({ input: { gatewayId } }),
   )
 
   if (isLoading) {
     return (
-      <div className="grid gap-3 grid-cols-1 @sm:grid-cols-2 @lg:grid-cols-3 pt-2">
+      <div className="grid gap-3 grid-cols-1 @sm:grid-cols-2 @lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} className="h-32 rounded-lg" />
         ))}
@@ -45,7 +37,7 @@ function NodesPage() {
   const onlineCount = nodes.filter((n) => n.connected).length
 
   return (
-    <div className="@container flex flex-col gap-3 pt-2">
+    <div className="@container flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <Badge variant="outline" className="text-[0.625rem]">
           {onlineCount} online

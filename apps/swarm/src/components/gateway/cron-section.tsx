@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
@@ -50,13 +48,7 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'sonner'
 
-export const Route = createFileRoute('/dashboard/gateways/$gatewayId/cron')({
-  component: CronPage,
-  errorComponent: RouteErrorFallback,
-})
-
-function CronPage() {
-  const { gatewayId } = Route.useParams()
+export function CronSection({ gatewayId }: { gatewayId: string }) {
   const queryClient = useQueryClient()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [editTarget, setEditTarget] = useState<{
@@ -115,7 +107,6 @@ function CronPage() {
     onError: (err) => toast.error('Failed to update', { description: String(err) }),
   })
 
-  // Sort: enabled first, then by name
   const sorted = useMemo(() => {
     if (!jobs) return []
     const q = search.toLowerCase()
@@ -136,7 +127,7 @@ function CronPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-3 pt-2">
+      <div className="flex flex-col gap-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} className="h-24 rounded-lg" />
         ))}
@@ -159,8 +150,7 @@ function CronPage() {
   const enabledCount = jobs.filter((j) => j.enabled).length
 
   return (
-    <div className="flex flex-col gap-3 pt-2">
-      {/* Stats + filter */}
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <Badge variant="outline" className="text-[0.625rem]">
           {enabledCount} enabled
@@ -307,7 +297,6 @@ function CronPage() {
         )
       })}
 
-      {/* Delete dialog */}
       <AlertDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
@@ -335,7 +324,6 @@ function CronPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Edit dialog */}
       <Dialog open={editTarget !== null} onOpenChange={(open) => !open && setEditTarget(null)}>
         <DialogContent>
           <DialogHeader>
