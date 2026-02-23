@@ -24,7 +24,10 @@ A command center for managing your [OpenClaw Gateway](https://github.com/opencla
 
 ## Download
 
-Grab the latest `.dmg` from the [Releases](https://github.com/kddige/openclaw-swarm/releases) page.
+MacOS 
+```shell
+curl -fsSL https://raw.githubusercontent.com/kddige/openclaw-swarm/main/install.sh | sh
+```
 
 ## Development
 
