@@ -37,12 +37,20 @@ let logger: Logger | null = null
 let handler: RPCHandler<any> | null = null
 
 function createWindow() {
+  const isMac = process.platform === 'darwin'
+
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'icon.png'),
-    titleBarStyle: 'hiddenInset',
-    titleBarOverlay: false,
-    vibrancy: 'under-window',
-    visualEffectState: 'active',
+    titleBarStyle: isMac ? 'hiddenInset' : 'default',
+    titleBarOverlay: !isMac,
+    ...(isMac && {
+      vibrancy: 'under-window',
+      visualEffectState: 'active',
+      transparent: true,
+    }),
+    ...(!isMac && {
+      backgroundColor: '#000000',
+    }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
