@@ -37,12 +37,20 @@ let logger: Logger | null = null
 let handler: RPCHandler<any> | null = null
 
 function createWindow() {
+  const isMac = process.platform === 'darwin'
+
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'icon.png'),
-    titleBarStyle: 'hiddenInset',
-    titleBarOverlay: false,
-    vibrancy: 'under-window',
-    visualEffectState: 'active',
+    titleBarStyle: isMac ? 'hiddenInset' : 'default',
+    titleBarOverlay: !isMac,
+    ...(isMac && {
+      vibrancy: 'under-window',
+      visualEffectState: 'active',
+      transparent: true,
+    }),
+    ...(!isMac && {
+      backgroundColor: nativeTheme.shouldUseDarkColors ? '#242424' : '#f5f5f5',
+    }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
@@ -79,6 +87,9 @@ app.on('activate', () => {
 function syncTheme() {
   if (win) {
     win.webContents.send('theme-changed', nativeTheme.shouldUseDarkColors)
+    if (process.platform !== 'darwin') {
+      win.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#242424' : '#f5f5f5')
+    }
   }
 }
 
