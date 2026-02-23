@@ -37,5 +37,14 @@ dist-electron
 .moon/cache
 .moon/docker
 
+# Environment files
+.env*
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Windows OS files
+Thumbs.db
+
 # Internal development notes
 progress.txt

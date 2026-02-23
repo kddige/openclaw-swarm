@@ -2,6 +2,14 @@
   "name": "openclaw-docs",
   "private": true,
   "type": "module",
+  "description": "Documentation site for OpenClaw Swarm",
+  "license": "MIT",
+  "author": "Kjartan Dige",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kddige/openclaw-swarm.git",
+    "directory": "apps/docs"
+  },
   "sideEffects": false,
   "scripts": {
     "dev": "vite dev",
