@@ -70,12 +70,12 @@ export const exampleRouter = {
 
 ## Log levels
 
-| Level | Use for |
-|---|---|
+| Level   | Use for                                                                 |
+| ------- | ----------------------------------------------------------------------- |
 | `debug` | Verbose trace info (WS frames, state transitions). Only written in dev. |
-| `info` | Normal operational events (connected, restored gateways). |
-| `warn` | Recoverable issues (validation fallbacks, unexpected frame types). |
-| `error` | Failures (connection errors, timeouts, handler errors). |
+| `info`  | Normal operational events (connected, restored gateways).               |
+| `warn`  | Recoverable issues (validation fallbacks, unexpected frame types).      |
+| `error` | Failures (connection errors, timeouts, handler errors).                 |
 
 In production builds, `minLevel` is set to `info` — debug entries are dropped before reaching any transport.
 
@@ -83,11 +83,11 @@ In production builds, `minLevel` is set to `info` — debug entries are dropped 
 
 Three transports are active simultaneously:
 
-| Transport | When active | Output |
-|---|---|---|
-| `ConsoleTransport` | Dev only (`VITE_DEV_SERVER_URL` set) | Colored ANSI output to terminal |
-| `FileTransport` | Always | NDJSON to rotating log files |
-| `MemoryTransport` | Always | Ring buffer (1000 entries) for in-app viewer |
+| Transport          | When active                          | Output                                       |
+| ------------------ | ------------------------------------ | -------------------------------------------- |
+| `ConsoleTransport` | Dev only (`VITE_DEV_SERVER_URL` set) | Colored ANSI output to terminal              |
+| `FileTransport`    | Always                               | NDJSON to rotating log files                 |
+| `MemoryTransport`  | Always                               | Ring buffer (1000 entries) for in-app viewer |
 
 ### File transport
 
@@ -102,7 +102,7 @@ Rotation: max 5 MB per file, 5 files total (25 MB cap). Files are named `swarm.l
 Each line is a JSON object:
 
 ```json
-{"ts":1740230400000,"level":"info","ns":"gw:conn","msg":"handshake SUCCESS"}
+{ "ts": 1740230400000, "level": "info", "ns": "gw:conn", "msg": "handshake SUCCESS" }
 ```
 
 ### Memory transport
@@ -113,11 +113,11 @@ A fixed-capacity ring buffer supporting cursor-based tailing. The renderer polls
 
 The `logs` router exposes three procedures:
 
-| Procedure | Description |
-|---|---|
-| `logs.tail` | Read recent entries from the memory ring buffer. Supports `limit`, `afterCursor`, `level`, and `ns` filters. |
-| `logs.export` | Opens a native save dialog and copies the current log file to the chosen location. |
-| `logs.logPath` | Returns the absolute path of the current log file. |
+| Procedure      | Description                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------ |
+| `logs.tail`    | Read recent entries from the memory ring buffer. Supports `limit`, `afterCursor`, `level`, and `ns` filters. |
+| `logs.export`  | Opens a native save dialog and copies the current log file to the chosen location.                           |
+| `logs.logPath` | Returns the absolute path of the current log file.                                                           |
 
 ## Initialization
 
@@ -135,9 +135,9 @@ gatewayManager = new GatewayManager(logger.child('gw'))
 
 ## Namespace conventions
 
-| Namespace | Source |
-|---|---|
-| `main` | Root logger (main.ts, oRPC errors) |
-| `gw` | GatewayManager |
-| `gw:conn` | GatewayConnection instances |
-| `gw:protocol` | WS frame encoding/decoding |
+| Namespace     | Source                             |
+| ------------- | ---------------------------------- |
+| `main`        | Root logger (main.ts, oRPC errors) |
+| `gw`          | GatewayManager                     |
+| `gw:conn`     | GatewayConnection instances        |
+| `gw:protocol` | WS frame encoding/decoding         |

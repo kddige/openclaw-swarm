@@ -3,10 +3,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
 import { ChatPanel } from '@/components/chat-panel'
 import { MetricCard } from '@/components/metric-card'
-import {
-  SessionActionDialogs,
-  type SessionActionDialog,
-} from '@/components/session-action-dialogs'
+import { SessionActionDialogs, type SessionActionDialog } from '@/components/session-action-dialogs'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { toast } from 'sonner'
@@ -60,7 +57,6 @@ function SessionDetailPage() {
       input: { gatewayId, sessionKey },
     }),
   )
-
 
   const { data: usageLogs } = useQuery(
     orpc.gateway.sessionUsageLogs.queryOptions({
@@ -212,7 +208,11 @@ function SessionDetailPage() {
         <div className="flex-1" />
 
         {/* Action buttons */}
-        <Button variant="outline" size="xs" onClick={() => setDialog({ type: 'reset', sessionKey })}>
+        <Button
+          variant="outline"
+          size="xs"
+          onClick={() => setDialog({ type: 'reset', sessionKey })}
+        >
           <RotateCcwIcon />
           Reset
         </Button>
@@ -539,4 +539,3 @@ function SessionUsageCharts({ usageLogs }: { usageLogs: UsageLog[] }) {
     </div>
   )
 }
-

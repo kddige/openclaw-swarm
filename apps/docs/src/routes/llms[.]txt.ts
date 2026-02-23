@@ -9,9 +9,7 @@ export const Route = createFileRoute('/llms.txt')({
         lines.push('# OpenClaw Swarm Documentation')
         lines.push('')
         for (const page of source.getPages()) {
-          lines.push(
-            `- [${page.data.title}](${page.url}): ${page.data.description}`,
-          )
+          lines.push(`- [${page.data.title}](${page.url}): ${page.data.description}`)
         }
         return new Response(lines.join('\n'))
       },

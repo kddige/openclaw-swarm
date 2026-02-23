@@ -26,9 +26,11 @@ export function ModelsSection({ gatewayId }: { gatewayId: string }) {
   const [search, setSearch] = useState('')
   const [providerFilter, setProviderFilter] = useState<string>('all')
 
-  const { data: models, isLoading, error } = useQuery(
-    orpc.gateway.models.queryOptions({ input: { gatewayId } }),
-  )
+  const {
+    data: models,
+    isLoading,
+    error,
+  } = useQuery(orpc.gateway.models.queryOptions({ input: { gatewayId } }))
 
   const { data: configData } = useQuery(
     orpc.gateway.configGet.queryOptions({ input: { gatewayId } }),
@@ -163,17 +165,13 @@ export function ModelsSection({ gatewayId }: { gatewayId: string }) {
                 return (
                   <TableRow key={model.id} className={cn(!enabled && 'opacity-40')}>
                     <TableCell className="pr-0">
-                      {enabled && (
-                        <span className="size-1.5 rounded-full bg-emerald-500 block" />
-                      )}
+                      {enabled && <span className="size-1.5 rounded-full bg-emerald-500 block" />}
                     </TableCell>
                     <TableCell className="font-mono text-[0.625rem]">{model.id}</TableCell>
                     <TableCell>{model.name}</TableCell>
                     <TableCell className="text-muted-foreground">{model.provider}</TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {model.contextWindow
-                        ? `${(model.contextWindow / 1000).toFixed(0)}k`
-                        : '--'}
+                      {model.contextWindow ? `${(model.contextWindow / 1000).toFixed(0)}k` : '--'}
                     </TableCell>
                     <TableCell className="text-center">
                       {model.reasoning && (

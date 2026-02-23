@@ -5,13 +5,7 @@ import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/ui/empty'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { MetricCard } from '@/components/metric-card'
 import {
   ServerIcon,
@@ -33,19 +27,14 @@ function SwarmDashboard() {
   const { data: overview, isLoading: overviewLoading } = useQuery(
     orpc.swarm.overview.queryOptions(),
   )
-  const { data: gateways, isLoading: gatewaysLoading } = useQuery(
-    orpc.gateway.list.queryOptions(),
-  )
-  const { data: swarmCost, isLoading: costLoading } = useQuery(
-    orpc.swarm.cost.queryOptions(),
-  )
-  const { data: swarmPresence } = useQuery(
-    orpc.swarm.presence.queryOptions(),
-  )
+  const { data: gateways, isLoading: gatewaysLoading } = useQuery(orpc.gateway.list.queryOptions())
+  const { data: swarmCost, isLoading: costLoading } = useQuery(orpc.swarm.cost.queryOptions())
+  const { data: swarmPresence } = useQuery(orpc.swarm.presence.queryOptions())
 
-  const allDevices = swarmPresence?.flatMap((g) =>
-    g.devices.map((d) => ({ ...d, gatewayId: g.gatewayId, gatewayLabel: g.gatewayLabel })),
-  ) ?? []
+  const allDevices =
+    swarmPresence?.flatMap((g) =>
+      g.devices.map((d) => ({ ...d, gatewayId: g.gatewayId, gatewayLabel: g.gatewayLabel })),
+    ) ?? []
 
   if (gatewaysLoading || overviewLoading) {
     return (
@@ -75,9 +64,7 @@ function SwarmDashboard() {
               <ServerIcon />
             </EmptyMedia>
             <EmptyTitle>No gateways configured</EmptyTitle>
-            <EmptyDescription>
-              Add a gateway to start monitoring your swarm.
-            </EmptyDescription>
+            <EmptyDescription>Add a gateway to start monitoring your swarm.</EmptyDescription>
           </EmptyHeader>
           <Button variant="outline" render={<Link to="/dashboard/gateways" />}>
             Add Gateway
@@ -110,28 +97,18 @@ function SwarmDashboard() {
         />
         <MetricCard
           label="Total Cost (24h)"
-          value={
-            costLoading
-              ? '--'
-              : `$${(swarmCost?.totalCost ?? 0).toFixed(2)}`
-          }
+          value={costLoading ? '--' : `$${(swarmCost?.totalCost ?? 0).toFixed(2)}`}
           icon={<DollarSignIcon className="size-3.5 text-muted-foreground" />}
         />
       </div>
 
-      <h2 className="text-xs font-medium text-muted-foreground mt-2">
-        Gateways
-      </h2>
+      <h2 className="text-xs font-medium text-muted-foreground mt-2">Gateways</h2>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {gateways.map((gw) => {
           const status = getGatewayStatus(gw.status)
           return (
-            <Link
-              key={gw.id}
-              to="/dashboard/gateways/$gatewayId"
-              params={{ gatewayId: gw.id }}
-            >
+            <Link key={gw.id} to="/dashboard/gateways/$gatewayId" params={{ gatewayId: gw.id }}>
               <Card className="bg-muted/40 cursor-pointer transition-colors hover:bg-muted/60">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -145,7 +122,9 @@ function SwarmDashboard() {
                 <CardContent>
                   <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                     {gw.serverInfo && (
-                      <span>{gw.serverInfo.host} · v{gw.serverInfo.version}</span>
+                      <span>
+                        {gw.serverInfo.host} · v{gw.serverInfo.version}
+                      </span>
                     )}
                     <span className="truncate">{gw.url}</span>
                     {gw.status === 'pairing' && (
@@ -158,10 +137,7 @@ function SwarmDashboard() {
                       </Badge>
                     )}
                     {gw.health && !gw.health.ok && (
-                      <Badge
-                        variant="destructive"
-                        className="w-fit mt-1 gap-1"
-                      >
+                      <Badge variant="destructive" className="w-fit mt-1 gap-1">
                         <AlertTriangleIcon data-icon="inline-start" />
                         Health issues
                       </Badge>
@@ -176,9 +152,7 @@ function SwarmDashboard() {
 
       {allDevices.length > 0 && (
         <>
-          <h2 className="text-xs font-medium text-muted-foreground mt-2">
-            Connected Devices
-          </h2>
+          <h2 className="text-xs font-medium text-muted-foreground mt-2">Connected Devices</h2>
           <div className="flex flex-col gap-3">
             {swarmPresence?.map((group) => {
               if (!group.devices.length) return null
@@ -197,7 +171,9 @@ function SwarmDashboard() {
                           params={{ gatewayId: group.gatewayId }}
                         >
                           <div className="flex items-center gap-1.5 rounded-full border bg-muted/40 px-3 py-1.5 text-xs hover:bg-muted/70 transition-colors cursor-pointer">
-                            <span className={cn('size-1.5 rounded-full shrink-0', activity.color)} />
+                            <span
+                              className={cn('size-1.5 rounded-full shrink-0', activity.color)}
+                            />
                             <span className="font-medium">{device.host ?? 'Unknown'}</span>
                             {device.platform && (
                               <span className="text-muted-foreground text-[0.625rem]">
@@ -218,4 +194,3 @@ function SwarmDashboard() {
     </div>
   )
 }
-

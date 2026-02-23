@@ -11,11 +11,9 @@ export const swarmRouter = {
   presence: p.handler(({ context }) => {
     return context.gatewayManager.getSwarmPresence()
   }),
-  search: p
-    .input(z.object({ query: z.string() }))
-    .handler(({ input, context }) => {
-      return context.gatewayManager.searchSwarm(input.query)
-    }),
+  search: p.input(z.object({ query: z.string() })).handler(({ input, context }) => {
+    return context.gatewayManager.searchSwarm(input.query)
+  }),
   deviceId: p.handler(({ context }) => {
     return { deviceId: context.gatewayManager.getDeviceId() }
   }),

@@ -23,8 +23,7 @@ export const logsRouter = {
 
       const filtered = entries.filter((e) => {
         if (input.level) {
-          if (LEVEL_ORDER.indexOf(e.level) < LEVEL_ORDER.indexOf(input.level))
-            return false
+          if (LEVEL_ORDER.indexOf(e.level) < LEVEL_ORDER.indexOf(input.level)) return false
         }
         if (input.ns && !e.ns.startsWith(input.ns)) return false
         return true

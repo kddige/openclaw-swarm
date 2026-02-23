@@ -118,9 +118,11 @@ useQuery(orpc.gateway.get.queryOptions({ input: { id: gatewayId } }))
 useMutation(orpc.gateway.add.mutationOptions())
 
 // Event streaming (real-time updates from main process)
-useQuery(orpc.events.subscribe.experimental_streamedOptions({
-  queryFnOptions: { refetchMode: 'replace' },
-}))
+useQuery(
+  orpc.events.subscribe.experimental_streamedOptions({
+    queryFnOptions: { refetchMode: 'replace' },
+  }),
+)
 ```
 
 **Procedure definitions** use zod/v4 for input validation:

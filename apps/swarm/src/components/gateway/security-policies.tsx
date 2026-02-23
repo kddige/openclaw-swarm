@@ -23,13 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  ShieldIcon,
-  UserIcon,
-  AlertTriangleIcon,
-  SaveIcon,
-  ShieldCheckIcon,
-} from 'lucide-react'
+import { ShieldIcon, UserIcon, AlertTriangleIcon, SaveIcon, ShieldCheckIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'sonner'
 
@@ -54,7 +48,9 @@ export function SecurityPolicies({ gatewayId }: { gatewayId: string }) {
   } | null>(null)
   const [showRestart, setShowRestart] = useState(false)
 
-  const approvalsQueryKey = orpc.gateway.execApprovals.queryOptions({ input: { gatewayId } }).queryKey
+  const approvalsQueryKey = orpc.gateway.execApprovals.queryOptions({
+    input: { gatewayId },
+  }).queryKey
 
   const { data, isLoading, error } = useQuery(
     orpc.gateway.execApprovals.queryOptions({ input: { gatewayId } }),
@@ -146,11 +142,7 @@ export function SecurityPolicies({ gatewayId }: { gatewayId: string }) {
                 <Button variant="outline" size="sm" onClick={() => setEditDefaults(null)}>
                   Cancel
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSaveDefaults}
-                  disabled={saveMutation.isPending}
-                >
+                <Button size="sm" onClick={handleSaveDefaults} disabled={saveMutation.isPending}>
                   {saveMutation.isPending && <Spinner className="size-3" />}
                   <SaveIcon className="size-3" />
                   Save
@@ -305,7 +297,19 @@ export function SecurityPolicies({ gatewayId }: { gatewayId: string }) {
 function AllowedCommands({
   agents,
 }: {
-  agents: [string, { security?: string; allowlist?: { id?: string; pattern: string; lastUsedAt?: number; lastUsedCommand?: string; lastResolvedPath?: string }[] }][]
+  agents: [
+    string,
+    {
+      security?: string
+      allowlist?: {
+        id?: string
+        pattern: string
+        lastUsedAt?: number
+        lastUsedCommand?: string
+        lastResolvedPath?: string
+      }[]
+    },
+  ][]
 }) {
   const allEntries = agents.flatMap(([agentId, config]) =>
     (config.allowlist ?? []).map((entry) => ({
@@ -329,7 +333,8 @@ function AllowedCommands({
       {allEntries.length === 0 ? (
         <div className="rounded-md border bg-muted/20 px-3 py-3 text-center">
           <span className="text-[0.625rem] text-muted-foreground">
-            No commands in the allowlist. Commands approved with &ldquo;Always&rdquo; will appear here.
+            No commands in the allowlist. Commands approved with &ldquo;Always&rdquo; will appear
+            here.
           </span>
         </div>
       ) : (

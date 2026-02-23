@@ -4,12 +4,15 @@ import { CheckCircleIcon, XCircleIcon } from 'lucide-react'
 interface ChannelHealthCompactProps {
   health?: {
     ok: boolean
-    channels: Record<string, {
-      configured?: boolean
-      running?: boolean
-      probe?: { ok: boolean; error?: string | null }
-      lastError?: string | null
-    }>
+    channels: Record<
+      string,
+      {
+        configured?: boolean
+        running?: boolean
+        probe?: { ok: boolean; error?: string | null }
+        lastError?: string | null
+      }
+    >
   } | null
 }
 
@@ -40,10 +43,7 @@ export function ChannelHealthCompact({ health }: ChannelHealthCompactProps) {
               className="flex items-center gap-1.5 rounded-md border bg-muted/30 px-2 py-1"
             >
               <span
-                className={cn(
-                  'size-1.5 rounded-full',
-                  isOk ? 'bg-emerald-500' : 'bg-destructive',
-                )}
+                className={cn('size-1.5 rounded-full', isOk ? 'bg-emerald-500' : 'bg-destructive')}
               />
               <span className="text-[0.625rem] font-medium capitalize">{name}</span>
             </div>

@@ -46,9 +46,11 @@ export function SkillsSection({ gatewayId }: { gatewayId: string }) {
 
   const skillsQueryKey = orpc.gateway.skillsStatus.queryOptions({ input: { gatewayId } }).queryKey
 
-  const { data: rawStatus, isLoading, error } = useQuery(
-    orpc.gateway.skillsStatus.queryOptions({ input: { gatewayId } }),
-  )
+  const {
+    data: rawStatus,
+    isLoading,
+    error,
+  } = useQuery(orpc.gateway.skillsStatus.queryOptions({ input: { gatewayId } }))
 
   const status = rawStatus as SkillStatusResponse | undefined
   const skills = useMemo(() => status?.skills ?? [], [status])
@@ -65,7 +67,11 @@ export function SkillsSection({ gatewayId }: { gatewayId: string }) {
   const grouped = useMemo(() => {
     const groups = new Map<string, SkillStatusEntry[]>()
     for (const skill of skills) {
-      const key = skill.bundled ? 'Bundled' : skill.source === 'workspace' ? 'Workspace' : skill.source || 'Other'
+      const key = skill.bundled
+        ? 'Bundled'
+        : skill.source === 'workspace'
+          ? 'Workspace'
+          : skill.source || 'Other'
       const list = groups.get(key) ?? []
       list.push(skill)
       groups.set(key, list)
@@ -102,9 +108,7 @@ export function SkillsSection({ gatewayId }: { gatewayId: string }) {
   }
 
   if (!skills.length) {
-    return (
-      <div className="py-8 text-center text-xs text-muted-foreground">No skills found.</div>
-    )
+    return <div className="py-8 text-center text-xs text-muted-foreground">No skills found.</div>
   }
 
   const eligibleCount = skills.filter((s) => s.eligible).length
@@ -168,11 +172,17 @@ export function SkillsSection({ gatewayId }: { gatewayId: string }) {
                           disabled
                         </Badge>
                       ) : skill.blockedByAllowlist ? (
-                        <Badge variant="outline" className="text-[0.5625rem] text-amber-600 dark:text-amber-400">
+                        <Badge
+                          variant="outline"
+                          className="text-[0.5625rem] text-amber-600 dark:text-amber-400"
+                        >
                           blocked
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[0.5625rem] text-destructive gap-0.5">
+                        <Badge
+                          variant="outline"
+                          className="text-[0.5625rem] text-destructive gap-0.5"
+                        >
                           <AlertTriangleIcon className="size-2.5" />
                           missing deps
                         </Badge>

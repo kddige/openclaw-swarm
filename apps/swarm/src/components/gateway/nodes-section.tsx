@@ -8,9 +8,11 @@ import { HardDriveIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 export function NodesSection({ gatewayId }: { gatewayId: string }) {
-  const { data: nodes, isLoading, error } = useQuery(
-    orpc.gateway.nodes.queryOptions({ input: { gatewayId } }),
-  )
+  const {
+    data: nodes,
+    isLoading,
+    error,
+  } = useQuery(orpc.gateway.nodes.queryOptions({ input: { gatewayId } }))
 
   if (isLoading) {
     return (
@@ -57,9 +59,7 @@ export function NodesSection({ gatewayId }: { gatewayId: string }) {
                     <HardDriveIcon className="size-3.5" />
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <CardTitle className="truncate">
-                      {node.displayName ?? node.nodeId}
-                    </CardTitle>
+                    <CardTitle className="truncate">{node.displayName ?? node.nodeId}</CardTitle>
                     {node.displayName && (
                       <span className="font-mono text-[0.625rem] text-muted-foreground truncate">
                         {node.nodeId}

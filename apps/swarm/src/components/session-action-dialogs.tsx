@@ -44,10 +44,7 @@ export function SessionActionDialogs({
   return (
     <>
       {/* Reset Dialog */}
-      <AlertDialog
-        open={dialog.type === 'reset'}
-        onOpenChange={(open) => !open && onClose()}
-      >
+      <AlertDialog open={dialog.type === 'reset'} onOpenChange={(open) => !open && onClose()}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Reset Session</AlertDialogTitle>

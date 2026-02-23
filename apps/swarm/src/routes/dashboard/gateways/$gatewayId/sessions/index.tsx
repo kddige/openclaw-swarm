@@ -1,10 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { RouteErrorFallback } from '@/components/route-error-fallback'
-import {
-  SessionActionDialogs,
-  type SessionActionDialog,
-} from '@/components/session-action-dialogs'
+import { SessionActionDialogs, type SessionActionDialog } from '@/components/session-action-dialogs'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { toast } from 'sonner'
@@ -168,9 +165,7 @@ function SessionsPage() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       variant="destructive"
-                      onClick={() =>
-                        setActionDialog({ type: 'delete', sessionKey: session.key })
-                      }
+                      onClick={() => setActionDialog({ type: 'delete', sessionKey: session.key })}
                     >
                       <Trash2Icon />
                       Delete Session

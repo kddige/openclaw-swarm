@@ -1,10 +1,7 @@
 import crypto from 'node:crypto'
 import { app } from 'electron'
 import { EventPublisher } from '@orpc/shared'
-import {
-  GatewayConnection,
-  type GatewayConnectionConfig,
-} from './connection'
+import { GatewayConnection, type GatewayConnectionConfig } from './connection'
 import { store, encryptToken, decryptToken } from '../store'
 import { getOrCreateDeviceIdentity } from '../device-identity'
 import { gatewayPublisher } from './publisher'
@@ -146,7 +143,10 @@ export class GatewayManager {
       }
       if (event.type === 'exec.approval.requested') {
         const payload = event.payload as ExecApprovalRequest
-        this.logger.info('[exec-approval] requested', { id: payload.id, command: payload.request?.command })
+        this.logger.info('[exec-approval] requested', {
+          id: payload.id,
+          command: payload.request?.command,
+        })
         gatewayPublisher
           .publish('execApproval', {
             gatewayId: event.gatewayId,
@@ -190,11 +190,7 @@ export class GatewayManager {
 
   // ── CRUD ──────────────────────────────────────────────
 
-  addGateway(params: {
-    url: string
-    token: string
-    label: string
-  }): GatewayRuntimeState {
+  addGateway(params: { url: string; token: string; label: string }): GatewayRuntimeState {
     const id = crypto.randomUUID()
     const gateways = store.get('gateways')
     const stored: StoredGateway = {
@@ -253,10 +249,7 @@ export class GatewayManager {
     return this.getRuntimeState(conn)
   }
 
-  async testConnection(params: {
-    url: string
-    token: string
-  }): Promise<{
+  async testConnection(params: { url: string; token: string }): Promise<{
     ok: boolean
     error?: string
     pairingRequestId?: string
@@ -321,9 +314,7 @@ export class GatewayManager {
   // ── Queries ───────────────────────────────────────────
 
   listGateways(): GatewayRuntimeState[] {
-    return Array.from(this.connections.values()).map((conn) =>
-      this.getRuntimeState(conn),
-    )
+    return Array.from(this.connections.values()).map((conn) => this.getRuntimeState(conn))
   }
 
   getGateway(id: string): GatewayRuntimeState {
@@ -345,11 +336,12 @@ export class GatewayManager {
       agent: (s.agent as string) ?? (s.agentId as string) ?? null,
       channel: (s.channel as string) ?? null,
       createdAt: typeof s.createdAt === 'number' ? s.createdAt : null,
-      lastActiveAt: typeof s.lastActiveAt === 'number'
-        ? s.lastActiveAt
-        : typeof s.lastActivity === 'number'
-          ? s.lastActivity
-          : null,
+      lastActiveAt:
+        typeof s.lastActiveAt === 'number'
+          ? s.lastActiveAt
+          : typeof s.lastActivity === 'number'
+            ? s.lastActivity
+            : null,
       tokensIn: Number(s.tokensIn ?? 0),
       tokensOut: Number(s.tokensOut ?? 0),
       cost: Number(s.cost ?? 0),
@@ -359,10 +351,7 @@ export class GatewayManager {
     return sessions
   }
 
-  async getSessionUsage(
-    gatewayId: string,
-    sessionKey: string,
-  ): Promise<SessionUsage> {
+  async getSessionUsage(gatewayId: string, sessionKey: string): Promise<SessionUsage> {
     const conn = this.getConnection(gatewayId)
     return (await conn.request('sessions.usage', {
       key: sessionKey,
@@ -381,11 +370,7 @@ export class GatewayManager {
     })) as SessionUsageLog[]
   }
 
-  async getChatHistory(
-    gatewayId: string,
-    sessionKey: string,
-    limit = 100,
-  ): Promise<ChatMessage[]> {
+  async getChatHistory(gatewayId: string, sessionKey: string, limit = 100): Promise<ChatMessage[]> {
     const conn = this.getConnection(gatewayId)
     const res = (await conn.request('chat.history', {
       sessionKey,
@@ -396,11 +381,7 @@ export class GatewayManager {
     return (res as { messages: ChatMessage[] }).messages ?? []
   }
 
-  async sendChatMessage(
-    gatewayId: string,
-    sessionKey: string,
-    message: string,
-  ): Promise<void> {
+  async sendChatMessage(gatewayId: string, sessionKey: string, message: string): Promise<void> {
     const conn = this.getConnection(gatewayId)
     // Publish the user message to the stream immediately
     gatewayPublisher
@@ -440,11 +421,7 @@ export class GatewayManager {
     await conn.request('sessions.delete', { key: sessionKey, deleteTranscript })
   }
 
-  async compactSession(
-    gatewayId: string,
-    sessionKey: string,
-    maxLines?: number,
-  ): Promise<void> {
+  async compactSession(gatewayId: string, sessionKey: string, maxLines?: number): Promise<void> {
     const conn = this.getConnection(gatewayId)
     await conn.request('sessions.compact', { key: sessionKey, maxLines })
   }
@@ -460,10 +437,7 @@ export class GatewayManager {
 
   async getAgents(gatewayId: string): Promise<AgentEntry[]> {
     const conn = this.getConnection(gatewayId)
-    const result = (await conn.request('agents.list', {})) as Record<
-      string,
-      unknown
-    >
+    const result = (await conn.request('agents.list', {})) as Record<string, unknown>
     const defaultId = result.defaultId as string | undefined
     const raw = (result.agents ?? result) as {
       id: string
@@ -514,11 +488,7 @@ export class GatewayManager {
     return result.files ?? []
   }
 
-  async getAgentFile(
-    gatewayId: string,
-    agentId: string,
-    name: string,
-  ): Promise<AgentFileEntry> {
+  async getAgentFile(gatewayId: string, agentId: string, name: string): Promise<AgentFileEntry> {
     const conn = this.getConnection(gatewayId)
     const result = (await conn.request('agents.files.get', { agentId, name })) as {
       file: AgentFileEntry
@@ -549,11 +519,7 @@ export class GatewayManager {
     return devices
   }
 
-  async getCost(
-    gatewayId: string,
-    startDate?: string,
-    endDate?: string,
-  ): Promise<CostSummary> {
+  async getCost(gatewayId: string, startDate?: string, endDate?: string): Promise<CostSummary> {
     const conn = this.getConnection(gatewayId)
     return (await conn.request('usage.cost', {
       startDate,
@@ -617,29 +583,20 @@ export class GatewayManager {
     return (await conn.request('device.pair.list', {})) as DevicePairList
   }
 
-  async approveDevicePair(
-    gatewayId: string,
-    requestId: string,
-  ): Promise<{ requestId: string }> {
+  async approveDevicePair(gatewayId: string, requestId: string): Promise<{ requestId: string }> {
     const conn = this.getConnection(gatewayId)
     return (await conn.request('device.pair.approve', { requestId })) as {
       requestId: string
     }
   }
 
-  async rejectDevicePair(
-    gatewayId: string,
-    requestId: string,
-  ): Promise<{ ok: true }> {
+  async rejectDevicePair(gatewayId: string, requestId: string): Promise<{ ok: true }> {
     const conn = this.getConnection(gatewayId)
     await conn.request('device.pair.reject', { requestId })
     return { ok: true }
   }
 
-  async removeDevicePair(
-    gatewayId: string,
-    deviceId: string,
-  ): Promise<{ ok: true }> {
+  async removeDevicePair(gatewayId: string, deviceId: string): Promise<{ ok: true }> {
     const conn = this.getConnection(gatewayId)
     await conn.request('device.pair.remove', { deviceId })
     return { ok: true }
@@ -771,11 +728,7 @@ export class GatewayManager {
     return { ok: true }
   }
 
-  async getCronRuns(
-    gatewayId: string,
-    jobId: string,
-    limit?: number,
-  ): Promise<CronRunLogEntry[]> {
+  async getCronRuns(gatewayId: string, jobId: string, limit?: number): Promise<CronRunLogEntry[]> {
     const conn = this.getConnection(gatewayId)
     const result = (await conn.request('cron.runs', {
       id: jobId,
@@ -829,11 +782,7 @@ export class GatewayManager {
     return conn.request('skills.status', { ...(agentId ? { agentId } : {}) })
   }
 
-  async installSkill(
-    gatewayId: string,
-    name: string,
-    installId: string,
-  ): Promise<unknown> {
+  async installSkill(gatewayId: string, name: string, installId: string): Promise<unknown> {
     const conn = this.getConnection(gatewayId)
     return conn.request('skills.install', { name, installId })
   }
@@ -849,10 +798,7 @@ export class GatewayManager {
 
   // ── Tier 3: Channels ───────────────────────────────────
 
-  async getChannelsStatus(
-    gatewayId: string,
-    probe?: boolean,
-  ): Promise<ChannelsStatusResponse> {
+  async getChannelsStatus(gatewayId: string, probe?: boolean): Promise<ChannelsStatusResponse> {
     const conn = this.getConnection(gatewayId)
     return (await conn.request('channels.status', {
       ...(probe ? { probe } : {}),
@@ -1032,9 +978,7 @@ export class GatewayManager {
       if (conn.getStatus() === 'connected') {
         connected++
         // Session count from status.sessions (shape varies by gateway version)
-        const sessions = conn.getCachedStatus()?.sessions as
-          | Record<string, unknown>
-          | undefined
+        const sessions = conn.getCachedStatus()?.sessions as Record<string, unknown> | undefined
         if (sessions && typeof sessions.active === 'number') {
           totalActiveSessions += sessions.active
         }
@@ -1059,9 +1003,7 @@ export class GatewayManager {
     const connected = Array.from(this.connections.entries()).filter(
       ([, conn]) => conn.getStatus() === 'connected',
     )
-    const results = await Promise.allSettled(
-      connected.map(([id, conn]) => mapper(id, conn)),
-    )
+    const results = await Promise.allSettled(connected.map(([id, conn]) => mapper(id, conn)))
     const fulfilled: T[] = []
     for (const r of results) {
       if (r.status === 'fulfilled') fulfilled.push(r.value)

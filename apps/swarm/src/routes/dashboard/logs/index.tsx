@@ -54,11 +54,7 @@ function LogsPage() {
     const newEntries = logsData.entries ?? []
     const newCursor = logsData.cursor
 
-    if (
-      newCursor !== undefined &&
-      newCursor === prevCursorRef.current &&
-      newEntries.length === 0
-    )
+    if (newCursor !== undefined && newCursor === prevCursorRef.current && newEntries.length === 0)
       return
 
     prevCursorRef.current = newCursor
@@ -68,9 +64,7 @@ function LogsPage() {
     const timer = setTimeout(() => {
       setEntries((prev) => {
         const combined = [...prev, ...newEntries]
-        return combined.length > MAX_LINES
-          ? combined.slice(combined.length - MAX_LINES)
-          : combined
+        return combined.length > MAX_LINES ? combined.slice(combined.length - MAX_LINES) : combined
       })
       if (newCursor) setCursor(newCursor)
     }, 0)
@@ -167,9 +161,7 @@ function LogsPage() {
                     {e.msg}
                     {e.data !== undefined && (
                       <span className="ml-2 text-zinc-500">
-                        {typeof e.data === 'string'
-                          ? e.data
-                          : JSON.stringify(e.data)}
+                        {typeof e.data === 'string' ? e.data : JSON.stringify(e.data)}
                       </span>
                     )}
                   </span>

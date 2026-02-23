@@ -275,9 +275,7 @@ export function ChatPanel({
                     <div
                       className={cn(
                         'rounded-lg px-3 py-2 text-xs leading-relaxed break-words overflow-wrap-anywhere',
-                        isUser
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground',
+                        isUser ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
                       )}
                     >
                       {text}
@@ -302,9 +300,18 @@ export function ChatPanel({
               </div>
               <div className="rounded-lg bg-muted px-3 py-2">
                 <div className="flex gap-1">
-                  <span className="size-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="size-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="size-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span
+                    className="size-1.5 rounded-full bg-muted-foreground/40 animate-bounce"
+                    style={{ animationDelay: '0ms' }}
+                  />
+                  <span
+                    className="size-1.5 rounded-full bg-muted-foreground/40 animate-bounce"
+                    style={{ animationDelay: '150ms' }}
+                  />
+                  <span
+                    className="size-1.5 rounded-full bg-muted-foreground/40 animate-bounce"
+                    style={{ animationDelay: '300ms' }}
+                  />
                 </div>
               </div>
             </div>
@@ -355,8 +362,8 @@ export function ChatPanel({
           <AlertDialogHeader>
             <AlertDialogTitle>Start New Session</AlertDialogTitle>
             <AlertDialogDescription>
-              This will reset the <code className="font-mono text-xs">{sessionKey}</code> session and
-              clear the current conversation. The agent will start fresh.
+              This will reset the <code className="font-mono text-xs">{sessionKey}</code> session
+              and clear the current conversation. The agent will start fresh.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

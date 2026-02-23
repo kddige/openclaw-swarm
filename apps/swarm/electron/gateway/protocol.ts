@@ -24,10 +24,7 @@ export function decodeFrame(data: string): WsFrame {
   return result.data
 }
 
-export function createReqFrame(
-  method: string,
-  params: Record<string, unknown>,
-): WsReqFrame {
+export function createReqFrame(method: string, params: Record<string, unknown>): WsReqFrame {
   return {
     type: 'req',
     id: crypto.randomUUID(),

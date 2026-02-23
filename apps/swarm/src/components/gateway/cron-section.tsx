@@ -65,9 +65,11 @@ export function CronSection({ gatewayId }: { gatewayId: string }) {
     input: { gatewayId, includeDisabled: true },
   }).queryKey
 
-  const { data: jobs, isLoading, error } = useQuery(
-    orpc.gateway.cronJobs.queryOptions({ input: { gatewayId, includeDisabled: true } }),
-  )
+  const {
+    data: jobs,
+    isLoading,
+    error,
+  } = useQuery(orpc.gateway.cronJobs.queryOptions({ input: { gatewayId, includeDisabled: true } }))
 
   const runMutation = useMutation({
     ...orpc.gateway.runCronJob.mutationOptions(),
@@ -190,7 +192,10 @@ export function CronSection({ gatewayId }: { gatewayId: string }) {
                     {scheduleLabel}
                   </Badge>
                   {!job.enabled && (
-                    <Badge variant="outline" className="text-[0.625rem] text-muted-foreground shrink-0">
+                    <Badge
+                      variant="outline"
+                      className="text-[0.625rem] text-muted-foreground shrink-0"
+                    >
                       disabled
                     </Badge>
                   )}
@@ -289,7 +294,9 @@ export function CronSection({ gatewayId }: { gatewayId: string }) {
                   )}
                 </div>
                 {job.lastError && (
-                  <p className="text-[0.625rem] text-destructive truncate mt-0.5">{job.lastError}</p>
+                  <p className="text-[0.625rem] text-destructive truncate mt-0.5">
+                    {job.lastError}
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -358,7 +365,9 @@ export function CronSection({ gatewayId }: { gatewayId: string }) {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[0.625rem] text-muted-foreground">Schedule (read-only)</label>
+                <label className="text-[0.625rem] text-muted-foreground">
+                  Schedule (read-only)
+                </label>
                 <Input
                   value={editTarget.schedule}
                   disabled

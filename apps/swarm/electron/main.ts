@@ -1,11 +1,4 @@
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  Menu,
-  MenuItem,
-  nativeTheme,
-} from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, MenuItem, nativeTheme } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { RPCHandler } from '@orpc/server/message-port'
@@ -146,10 +139,7 @@ app.whenReady().then(() => {
   // Block dangerous keyboard shortcuts in production
   if (!isDev) {
     win!.webContents.on('before-input-event', (_event, input) => {
-      if (
-        (input.control || input.meta) &&
-        (input.key === 'r' || input.key === 'R')
-      ) {
+      if ((input.control || input.meta) && (input.key === 'r' || input.key === 'R')) {
         _event.preventDefault()
       }
       if (input.key === 'F5' || input.key === 'F12') {

@@ -5,12 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { UserIcon, FileIcon, StarIcon } from 'lucide-react'
 
 export function AgentsSection({ gatewayId }: { gatewayId: string }) {
@@ -59,9 +54,7 @@ export function AgentsSection({ gatewayId }: { gatewayId: string }) {
                     )}
                   </div>
                   <div className="flex flex-col">
-                    <CardTitle>
-                      {agent.identity?.name ?? agent.name ?? agent.id}
-                    </CardTitle>
+                    <CardTitle>{agent.identity?.name ?? agent.name ?? agent.id}</CardTitle>
                     {(agent.identity?.name || agent.name) && (
                       <span className="font-mono text-[0.625rem] text-muted-foreground">
                         {agent.id}

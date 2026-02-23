@@ -12,9 +12,7 @@ export function DevicePairingRequests({ gatewayId }: { gatewayId: string }) {
 
   const pairsQueryKey = orpc.gateway.devicePairs.queryOptions({ input: { gatewayId } }).queryKey
 
-  const { data: pairs } = useQuery(
-    orpc.gateway.devicePairs.queryOptions({ input: { gatewayId } }),
-  )
+  const { data: pairs } = useQuery(orpc.gateway.devicePairs.queryOptions({ input: { gatewayId } }))
 
   const approveMutation = useMutation({
     ...orpc.gateway.approveDevicePair.mutationOptions(),
@@ -72,9 +70,7 @@ export function DevicePairingRequests({ gatewayId }: { gatewayId: string }) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  approveMutation.mutate({ gatewayId, requestId: req.requestId })
-                }
+                onClick={() => approveMutation.mutate({ gatewayId, requestId: req.requestId })}
                 disabled={approveMutation.isPending}
                 className="text-emerald-600 dark:text-emerald-400"
               >
@@ -88,9 +84,7 @@ export function DevicePairingRequests({ gatewayId }: { gatewayId: string }) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  rejectMutation.mutate({ gatewayId, requestId: req.requestId })
-                }
+                onClick={() => rejectMutation.mutate({ gatewayId, requestId: req.requestId })}
                 disabled={rejectMutation.isPending}
               >
                 {rejectMutation.isPending ? (

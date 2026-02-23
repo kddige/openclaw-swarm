@@ -3,12 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import {
-  CheckIcon,
-  XIcon,
-  ShieldCheckIcon,
-  TerminalIcon,
-} from 'lucide-react'
+import { CheckIcon, XIcon, ShieldCheckIcon, TerminalIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'sonner'
 
@@ -129,9 +124,7 @@ function ApprovalCard({
   if (expired) return null
 
   return (
-    <div
-      className={cn('rounded-md border px-3 py-2.5 flex flex-col gap-2', urgentClass)}
-    >
+    <div className={cn('rounded-md border px-3 py-2.5 flex flex-col gap-2', urgentClass)}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1 min-w-0">
           <div className="flex items-center gap-2">

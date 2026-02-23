@@ -16,20 +16,16 @@ export function getOrCreateDeviceIdentity(): DeviceIdentity {
   // Clear stale identity with old format
   if (existing) store.delete('deviceIdentity')
 
-  const { publicKey: spkiDer, privateKey: pkcs8Der } =
-    crypto.generateKeyPairSync('ed25519', {
-      publicKeyEncoding: { type: 'spki', format: 'der' },
-      privateKeyEncoding: { type: 'pkcs8', format: 'der' },
-    })
+  const { publicKey: spkiDer, privateKey: pkcs8Der } = crypto.generateKeyPairSync('ed25519', {
+    publicKeyEncoding: { type: 'spki', format: 'der' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'der' },
+  })
 
   // Extract raw 32-byte Ed25519 public key from SPKI DER wrapper
   const rawPublicKey = extractRawPublicKey(spkiDer)
 
   // deviceId = SHA-256 hex of the raw public key (matches gateway behavior)
-  const deviceId = crypto
-    .createHash('sha256')
-    .update(rawPublicKey)
-    .digest('hex')
+  const deviceId = crypto.createHash('sha256').update(rawPublicKey).digest('hex')
 
   const identity: DeviceIdentity = {
     deviceId,

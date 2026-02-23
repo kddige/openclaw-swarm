@@ -58,22 +58,15 @@ function Hero() {
       <div className="alpha-banner relative overflow-hidden border-b border-fd-border/50">
         <div className="alpha-banner-shimmer pointer-events-none absolute inset-0" />
         <div className="relative mx-auto flex max-w-6xl items-center justify-center gap-3 px-6 py-2.5">
-          <FlaskConical
-            className="size-3.5 shrink-0"
-            style={{ color: 'var(--landing-accent)' }}
-          />
+          <FlaskConical className="size-3.5 shrink-0" style={{ color: 'var(--landing-accent)' }} />
           <p
             className="text-center text-xs text-fd-muted-foreground"
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            <strong
-              className="font-semibold"
-              style={{ color: 'var(--landing-accent)' }}
-            >
+            <strong className="font-semibold" style={{ color: 'var(--landing-accent)' }}>
               Early Alpha
-            </strong>
-            {' '}&mdash;{' '}
-            OpenClaw Swarm is in active development. Things may break.
+            </strong>{' '}
+            &mdash; OpenClaw Swarm is in active development. Things may break.
           </p>
           <a
             href="https://github.com/kddige/openclaw-swarm/issues"
@@ -120,21 +113,14 @@ function Hero() {
           className="animate-fade-up mb-12 max-w-xl text-lg leading-relaxed text-fd-muted-foreground md:text-xl"
           style={{ animationDelay: '0.2s' }}
         >
-          Monitor sessions, stream logs, and manage security across every
-          OpenClaw Gateway in your infrastructure. Starting as a{' '}
-          <strong className="text-fd-foreground">desktop app</strong> for fast
-          iteration, evolving into a{' '}
-          <strong className="text-fd-foreground">
-            self-hostable web dashboard
-          </strong>
-          .
+          Monitor sessions, stream logs, and manage security across every OpenClaw Gateway in your
+          infrastructure. Starting as a <strong className="text-fd-foreground">desktop app</strong>{' '}
+          for fast iteration, evolving into a{' '}
+          <strong className="text-fd-foreground">self-hostable web dashboard</strong>.
         </p>
 
         {/* CTAs */}
-        <div
-          className="animate-fade-up flex flex-wrap gap-4"
-          style={{ animationDelay: '0.3s' }}
-        >
+        <div className="animate-fade-up flex flex-wrap gap-4" style={{ animationDelay: '0.3s' }}>
           <Link
             to="/docs/$"
             params={{ _splat: 'guide' }}
@@ -251,16 +237,15 @@ function SwarmPreview() {
             >
               <th className="px-4 py-3 font-medium uppercase tracking-wider">Gateway</th>
               <th className="px-4 py-3 font-medium uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-right font-medium uppercase tracking-wider">Sessions</th>
+              <th className="px-4 py-3 text-right font-medium uppercase tracking-wider">
+                Sessions
+              </th>
               <th className="px-4 py-3 text-right font-medium uppercase tracking-wider">Agents</th>
             </tr>
           </thead>
           <tbody>
             {gateways.map((gw) => (
-              <tr
-                key={gw.name}
-                className="border-b border-fd-border/50 transition-colors"
-              >
+              <tr key={gw.name} className="border-b border-fd-border/50 transition-colors">
                 <td
                   className="px-4 py-3 text-fd-foreground"
                   style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}
@@ -273,9 +258,7 @@ function SwarmPreview() {
                       className={`inline-block size-1.5 rounded-full ${gw.status === 'connected' ? 'pulse-dot' : ''}`}
                       style={{ background: statusColor[gw.status] }}
                     />
-                    <span className="text-fd-muted-foreground">
-                      {gw.status}
-                    </span>
+                    <span className="text-fd-muted-foreground">{gw.status}</span>
                   </span>
                 </td>
                 <td
@@ -370,10 +353,7 @@ function Features() {
             className="glow-border dot-grid group relative overflow-hidden rounded-xl border border-fd-border bg-fd-card p-6"
           >
             <div className="mb-4 inline-flex rounded-lg border border-fd-border bg-fd-muted p-2.5">
-              <f.icon
-                className="size-5"
-                style={{ color: 'var(--landing-accent)' }}
-              />
+              <f.icon className="size-5" style={{ color: 'var(--landing-accent)' }} />
             </div>
             <h3
               className="mb-2 text-sm font-semibold"
@@ -381,9 +361,7 @@ function Features() {
             >
               {f.title}
             </h3>
-            <p className="text-sm leading-relaxed text-fd-muted-foreground">
-              {f.description}
-            </p>
+            <p className="text-sm leading-relaxed text-fd-muted-foreground">{f.description}</p>
           </div>
         ))}
       </div>
@@ -417,9 +395,8 @@ function TerminalDemo() {
           </h2>
           <p className="mb-8 max-w-md leading-relaxed text-fd-muted-foreground">
             Clone, install, run. The monorepo uses{' '}
-            <strong className="text-fd-foreground">proto</strong> to pin exact
-            versions of bun and moon, so every contributor gets an identical
-            setup.
+            <strong className="text-fd-foreground">proto</strong> to pin exact versions of bun and
+            moon, so every contributor gets an identical setup.
           </p>
 
           <div className="flex flex-wrap gap-6">
@@ -474,20 +451,10 @@ function TerminalDemo() {
   )
 }
 
-function Line({
-  prompt,
-  muted,
-  text,
-}: {
-  prompt?: boolean
-  muted?: boolean
-  text: string
-}) {
+function Line({ prompt, muted, text }: { prompt?: boolean; muted?: boolean; text: string }) {
   return (
     <div className={muted ? 'text-fd-muted-foreground' : ''}>
-      {prompt && (
-        <span style={{ color: 'var(--landing-accent)' }}>$ </span>
-      )}
+      {prompt && <span style={{ color: 'var(--landing-accent)' }}>$ </span>}
       {text}
     </div>
   )
@@ -507,10 +474,7 @@ function Stat({ label, value }: { label: string; value: string }) {
       >
         {label}
       </div>
-      <div
-        className="mt-1 text-lg font-bold"
-        style={{ fontFamily: 'var(--font-display)' }}
-      >
+      <div className="mt-1 text-lg font-bold" style={{ fontFamily: 'var(--font-display)' }}>
         {value}
       </div>
     </div>
@@ -552,14 +516,24 @@ function Architecture() {
             icon={<Radio className="size-5" />}
             title="IPC Layer"
             subtitle="MessagePort"
-            items={['oRPC over MessagePort', 'Type-safe procedures', 'Event streaming', 'Zod v4 validation']}
+            items={[
+              'oRPC over MessagePort',
+              'Type-safe procedures',
+              'Event streaming',
+              'Zod v4 validation',
+            ]}
             accent
           />
           <ArchCard
             icon={<Shield className="size-5" />}
             title="Main Process"
             subtitle="Electron + Node.js"
-            items={['GatewayManager', 'WebSocket connections', 'electron-store', 'Ed25519 identity']}
+            items={[
+              'GatewayManager',
+              'WebSocket connections',
+              'electron-store',
+              'Ed25519 identity',
+            ]}
           />
         </div>
       </div>
@@ -584,9 +558,7 @@ function ArchCard({
     <div
       className="glow-border rounded-xl border p-6"
       style={{
-        borderColor: accent
-          ? 'var(--landing-accent-dim)'
-          : 'var(--color-fd-border)',
+        borderColor: accent ? 'var(--landing-accent-dim)' : 'var(--color-fd-border)',
         background: accent
           ? 'color-mix(in srgb, var(--landing-accent) 5%, var(--color-fd-card))'
           : 'var(--color-fd-card)',
@@ -595,9 +567,7 @@ function ArchCard({
       <div
         className="mb-4 inline-flex rounded-lg border p-2.5"
         style={{
-          borderColor: accent
-            ? 'var(--landing-accent-dim)'
-            : 'var(--color-fd-border)',
+          borderColor: accent ? 'var(--landing-accent-dim)' : 'var(--color-fd-border)',
           background: accent
             ? 'color-mix(in srgb, var(--landing-accent) 10%, var(--color-fd-muted))'
             : 'var(--color-fd-muted)',
@@ -606,10 +576,7 @@ function ArchCard({
       >
         {icon}
       </div>
-      <h3
-        className="text-sm font-semibold"
-        style={{ fontFamily: 'var(--font-display)' }}
-      >
+      <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
         {title}
       </h3>
       <p
@@ -620,10 +587,7 @@ function ArchCard({
       </p>
       <ul className="space-y-2">
         {items.map((item) => (
-          <li
-            key={item}
-            className="flex items-center gap-2 text-sm text-fd-muted-foreground"
-          >
+          <li key={item} className="flex items-center gap-2 text-sm text-fd-muted-foreground">
             <span
               className="inline-block size-1 rounded-full"
               style={{ background: 'var(--landing-accent)' }}
@@ -710,10 +674,9 @@ function Roadmap() {
           web-ready
         </h2>
         <p className="max-w-lg leading-relaxed text-fd-muted-foreground">
-          We're building OpenClaw Swarm as an Electron desktop app first — it
-          gives us the fastest iteration loop and access to native OS APIs.
-          Once the core experience is solid, we'll ship a self-hostable web
-          dashboard that runs anywhere.
+          We're building OpenClaw Swarm as an Electron desktop app first — it gives us the fastest
+          iteration loop and access to native OS APIs. Once the core experience is solid, we'll ship
+          a self-hostable web dashboard that runs anywhere.
         </p>
       </div>
 
@@ -723,9 +686,7 @@ function Roadmap() {
             key={p.phase}
             className="glow-border relative overflow-hidden rounded-xl border p-6"
             style={{
-              borderColor: p.active
-                ? 'var(--landing-accent-dim)'
-                : 'var(--color-fd-border)',
+              borderColor: p.active ? 'var(--landing-accent-dim)' : 'var(--color-fd-border)',
               background: p.active
                 ? 'color-mix(in srgb, var(--landing-accent) 5%, var(--color-fd-card))'
                 : 'var(--color-fd-card)',
@@ -736,12 +697,8 @@ function Roadmap() {
               <span
                 className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.625rem] font-medium uppercase tracking-wider"
                 style={{
-                  borderColor: p.active
-                    ? 'var(--landing-accent-dim)'
-                    : 'var(--color-fd-border)',
-                  color: p.active
-                    ? 'var(--landing-accent)'
-                    : 'var(--color-fd-muted-foreground)',
+                  borderColor: p.active ? 'var(--landing-accent-dim)' : 'var(--color-fd-border)',
+                  color: p.active ? 'var(--landing-accent)' : 'var(--color-fd-muted-foreground)',
                   fontFamily: 'var(--font-mono)',
                 }}
               >
@@ -759,9 +716,7 @@ function Roadmap() {
             <div
               className="mb-4 inline-flex rounded-lg border p-2.5"
               style={{
-                borderColor: p.active
-                  ? 'var(--landing-accent-dim)'
-                  : 'var(--color-fd-border)',
+                borderColor: p.active ? 'var(--landing-accent-dim)' : 'var(--color-fd-border)',
                 background: p.active
                   ? 'color-mix(in srgb, var(--landing-accent) 10%, var(--color-fd-muted))'
                   : 'var(--color-fd-muted)',
@@ -777,16 +732,11 @@ function Roadmap() {
             >
               {p.title}
             </h3>
-            <p className="mb-4 text-sm leading-relaxed text-fd-muted-foreground">
-              {p.description}
-            </p>
+            <p className="mb-4 text-sm leading-relaxed text-fd-muted-foreground">{p.description}</p>
 
             <ul className="space-y-2">
               {p.items.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-center gap-2 text-sm text-fd-muted-foreground"
-                >
+                <li key={item} className="flex items-center gap-2 text-sm text-fd-muted-foreground">
                   <span
                     className="inline-block size-1 rounded-full"
                     style={{ background: 'var(--landing-accent)' }}
@@ -818,9 +768,8 @@ function GetStarted() {
             Ready to take control?
           </h2>
           <p className="mx-auto mb-8 max-w-md leading-relaxed text-fd-muted-foreground">
-            OpenClaw Swarm is open source and free. Run the desktop app today
-            or start contributing to help us build the self-hostable web
-            dashboard.
+            OpenClaw Swarm is open source and free. Run the desktop app today or start contributing
+            to help us build the self-hostable web dashboard.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
