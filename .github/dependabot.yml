@@ -1,23 +1,23 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     groups:
       tanstack:
         patterns:
-          - "@tanstack/*"
+          - '@tanstack/*'
       orpc:
         patterns:
-          - "@orpc/*"
+          - '@orpc/*'
       electron:
         patterns:
-          - "electron"
-          - "electron-builder"
-          - "vite-plugin-electron*"
+          - 'electron'
+          - 'electron-builder'
+          - 'vite-plugin-electron*'
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'

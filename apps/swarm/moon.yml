@@ -27,3 +27,5 @@ tasks:
     outputs:
       - 'dist'
       - 'dist-electron'
+    options:
+      runInCI: false

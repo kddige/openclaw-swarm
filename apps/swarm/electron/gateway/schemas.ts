@@ -162,9 +162,7 @@ export const SnapshotSchema = z.object({
   configPath: z.string().optional(),
   stateDir: z.string().optional(),
   sessionDefaults: SessionDefaultsSchema.optional(),
-  authMode: z
-    .enum(['none', 'token', 'password', 'trusted-proxy'])
-    .optional(),
+  authMode: z.enum(['none', 'token', 'password', 'trusted-proxy']).optional(),
 })
 
 export const HelloOkSchema = z.object({

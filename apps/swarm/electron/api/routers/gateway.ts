@@ -4,10 +4,7 @@ import { gatewayPublisher } from '../../gateway/publisher'
 import type { GatewayEvents } from '../../gateway/publisher'
 
 function createGatewayStream<K extends keyof GatewayEvents>(event: K) {
-  return p.input(z.object({ gatewayId: z.string() })).handler(async function* ({
-    input,
-    signal,
-  }) {
+  return p.input(z.object({ gatewayId: z.string() })).handler(async function* ({ input, signal }) {
     for await (const payload of gatewayPublisher.subscribe(event, { signal })) {
       if (payload.gatewayId === input.gatewayId) yield payload
     }
@@ -353,11 +350,9 @@ export const gatewayRouter = {
 
   // ── Tier 1: Device Pairing ────────────────────────────
 
-  devicePairs: p
-    .input(z.object({ gatewayId: z.string() }))
-    .handler(async ({ input, context }) => {
-      return context.gatewayManager.getDevicePairs(input.gatewayId)
-    }),
+  devicePairs: p.input(z.object({ gatewayId: z.string() })).handler(async ({ input, context }) => {
+    return context.gatewayManager.getDevicePairs(input.gatewayId)
+  }),
 
   approveDevicePair: p
     .input(z.object({ gatewayId: z.string(), requestId: z.string() }))
@@ -428,11 +423,7 @@ export const gatewayRouter = {
       }),
     )
     .handler(async ({ input, context }) => {
-      return context.gatewayManager.resolveExecApproval(
-        input.gatewayId,
-        input.id,
-        input.decision,
-      )
+      return context.gatewayManager.resolveExecApproval(input.gatewayId, input.id, input.decision)
     }),
 
   execApprovalStream: createGatewayStream('execApproval'),
@@ -459,11 +450,9 @@ export const gatewayRouter = {
       return context.gatewayManager.getCronJobs(input.gatewayId, input.includeDisabled)
     }),
 
-  cronStatus: p
-    .input(z.object({ gatewayId: z.string() }))
-    .handler(async ({ input, context }) => {
-      return context.gatewayManager.getCronStatus(input.gatewayId)
-    }),
+  cronStatus: p.input(z.object({ gatewayId: z.string() })).handler(async ({ input, context }) => {
+    return context.gatewayManager.getCronStatus(input.gatewayId)
+  }),
 
   addCronJob: p
     .input(
@@ -570,11 +559,9 @@ export const gatewayRouter = {
 
   // ── Tier 2: Gateway Update ────────────────────────────
 
-  runUpdate: p
-    .input(z.object({ gatewayId: z.string() }))
-    .handler(async ({ input, context }) => {
-      return context.gatewayManager.runUpdate(input.gatewayId)
-    }),
+  runUpdate: p.input(z.object({ gatewayId: z.string() })).handler(async ({ input, context }) => {
+    return context.gatewayManager.runUpdate(input.gatewayId)
+  }),
 
   // ── Tier 3: Skills ────────────────────────────────────
 

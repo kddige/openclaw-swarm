@@ -18,12 +18,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { getActivityStatus } from '@/lib/gateway-status'
-import {
-  Trash2Icon,
-  ShieldIcon,
-  KeyIcon,
-  MonitorIcon,
-} from 'lucide-react'
+import { Trash2Icon, ShieldIcon, KeyIcon, MonitorIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'sonner'
 

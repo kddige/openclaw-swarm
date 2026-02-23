@@ -7,3 +7,11 @@ tasks:
     options:
       cache: false
       runFromWorkspaceRoot: true
+
+  format-staged:
+    command: 'prettier --write --ignore-unknown'
+    inputs: []
+    options:
+      cache: false
+      runFromWorkspaceRoot: true
+      runInCI: false

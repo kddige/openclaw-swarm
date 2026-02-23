@@ -121,7 +121,10 @@ export function LogsPanel({ gatewayId, className }: { gatewayId: string; classNa
   }
 
   return (
-    <div className={cn('flex flex-col gap-3', className)} style={{ height: '100%', minHeight: '400px' }}>
+    <div
+      className={cn('flex flex-col gap-3', className)}
+      style={{ height: '100%', minHeight: '400px' }}
+    >
       {/* Filter bar */}
       <div className="flex items-center gap-2 shrink-0">
         <Select value={levelFilter} onValueChange={(v) => setLevelFilter(v ?? 'all')}>

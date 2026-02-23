@@ -76,7 +76,10 @@ export function CommandPalette() {
 
   // Group sessions by gateway
   const sessionsByGateway = sessions.reduce<
-    Record<string, { gatewayId: string; gatewayLabel: string; key: string; displayName: string | null }[]>
+    Record<
+      string,
+      { gatewayId: string; gatewayLabel: string; key: string; displayName: string | null }[]
+    >
   >((acc, s) => {
     const group = acc[s.gatewayId] ?? []
     group.push(s)
@@ -95,19 +98,13 @@ export function CommandPalette() {
         <CommandList>
           {/* Quick Actions — always visible */}
           <CommandGroup heading="Quick Actions">
-            <CommandItem
-              onSelect={() =>
-                runAndClose(() => navigate({ to: '/dashboard' }))
-              }
-            >
+            <CommandItem onSelect={() => runAndClose(() => navigate({ to: '/dashboard' }))}>
               <LayoutDashboardIcon />
               Swarm Dashboard
               <CommandShortcut>⌘D</CommandShortcut>
             </CommandItem>
             <CommandItem
-              onSelect={() =>
-                runAndClose(() => navigate({ to: '/dashboard/gateways' }))
-              }
+              onSelect={() => runAndClose(() => navigate({ to: '/dashboard/gateways' }))}
             >
               <PlusIcon />
               Add Gateway
@@ -130,33 +127,34 @@ export function CommandPalette() {
                 <CommandEmpty>No results for &ldquo;{query}&rdquo;</CommandEmpty>
               )}
 
-              {!isFetching && Object.entries(sessionsByGateway).map(([gatewayId, gatewaySessions]) => (
-                <CommandGroup
-                  key={gatewayId}
-                  heading={`Sessions — ${gatewaySessions[0].gatewayLabel}`}
-                >
-                  {gatewaySessions.map((session) => (
-                    <CommandItem
-                      key={`${gatewayId}:${session.key}`}
-                      value={`${gatewayId}:${session.key}`}
-                      onSelect={() =>
-                        runAndClose(() =>
-                          navigate({
-                            to: '/dashboard/gateways/$gatewayId/sessions/$sessionKey',
-                            params: { gatewayId, sessionKey: session.key },
-                          }),
-                        )
-                      }
-                    >
-                      <TerminalIcon />
-                      <span className="truncate">{session.displayName ?? session.key}</span>
-                      <span className="ml-auto font-mono text-[0.625rem] text-muted-foreground truncate max-w-24">
-                        {session.key}
-                      </span>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              ))}
+              {!isFetching &&
+                Object.entries(sessionsByGateway).map(([gatewayId, gatewaySessions]) => (
+                  <CommandGroup
+                    key={gatewayId}
+                    heading={`Sessions — ${gatewaySessions[0].gatewayLabel}`}
+                  >
+                    {gatewaySessions.map((session) => (
+                      <CommandItem
+                        key={`${gatewayId}:${session.key}`}
+                        value={`${gatewayId}:${session.key}`}
+                        onSelect={() =>
+                          runAndClose(() =>
+                            navigate({
+                              to: '/dashboard/gateways/$gatewayId/sessions/$sessionKey',
+                              params: { gatewayId, sessionKey: session.key },
+                            }),
+                          )
+                        }
+                      >
+                        <TerminalIcon />
+                        <span className="truncate">{session.displayName ?? session.key}</span>
+                        <span className="ml-auto font-mono text-[0.625rem] text-muted-foreground truncate max-w-24">
+                          {session.key}
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                ))}
 
               {!isFetching && agents.length > 0 && (
                 <CommandGroup heading="Agents">
@@ -179,7 +177,9 @@ export function CommandPalette() {
                         {agent.gatewayLabel}
                       </span>
                       {agent.isDefault && (
-                        <span className="ml-auto text-[0.625rem] text-muted-foreground">default</span>
+                        <span className="ml-auto text-[0.625rem] text-muted-foreground">
+                          default
+                        </span>
                       )}
                     </CommandItem>
                   ))}

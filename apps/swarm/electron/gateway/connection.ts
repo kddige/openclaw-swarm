@@ -1,11 +1,6 @@
 import { EventEmitter } from 'node:events'
 import WebSocket from 'ws'
-import {
-  decodeFrame,
-  encodeFrame,
-  createReqFrame,
-  buildConnectFrame,
-} from './protocol'
+import { decodeFrame, encodeFrame, createReqFrame, buildConnectFrame } from './protocol'
 import { HelloOkSchema, ChallengeEventSchema } from './schemas'
 import type {
   DeviceIdentity,
@@ -215,7 +210,10 @@ export class GatewayConnection extends EventEmitter {
     })
 
     this.logger.debug(`[${this.id}] sending connect request id=${frame.id}`)
-    this.logger.debug(`[${this.id}] connect params`, JSON.stringify(frame.params, null, 2).slice(0, 500))
+    this.logger.debug(
+      `[${this.id}] connect params`,
+      JSON.stringify(frame.params, null, 2).slice(0, 500),
+    )
 
     this.sendRequest(frame)
       .then((res) => {
@@ -224,7 +222,10 @@ export class GatewayConnection extends EventEmitter {
 
         const parsed = HelloOkSchema.safeParse(raw)
         if (!parsed.success) {
-          this.logger.warn(`[${this.id}] hello-ok validation failed, falling back`, parsed.error.message)
+          this.logger.warn(
+            `[${this.id}] hello-ok validation failed, falling back`,
+            parsed.error.message,
+          )
         }
 
         const helloOk: HelloOk | null = parsed.success ? parsed.data : null
@@ -236,7 +237,9 @@ export class GatewayConnection extends EventEmitter {
           this.reconnectBackoff = 800
           this.lastSeq = null
 
-          const server = helloOk?.server ?? (raw.server as { version?: string; host?: string; connId?: string } | undefined)
+          const server =
+            helloOk?.server ??
+            (raw.server as { version?: string; host?: string; connId?: string } | undefined)
           if (server) {
             this._serverInfo = {
               version: server.version ?? 'unknown',
@@ -296,14 +299,9 @@ export class GatewayConnection extends EventEmitter {
       })
   }
 
-  async request(
-    method: string,
-    params: Record<string, unknown> = {},
-  ): Promise<unknown> {
+  async request(method: string, params: Record<string, unknown> = {}): Promise<unknown> {
     if (this.status !== 'connected' || !this.ws) {
-      throw new Error(
-        `Gateway ${this.id} is not connected (status: ${this.status})`,
-      )
+      throw new Error(`Gateway ${this.id} is not connected (status: ${this.status})`)
     }
     const frame = createReqFrame(method, params)
     return this.sendRequest(frame)
@@ -337,9 +335,7 @@ export class GatewayConnection extends EventEmitter {
     if (frame.ok) {
       pending.resolve(frame.payload)
     } else {
-      const err = new Error(
-        frame.error?.message ?? 'Unknown gateway error',
-      ) as PairingError
+      const err = new Error(frame.error?.message ?? 'Unknown gateway error') as PairingError
       if (frame.error?.code) err.code = frame.error.code
       if (
         frame.error?.code === 'DEVICE_PAIRING_REQUIRED' &&
@@ -354,9 +350,7 @@ export class GatewayConnection extends EventEmitter {
         frame.error?.code === 'DEVICE_PAIRING_REQUIRED' &&
         'requestId' in (frame.error as Record<string, unknown>)
       ) {
-        err.requestId =
-          err.requestId ??
-          (frame.error as unknown as { requestId: string }).requestId
+        err.requestId = err.requestId ?? (frame.error as unknown as { requestId: string }).requestId
       }
       pending.reject(err)
     }
@@ -455,11 +449,7 @@ export class GatewayConnection extends EventEmitter {
     }
   }
 
-  updateConfig(updates: {
-    label?: string
-    token?: string
-    url?: string
-  }): void {
+  updateConfig(updates: { label?: string; token?: string; url?: string }): void {
     if (updates.label) this.label = updates.label
     if (updates.token) this.token = updates.token
     if (updates.url && updates.url !== this._url) {

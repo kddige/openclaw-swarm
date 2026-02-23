@@ -65,9 +65,7 @@ export function ChannelsSection({ gatewayId }: { gatewayId: string }) {
 
   if (channelOrder.length === 0) {
     return (
-      <div className="py-8 text-center text-xs text-muted-foreground">
-        No channels configured.
-      </div>
+      <div className="py-8 text-center text-xs text-muted-foreground">No channels configured.</div>
     )
   }
 
@@ -126,10 +124,7 @@ export function ChannelsSection({ gatewayId }: { gatewayId: string }) {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {isOk ? (
-                  <Badge
-                    variant="outline"
-                    className="gap-1 text-emerald-600 dark:text-emerald-400"
-                  >
+                  <Badge variant="outline" className="gap-1 text-emerald-600 dark:text-emerald-400">
                     <CheckCircleIcon className="size-2.5" />
                     OK
                   </Badge>

@@ -19,13 +19,7 @@ import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { cn } from '@/lib/utils'
-import {
-  LayoutDashboardIcon,
-  PlusIcon,
-  ScrollTextIcon,
-  SearchIcon,
-  ServerIcon,
-} from 'lucide-react'
+import { LayoutDashboardIcon, PlusIcon, ScrollTextIcon, SearchIcon, ServerIcon } from 'lucide-react'
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardLayout,
@@ -100,22 +94,14 @@ function DashboardLayout() {
                   <SidebarMenuItem key={gw.id}>
                     <SidebarMenuButton
                       render={
-                        <Link
-                          to="/dashboard/gateways/$gatewayId"
-                          params={{ gatewayId: gw.id }}
-                        />
+                        <Link to="/dashboard/gateways/$gatewayId" params={{ gatewayId: gw.id }} />
                       }
                     >
                       <ServerIcon />
                       <span className="truncate">{gw.label}</span>
                     </SidebarMenuButton>
                     <SidebarMenuBadge>
-                      <span
-                        className={cn(
-                          'size-1.5 rounded-full',
-                          statusDot(gw.status),
-                        )}
-                      />
+                      <span className={cn('size-1.5 rounded-full', statusDot(gw.status))} />
                     </SidebarMenuBadge>
                   </SidebarMenuItem>
                 ))}

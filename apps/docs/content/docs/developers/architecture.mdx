@@ -21,18 +21,18 @@ Renderer (React)
 
 All paths relative to `apps/swarm/`:
 
-| Directory | Purpose |
-|---|---|
-| `src/routes/` | File-based routes (TanStack Router) |
-| `src/components/ui/` | shadcn/ui components |
-| `src/lib/` | Utilities, oRPC client, shared helpers |
-| `electron/` | Main process, preload, API |
-| `electron/api/routers/` | oRPC router files (gateway, swarm, events, logs, window) |
-| `electron/api/types.ts` | All shared TypeScript types (persistence, protocol, runtime, domain) |
-| `electron/gateway/` | WebSocket connection layer (manager, connection, protocol, publisher, schemas) |
-| `electron/logger/` | Transport-agnostic logging system |
-| `electron/store.ts` | electron-store persistence with safeStorage encryption |
-| `electron/device-identity.ts` | Ed25519 keypair generation + challenge signing |
+| Directory                     | Purpose                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------ |
+| `src/routes/`                 | File-based routes (TanStack Router)                                            |
+| `src/components/ui/`          | shadcn/ui components                                                           |
+| `src/lib/`                    | Utilities, oRPC client, shared helpers                                         |
+| `electron/`                   | Main process, preload, API                                                     |
+| `electron/api/routers/`       | oRPC router files (gateway, swarm, events, logs, window)                       |
+| `electron/api/types.ts`       | All shared TypeScript types (persistence, protocol, runtime, domain)           |
+| `electron/gateway/`           | WebSocket connection layer (manager, connection, protocol, publisher, schemas) |
+| `electron/logger/`            | Transport-agnostic logging system                                              |
+| `electron/store.ts`           | electron-store persistence with safeStorage encryption                         |
+| `electron/device-identity.ts` | Ed25519 keypair generation + challenge signing                                 |
 
 ## oRPC IPC
 
@@ -85,13 +85,13 @@ export const exampleRouter = {
 
 The app exposes five oRPC routers:
 
-| Router | Purpose |
-|---|---|
+| Router    | Purpose                                                          |
+| --------- | ---------------------------------------------------------------- |
 | `gateway` | CRUD for gateway connections, pairing, sessions, session details |
-| `swarm` | Aggregated overview, cost, presence, search across all gateways |
-| `events` | Async generator streaming gateway events to the renderer |
-| `logs` | Tail the memory ring buffer, export log files, get log path |
-| `window` | Window management (maximize, close) |
+| `swarm`   | Aggregated overview, cost, presence, search across all gateways  |
+| `events`  | Async generator streaming gateway events to the renderer         |
+| `logs`    | Tail the memory ring buffer, export log files, get log path      |
+| `window`  | Window management (maximize, close)                              |
 
 ## Event streaming
 
@@ -101,10 +101,7 @@ Real-time events from the main process use `MemoryPublisher` from `@orpc/experim
 // Server-side (electron/api/routers/events.ts)
 export const eventsRouter = {
   subscribe: p.handler(async function* ({ context, signal }) {
-    for await (const event of context.gatewayManager.events.subscribe(
-      'gatewayEvent',
-      { signal },
-    )) {
+    for await (const event of context.gatewayManager.events.subscribe('gatewayEvent', { signal })) {
       yield event
     }
   }),

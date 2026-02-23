@@ -59,15 +59,15 @@ moon run root:format     # Format all files (Prettier)
 
 OpenClaw Swarm is an Electron desktop app with a React 19 frontend. The main process owns all WebSocket connections, persistence, and device identity. The renderer is a standard React SPA that communicates with the main process via [oRPC](https://orpc.unnoq.com/) over a `MessagePort`.
 
-| Layer | Tech |
-|---|---|
-| Routing | TanStack Router (file-based) |
-| Server state | TanStack React Query |
-| IPC | oRPC over MessagePort |
-| UI | shadcn/ui + Base UI + Tailwind CSS 4 |
-| Persistence | electron-store with safeStorage encryption |
-| Identity | Node native Ed25519 keypairs |
-| Logging | Transport-agnostic structured logger (console, file, memory ring buffer) |
+| Layer        | Tech                                                                     |
+| ------------ | ------------------------------------------------------------------------ |
+| Routing      | TanStack Router (file-based)                                             |
+| Server state | TanStack React Query                                                     |
+| IPC          | oRPC over MessagePort                                                    |
+| UI           | shadcn/ui + Base UI + Tailwind CSS 4                                     |
+| Persistence  | electron-store with safeStorage encryption                               |
+| Identity     | Node native Ed25519 keypairs                                             |
+| Logging      | Transport-agnostic structured logger (console, file, memory ring buffer) |
 
 ## Repository structure
 

@@ -485,12 +485,7 @@ export interface ExecApprovalResolved {
 
 export interface GatewayEvent {
   gatewayId: string
-  type:
-    | 'status-change'
-    | 'status-update'
-    | 'health-update'
-    | 'presence-update'
-    | 'session-activity'
+  type: 'status-change' | 'status-update' | 'health-update' | 'presence-update' | 'session-activity'
   payload: unknown
   timestamp: number
 }

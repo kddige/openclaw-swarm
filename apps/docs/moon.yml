@@ -22,6 +22,8 @@ tasks:
       - 'tsconfig.json'
     outputs:
       - '.output'
+    options:
+      runInCI: false
 
   typecheck:
     command: 'bun run typecheck'

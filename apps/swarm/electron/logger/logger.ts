@@ -7,11 +7,7 @@ export class LoggerImpl implements Logger {
   private readonly transports: LogTransport[]
   private readonly minLevelIdx: number
 
-  constructor(options: {
-    ns: string
-    transports: LogTransport[]
-    minLevel?: LogLevel
-  }) {
+  constructor(options: { ns: string; transports: LogTransport[]; minLevel?: LogLevel }) {
     this.ns = options.ns
     this.transports = options.transports
     this.minLevelIdx = LEVEL_ORDER.indexOf(options.minLevel ?? 'debug')

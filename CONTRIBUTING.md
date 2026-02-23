@@ -60,11 +60,11 @@ ESLint is configured with custom rules that catch common mistakes **at lint time
 
 ### Import restrictions
 
-| Banned import | Use instead | Why |
-|---|---|---|
-| `from 'zod'` | `from 'zod/v4'` | We use Zod v4 API exclusively |
-| `from 'clsx'` | `cn()` from `@/lib/utils` | Single utility for class merging |
-| `from 'tailwind-merge'` | `cn()` from `@/lib/utils` | Same — `cn()` wraps both |
+| Banned import           | Use instead               | Why                              |
+| ----------------------- | ------------------------- | -------------------------------- |
+| `from 'zod'`            | `from 'zod/v4'`           | We use Zod v4 API exclusively    |
+| `from 'clsx'`           | `cn()` from `@/lib/utils` | Single utility for class merging |
+| `from 'tailwind-merge'` | `cn()` from `@/lib/utils` | Same — `cn()` wraps both         |
 
 ### No custom query hooks
 

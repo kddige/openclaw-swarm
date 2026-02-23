@@ -5,12 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { orpc } from '@/lib/orpc'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { PendingExecApprovals } from '@/components/gateway/pending-exec-approvals'
 import { DevicePairingRequests } from '@/components/gateway/device-pairing-requests'
 import { GatewayVitals } from '@/components/gateway/gateway-vitals'
@@ -29,21 +24,13 @@ function OverviewPage() {
   const [usageSheetOpen, setUsageSheetOpen] = useState(false)
   const [logsSheetOpen, setLogsSheetOpen] = useState(false)
 
-  const { data: gateway } = useQuery(
-    orpc.gateway.get.queryOptions({ input: { id: gatewayId } }),
-  )
+  const { data: gateway } = useQuery(orpc.gateway.get.queryOptions({ input: { id: gatewayId } }))
 
-  const { data: costData } = useQuery(
-    orpc.gateway.cost.queryOptions({ input: { gatewayId } }),
-  )
+  const { data: costData } = useQuery(orpc.gateway.cost.queryOptions({ input: { gatewayId } }))
 
-  const { data: sessions } = useQuery(
-    orpc.gateway.sessions.queryOptions({ input: { gatewayId } }),
-  )
+  const { data: sessions } = useQuery(orpc.gateway.sessions.queryOptions({ input: { gatewayId } }))
 
-  const { data: nodes } = useQuery(
-    orpc.gateway.nodes.queryOptions({ input: { gatewayId } }),
-  )
+  const { data: nodes } = useQuery(orpc.gateway.nodes.queryOptions({ input: { gatewayId } }))
 
   const daily = costData?.daily ?? []
   const todayCost = daily.length > 0 ? daily[daily.length - 1]!.totalCost : 0
@@ -107,19 +94,11 @@ function OverviewPage() {
 
       {/* Quick actions */}
       <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setUsageSheetOpen(true)}
-        >
+        <Button variant="outline" size="sm" onClick={() => setUsageSheetOpen(true)}>
           <BarChart3Icon className="size-3" />
           Usage Details
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setLogsSheetOpen(true)}
-        >
+        <Button variant="outline" size="sm" onClick={() => setLogsSheetOpen(true)}>
           <ScrollTextIcon className="size-3" />
           View Logs
         </Button>

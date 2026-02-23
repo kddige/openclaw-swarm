@@ -21,11 +21,7 @@ export class ConsoleTransport implements LogTransport {
     const color = COLORS[entry.level]
     const prefix = `${color}[${entry.level.toUpperCase()}]${RESET} [${entry.ns}]`
     const fn =
-      entry.level === 'error'
-        ? console.error
-        : entry.level === 'warn'
-          ? console.warn
-          : console.log
+      entry.level === 'error' ? console.error : entry.level === 'warn' ? console.warn : console.log
 
     if (entry.data !== undefined) {
       fn(prefix, entry.msg, entry.data)

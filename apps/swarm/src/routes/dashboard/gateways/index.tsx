@@ -29,13 +29,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/ui/empty'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { CopyableCommand } from '@/components/copyable-command'
 import { getGatewayStatus } from '@/lib/gateway-status'
 import {
@@ -84,9 +78,7 @@ function GatewayPairingHint({
 
 function GatewaysPage() {
   const queryClient = useQueryClient()
-  const { data: gateways, isLoading } = useQuery(
-    orpc.gateway.list.queryOptions(),
-  )
+  const { data: gateways, isLoading } = useQuery(orpc.gateway.list.queryOptions())
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [removeId, setRemoveId] = useState<string | null>(null)
@@ -106,18 +98,14 @@ function GatewaysPage() {
     },
   })
 
-  const reconnectMutation = useMutation(
-    orpc.gateway.reconnect.mutationOptions(),
-  )
+  const reconnectMutation = useMutation(orpc.gateway.reconnect.mutationOptions())
 
   return (
     <div className="flex flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-sm font-semibold">Gateways</h1>
-          <p className="text-muted-foreground text-xs">
-            Manage connected gateways
-          </p>
+          <p className="text-muted-foreground text-xs">Manage connected gateways</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger
@@ -143,9 +131,7 @@ function GatewaysPage() {
               <ServerIcon />
             </EmptyMedia>
             <EmptyTitle>No gateways configured</EmptyTitle>
-            <EmptyDescription>
-              Add a gateway to start monitoring.
-            </EmptyDescription>
+            <EmptyDescription>Add a gateway to start monitoring.</EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
@@ -153,10 +139,7 @@ function GatewaysPage() {
           {gateways.map((gw) => {
             const status = getGatewayStatus(gw.status)
             return (
-              <Card
-                key={gw.id}
-                className="bg-muted/40 transition-colors hover:bg-muted/60"
-              >
+              <Card key={gw.id} className="bg-muted/40 transition-colors hover:bg-muted/60">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <Link
@@ -167,28 +150,21 @@ function GatewaysPage() {
                       <CardTitle className="truncate">{gw.label}</CardTitle>
                     </Link>
                     <Badge variant="outline" className="shrink-0 gap-1.5">
-                      <span
-                        className={cn('size-1.5 rounded-full', status.dot)}
-                      />
+                      <span className={cn('size-1.5 rounded-full', status.dot)} />
                       {status.text}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-col gap-2">
-                    <span className="text-xs text-muted-foreground truncate">
-                      {gw.url}
-                    </span>
+                    <span className="text-xs text-muted-foreground truncate">{gw.url}</span>
                     {gw.lastError && gw.status !== 'pairing' && (
                       <span className="text-[0.625rem] text-destructive truncate">
                         {gw.lastError}
                       </span>
                     )}
                     {gw.status === 'pairing' && (
-                      <GatewayPairingHint
-                        requestId={gw.pairingRequestId}
-                        gatewayId={gw.id}
-                      />
+                      <GatewayPairingHint requestId={gw.pairingRequestId} gatewayId={gw.id} />
                     )}
                     <div className="flex items-center gap-1.5 mt-1">
                       {(gw.status === 'disconnected' ||
@@ -197,9 +173,7 @@ function GatewaysPage() {
                         <Button
                           variant="ghost"
                           size="icon-xs"
-                          onClick={() =>
-                            reconnectMutation.mutate({ id: gw.id })
-                          }
+                          onClick={() => reconnectMutation.mutate({ id: gw.id })}
                         >
                           <RefreshCwIcon />
                         </Button>
@@ -234,38 +208,27 @@ function GatewaysPage() {
         </div>
       )}
 
-      <AlertDialog
-        open={removeId !== null}
-        onOpenChange={(open) => !open && setRemoveId(null)}
-      >
+      <AlertDialog open={removeId !== null} onOpenChange={(open) => !open && setRemoveId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Gateway</AlertDialogTitle>
             <AlertDialogDescription>
-              This will disconnect and remove the gateway from your swarm. This
-              action cannot be undone.
+              This will disconnect and remove the gateway from your swarm. This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => removeId && removeMutation.mutate({ id: removeId })}
-            >
+            <AlertDialogAction onClick={() => removeId && removeMutation.mutate({ id: removeId })}>
               Remove
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog
-        open={editGateway !== null}
-        onOpenChange={(open) => !open && setEditGateway(null)}
-      >
+      <Dialog open={editGateway !== null} onOpenChange={(open) => !open && setEditGateway(null)}>
         {editGateway && (
-          <EditGatewayDialog
-            gateway={editGateway}
-            onClose={() => setEditGateway(null)}
-          />
+          <EditGatewayDialog gateway={editGateway} onClose={() => setEditGateway(null)} />
         )}
       </Dialog>
     </div>
@@ -369,10 +332,7 @@ function EditGatewayDialog({
       </div>
 
       <DialogFooter>
-        <Button
-          disabled={!canSubmit || updateMutation.isPending}
-          onClick={handleSubmit}
-        >
+        <Button disabled={!canSubmit || updateMutation.isPending} onClick={handleSubmit}>
           {updateMutation.isPending && <Spinner className="size-3" />}
           {updateMutation.isPending ? 'Saving...' : 'Save'}
         </Button>
@@ -388,12 +348,8 @@ function AddGatewayDialog({ onClose }: { onClose: () => void }) {
   const [label, setLabel] = useState('')
   const [phase, setPhase] = useState<DialogPhase>({ step: 'form' })
 
-  const testMutation = useMutation(
-    orpc.gateway.testConnection.mutationOptions(),
-  )
-  const addMutation = useMutation(
-    orpc.gateway.add.mutationOptions(),
-  )
+  const testMutation = useMutation(orpc.gateway.testConnection.mutationOptions())
+  const addMutation = useMutation(orpc.gateway.add.mutationOptions())
 
   const canSubmit = url.length > 0 && token.length > 0 && label.length > 0
   const busy = phase.step === 'testing' || phase.step === 'saving'
@@ -431,9 +387,7 @@ function AddGatewayDialog({ onClose }: { onClose: () => void }) {
     <DialogContent>
       <DialogHeader>
         <DialogTitle>Add Gateway</DialogTitle>
-        <DialogDescription>
-          Connect to an OpenClaw Gateway instance.
-        </DialogDescription>
+        <DialogDescription>Connect to an OpenClaw Gateway instance.</DialogDescription>
       </DialogHeader>
 
       <div className="flex flex-col gap-3">
@@ -443,7 +397,10 @@ function AddGatewayDialog({ onClose }: { onClose: () => void }) {
             id="gw-label"
             placeholder="My Gateway"
             value={label}
-            onChange={(e) => { setLabel(e.target.value); resetToForm() }}
+            onChange={(e) => {
+              setLabel(e.target.value)
+              resetToForm()
+            }}
             disabled={busy}
           />
         </div>
@@ -453,7 +410,10 @@ function AddGatewayDialog({ onClose }: { onClose: () => void }) {
             id="gw-url"
             placeholder="wss://gateway.example.com:18789"
             value={url}
-            onChange={(e) => { setUrl(e.target.value); resetToForm() }}
+            onChange={(e) => {
+              setUrl(e.target.value)
+              resetToForm()
+            }}
             disabled={busy}
           />
           <p className="text-[0.625rem] text-muted-foreground">
@@ -467,7 +427,10 @@ function AddGatewayDialog({ onClose }: { onClose: () => void }) {
             type="password"
             placeholder="Enter authentication token"
             value={token}
-            onChange={(e) => { setToken(e.target.value); resetToForm() }}
+            onChange={(e) => {
+              setToken(e.target.value)
+              resetToForm()
+            }}
             disabled={busy}
           />
         </div>
@@ -490,13 +453,10 @@ function AddGatewayDialog({ onClose }: { onClose: () => void }) {
               </span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Approve this device on the gateway, then press the button below to
-              finish connecting.
+              Approve this device on the gateway, then press the button below to finish connecting.
             </p>
             {phase.requestId ? (
-              <CopyableCommand
-                command={`openclaw devices approve ${phase.requestId}`}
-              />
+              <CopyableCommand command={`openclaw devices approve ${phase.requestId}`} />
             ) : (
               <div className="flex flex-col gap-1.5 rounded-md border bg-muted/60 px-3 py-2">
                 <code className="font-mono text-[0.6875rem] text-foreground">
@@ -504,9 +464,7 @@ function AddGatewayDialog({ onClose }: { onClose: () => void }) {
                 </code>
                 <p className="text-[0.625rem] text-muted-foreground">
                   Find the pending request, then:{' '}
-                  <code className="font-mono">
-                    openclaw devices approve &lt;id&gt;
-                  </code>
+                  <code className="font-mono">openclaw devices approve &lt;id&gt;</code>
                 </p>
               </div>
             )}
@@ -520,9 +478,7 @@ function AddGatewayDialog({ onClose }: { onClose: () => void }) {
       <DialogFooter>
         {phase.step === 'pairing' ? (
           <Button disabled={busy} onClick={handleSubmit}>
-            {phase.step === 'pairing' && testMutation.isPending && (
-              <Spinner className="size-3" />
-            )}
+            {phase.step === 'pairing' && testMutation.isPending && <Spinner className="size-3" />}
             Retry & Save
           </Button>
         ) : (

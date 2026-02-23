@@ -60,10 +60,7 @@ export class FileTransport implements LogTransport {
     }
 
     try {
-      fs.renameSync(
-        this.currentPath,
-        path.join(this.dir, `${this.basename}.1.log`),
-      )
+      fs.renameSync(this.currentPath, path.join(this.dir, `${this.basename}.1.log`))
     } catch {
       // skip
     }

@@ -55,12 +55,7 @@ export function RestartBanner({
           Apply &amp; Restart
         </Button>
         {onDismiss && (
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={onDismiss}
-            title="Dismiss"
-          >
+          <Button variant="ghost" size="icon-xs" onClick={onDismiss} title="Dismiss">
             <XIcon className="size-3" />
           </Button>
         )}

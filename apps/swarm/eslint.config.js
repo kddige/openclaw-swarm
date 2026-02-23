@@ -38,8 +38,7 @@ export default tseslint.config(
         },
         {
           selector: 'TSTypeReference > TSQualifiedName[right.name="FC"]',
-          message:
-            'Do not use React.FC. Declare components as plain functions with typed props.',
+          message: 'Do not use React.FC. Declare components as plain functions with typed props.',
         },
         {
           selector: 'TSTypeReference > Identifier[name="FunctionComponent"]',
@@ -47,8 +46,7 @@ export default tseslint.config(
             'Do not use FunctionComponent. Declare components as plain functions with typed props.',
         },
         {
-          selector:
-            'TSTypeReference > TSQualifiedName[right.name="FunctionComponent"]',
+          selector: 'TSTypeReference > TSQualifiedName[right.name="FunctionComponent"]',
           message:
             'Do not use React.FunctionComponent. Declare components as plain functions with typed props.',
         },
@@ -71,13 +69,11 @@ export default tseslint.config(
             },
             {
               name: 'clsx',
-              message:
-                'Use cn() from "@/lib/utils" instead of importing clsx directly.',
+              message: 'Use cn() from "@/lib/utils" instead of importing clsx directly.',
             },
             {
               name: 'tailwind-merge',
-              message:
-                'Use cn() from "@/lib/utils" instead of importing tailwind-merge directly.',
+              message: 'Use cn() from "@/lib/utils" instead of importing tailwind-merge directly.',
             },
           ],
         },
@@ -128,12 +124,7 @@ export default tseslint.config(
             },
             {
               name: '@tanstack/react-query',
-              importNames: [
-                'useQuery',
-                'useMutation',
-                'useInfiniteQuery',
-                'useSuspenseQuery',
-              ],
+              importNames: ['useQuery', 'useMutation', 'useInfiniteQuery', 'useSuspenseQuery'],
               message:
                 'Do not wrap React Query hooks in custom hooks. Use useQuery/useMutation directly in components with orpc.*.queryOptions().',
             },

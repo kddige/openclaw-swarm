@@ -15,10 +15,7 @@ export function MetricCard({
   className?: string
 }) {
   return (
-    <Card
-      size="sm"
-      className={cn('bg-muted/40', alert && 'ring-destructive/30', className)}
-    >
+    <Card size="sm" className={cn('bg-muted/40', alert && 'ring-destructive/30', className)}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <span className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">

@@ -17,10 +17,7 @@ export class MemoryTransport implements LogTransport {
     this.count++
   }
 
-  tail(
-    limit = 100,
-    afterCursor?: number,
-  ): { entries: LogEntry[]; cursor: number } {
+  tail(limit = 100, afterCursor?: number): { entries: LogEntry[]; cursor: number } {
     const cursor = this.count
     const available = Math.min(this.count, this.capacity)
     const startIndex = this.count - available
