@@ -49,7 +49,7 @@ function createWindow() {
       transparent: true,
     }),
     ...(!isMac && {
-      backgroundColor: '#000000',
+      backgroundColor: nativeTheme.shouldUseDarkColors ? '#242424' : '#f5f5f5',
     }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
@@ -87,6 +87,9 @@ app.on('activate', () => {
 function syncTheme() {
   if (win) {
     win.webContents.send('theme-changed', nativeTheme.shouldUseDarkColors)
+    if (process.platform !== 'darwin') {
+      win.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#242424' : '#f5f5f5')
+    }
   }
 }
 
