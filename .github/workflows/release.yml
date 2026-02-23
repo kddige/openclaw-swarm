@@ -53,7 +53,7 @@ jobs:
 
       - name: Build
         working-directory: apps/swarm
-        run: bun run build
+        run: bun run build -- -p never
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -76,7 +76,7 @@ jobs:
 
       - name: Build
         working-directory: apps/swarm
-        run: bun run build
+        run: bun run build -- -p never
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
