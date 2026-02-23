@@ -1,0 +1,47 @@
+---
+title: Developer Overview
+description: Start contributing to OpenClaw Swarm
+---
+
+OpenClaw Swarm is open source and we welcome contributions. This section covers everything you need to know to work on the codebase.
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Shell | Electron (macOS vibrancy + hidden titlebar) |
+| Frontend | React 19 |
+| Routing | TanStack Router (file-based, memory history) |
+| Server state | TanStack Query |
+| IPC | oRPC over MessagePort |
+| UI | shadcn/ui (base-mira) + Base UI + Tailwind CSS 4 |
+| Persistence | electron-store (safeStorage encryption) |
+| Crypto | Node native Ed25519 (device identity + challenge signing) |
+| Logging | Transport-agnostic logger (console, file, memory ring buffer) |
+| Package manager | Bun |
+| Task runner | moon |
+| Toolchain manager | proto |
+
+## Monorepo layout
+
+```
+├── .moon/               # moon workspace + toolchain config
+│   ├── workspace.yml    # Projects, VCS hooks, pipeline
+│   ├── toolchains.yml   # Bun toolchain
+│   └── tasks/           # Inherited tasks (lint, typecheck)
+├── apps/
+│   ├── swarm/           # Electron desktop app
+│   └── docs/            # This documentation site (Fumadocs + TanStack Start)
+├── .prototools          # Pinned tool versions (moon, bun)
+├── .editorconfig        # Editor formatting defaults
+├── .prettierrc          # Shared Prettier config
+└── package.json         # Bun workspaces root
+```
+
+## Where to start
+
+1. [Dev Setup](/docs/developers/dev-setup) — clone, install, and run locally
+2. [Architecture](/docs/developers/architecture) — understand how the app is structured
+3. [Conventions](/docs/developers/conventions) — enforced ESLint rules and code patterns
+4. [Logging](/docs/developers/logging) — structured logging system for the main process
+5. [Contributing](/docs/developers/contributing) — PR process and guidelines

@@ -1,0 +1,9 @@
+layer: 'configuration'
+
+tasks:
+  format:
+    command: 'prettier --write .'
+    inputs: []
+    options:
+      cache: false
+      runFromWorkspaceRoot: true

@@ -1,0 +1,30 @@
+---
+title: Sessions
+description: Monitor and inspect active agent sessions
+---
+
+Sessions represent active connections between AI agents and an OpenClaw Gateway. OpenClaw Swarm gives you a live view of every session across your entire swarm.
+
+## Session list
+
+From any gateway's detail view, you can see all active and recent sessions. Each session shows:
+
+- **Session key** — unique identifier for the session
+- **Agent identity** — which agent is connected
+- **Duration** — how long the session has been active
+- **Token usage** — input and output tokens consumed
+- **Cost** — estimated cost based on token usage and model pricing
+
+All numbers update in real time as the session progresses.
+
+## Session detail
+
+Click any session to open its full detail view:
+
+- **Chat history** — for chat-type sessions, see the full conversation between the agent and the model
+- **Token statistics** — detailed breakdown of tokens by message
+- **Session metadata** — raw metadata reported by the gateway (model, parameters, timestamps)
+
+## Swarm-wide search
+
+Use `Cmd+K` to open the command palette and search across all sessions in your swarm. You can search by session key, agent name, or gateway — and jump directly to any session detail view.

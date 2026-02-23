@@ -1,0 +1,47 @@
+{
+  "name": "openclaw-docs",
+  "private": true,
+  "type": "module",
+  "description": "Documentation site for OpenClaw Swarm",
+  "license": "MIT",
+  "author": "Kjartan Dige",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kddige/openclaw-swarm.git",
+    "directory": "apps/docs"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "start": "node .output/server/index.mjs",
+    "preview": "vite preview",
+    "typecheck": "fumadocs-mdx && tsc --noEmit"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.2.0",
+    "@tanstack/react-router": "^1.160.2",
+    "@tanstack/react-start": "^1.160.2",
+    "fumadocs-core": "^16.6.4",
+    "fumadocs-mdx": "^14.2.7",
+    "fumadocs-ui": "^16.6.4",
+    "lucide-react": "^0.574.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwind-merge": "^3.4.1",
+    "vite": "^7.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/mdx": "^2.0.13",
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
+    "nitro": "npm:nitro-nightly@latest",
+    "srvx": "^0.11.5",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
+    "vite-tsconfig-paths": "^6.1.1"
+  }
+}

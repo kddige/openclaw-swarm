@@ -1,0 +1,67 @@
+---
+title: Dev Setup
+description: Set up the OpenClaw Swarm development environment
+---
+
+## Prerequisites
+
+- **Node 22+**
+- **macOS** (vibrancy and native titlebar features are macOS-only)
+- **[proto](https://moonrepo.dev/proto)** — toolchain manager (installs the correct bun + moon versions)
+
+## Clone and run
+
+```bash
+git clone https://github.com/kddige/openclaw-swarm.git
+cd openclaw-swarm
+proto use        # Installs pinned bun + moon versions
+bun install
+moon run swarm:dev
+```
+
+This starts Vite + Electron with hot reload. A pre-commit hook will run lint + typecheck on staged files automatically.
+
+## Pinned tooling
+
+The monorepo uses [proto](https://moonrepo.dev/proto) to pin exact versions of **bun** and **moon** via `.prototools`. Every contributor gets the same versions — no "works on my machine" issues.
+
+```toml title=".prototools"
+moon = "2.0.1"
+bun = "1.3.9"
+```
+
+Run `proto use` after pulling to ensure you're on the correct versions.
+
+## Common tasks
+
+```bash
+moon run swarm:dev       # Start Electron app with hot reload
+moon run swarm:build     # Build distributable .dmg
+moon run swarm:lint      # ESLint (zero warnings allowed)
+moon run swarm:typecheck # TypeScript type-check
+moon ci                  # Run all affected tasks (CI mode)
+moon run root:format     # Prettier formatting (whole monorepo)
+moon run docs:dev        # Start docs site (localhost:3001)
+```
+
+## Project structure
+
+The swarm app lives in `apps/swarm/`:
+
+```
+apps/swarm/
+├── electron/                # Electron main process
+│   ├── api/routers/         # oRPC procedure handlers
+│   ├── gateway/             # WebSocket connection layer
+│   ├── logger/              # Transport-agnostic logging system
+│   ├── main.ts              # App entry point
+│   ├── preload.ts           # Preload script
+│   ├── store.ts             # electron-store persistence
+│   └── device-identity.ts   # Ed25519 keypair + challenge signing
+├── src/                     # React renderer
+│   ├── routes/              # TanStack Router file-based routes
+│   ├── components/ui/       # shadcn/ui components
+│   └── lib/                 # Utilities and oRPC client
+├── eslint.config.js         # ESLint with custom project rules
+└── moon.yml                 # Moon task definitions
+```

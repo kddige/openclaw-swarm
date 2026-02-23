@@ -1,0 +1,34 @@
+---
+title: Contributing
+description: How to contribute to OpenClaw Swarm
+---
+
+See the full [CONTRIBUTING.md](https://github.com/kddige/openclaw-swarm/blob/main/CONTRIBUTING.md) for detailed setup and guidelines.
+
+## Quick setup
+
+```bash
+git clone https://github.com/kddige/openclaw-swarm.git
+cd openclaw-swarm
+proto use && bun install
+moon run swarm:dev
+```
+
+## Enforced rules
+
+ESLint catches common mistakes at lint time. Every rule has a clear error message.
+
+| Rule | What it catches |
+|---|---|
+| `from 'zod'` banned | Must use `zod/v4` |
+| `from 'clsx'` banned | Must use `cn()` from `@/lib/utils` |
+| `React.FC` banned | Use plain function components |
+| `console.*` banned in electron/ | Use the `Logger` from `electron/logger/` |
+| Query hooks banned in src/hooks/ | Use `useQuery` directly in components |
+
+## PR process
+
+1. Branch off `main`
+2. One feature or fix per PR
+3. Pre-commit hook runs lint + typecheck automatically
+4. `moon ci` must pass

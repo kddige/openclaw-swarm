@@ -1,0 +1,22 @@
+{
+  "name": "openclaw",
+  "private": true,
+  "description": "Monorepo for OpenClaw Swarm — a command center for managing OpenClaw Gateway deployments",
+  "license": "MIT",
+  "author": "Kjartan Dige",
+  "homepage": "https://swarm.hucomm.ai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kddige/openclaw-swarm.git"
+  },
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "format": "prettier --write .",
+    "dev": "moon r :dev"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.1"
+  }
+}

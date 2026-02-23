@@ -1,0 +1,15 @@
+{
+  "title": "Guide",
+  "description": "Learn how to use OpenClaw Swarm",
+  "icon": "BookOpen",
+  "root": true,
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "installation",
+    "connecting-gateways",
+    "---Using Swarm---",
+    "sessions",
+    "logs-and-search"
+  ]
+}

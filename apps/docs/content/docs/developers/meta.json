@@ -1,0 +1,17 @@
+{
+  "title": "Developers",
+  "description": "Contribute to OpenClaw Swarm",
+  "icon": "Code",
+  "root": true,
+  "pages": [
+    "index",
+    "---Setup---",
+    "dev-setup",
+    "---Internals---",
+    "architecture",
+    "conventions",
+    "logging",
+    "---Contributing---",
+    "contributing"
+  ]
+}

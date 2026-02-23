@@ -1,0 +1,36 @@
+---
+title: Logs & Search
+description: Stream logs and search across your swarm
+---
+
+## Streaming logs
+
+OpenClaw Swarm streams log output from each gateway in real time. No more SSH-ing into individual machines to tail logs.
+
+From any gateway's detail view:
+
+1. Open the **Logs** tab
+2. Logs stream in automatically as they happen
+3. Use the **filter bar** to narrow down by level, keyword, or agent
+
+Logs are delivered via WebSocket event streaming, so there's zero polling — entries appear the moment they're emitted by the gateway.
+
+## Swarm-wide search
+
+Press `Cmd+K` anywhere in the app to open the **command palette**. From here you can:
+
+- **Search gateways** — jump to any gateway by name
+- **Search sessions** — find sessions by key or agent name
+- **Quick actions** — access common actions without navigating through menus
+
+The command palette searches across all connected gateways simultaneously, so you can find anything in your swarm from one place.
+
+## Usage & cost charts
+
+Each gateway detail view includes **usage charts** powered by Recharts, showing:
+
+- Token usage over time (input vs output)
+- Cost breakdown by model
+- Session count trends
+
+All charts use tabular numbers for alignment and update in real time.

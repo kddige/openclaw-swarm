@@ -1,0 +1,41 @@
+---
+title: What is OpenClaw Swarm?
+description: A command center for managing your OpenClaw Gateway deployments — starting as a desktop app, evolving into a self-hostable web dashboard
+---
+
+OpenClaw Swarm is a **command center** for all your [OpenClaw Gateway](https://github.com/openclaw/openclaw) deployments — a single pane of glass for monitoring sessions, streaming logs, and managing security across your AI agent infrastructure.
+
+Think **Portainer, but for AI agent swarms**.
+
+## Vision
+
+We're building OpenClaw Swarm in two phases:
+
+1. **Desktop app (now)** — A native Electron app for macOS. Building on the desktop first gives us the fastest iteration loop, access to system-level APIs (safeStorage, native menus, vibrancy), and a tight feedback cycle with early adopters.
+
+2. **Self-hostable web dashboard (next)** — The same monitoring and management UI, packaged as a standalone web application you deploy alongside your gateways. No desktop install required — accessible from any browser, any OS, with team-level auth and persistent storage.
+
+The desktop app isn't a throwaway prototype. The frontend is a standard React/TypeScript SPA — the same code that will power the web dashboard. Electron is the shell we iterate in today; the web is where we ship for production teams tomorrow.
+
+## What it does
+
+OpenClaw Swarm connects to one or more OpenClaw Gateway instances over WebSocket, giving you a unified view of everything happening across your AI agent infrastructure — without SSH, without switching between dashboards, without scripts.
+
+## Key features
+
+- **Multi-gateway management** — connect to any number of gateway instances and switch between them instantly
+- **Live session monitoring** — see every active agent session, token usage, and cost breakdown in real time
+- **Streaming logs** — tail log output from any gateway with powerful filtering, right from the app
+- **Usage & cost charts** — token usage and cost trends over time
+- **Security configuration** — push rate limits, allowed models, and access controls across your swarm
+- **Swarm-wide search** — `Cmd+K` command palette to jump between gateways, sessions, and actions
+- **Presence view** — see which agents are connected and active right now
+
+## Current requirements
+
+- **macOS** — the desktop app currently targets macOS with vibrancy and a hidden titlebar (Windows and Linux support is planned)
+- At least one running [OpenClaw Gateway](https://github.com/openclaw/openclaw) instance to connect to
+
+## Next steps
+
+Ready to get started? Head to [Installation](/docs/guide/installation) to download and run OpenClaw Swarm.
